@@ -3,7 +3,10 @@ from discord import Embed, Colour
 from discord.ui import View
 
 from discordbot.bot import bot
-from core.models import Game, Ban
+from core.utils.bans import get_outstanding_bans
+
+ban_types = {'ST': 'Soft ban', 'HD': 'Hard ban', 'PM': 'Permanent ban'}
+
 
 class BanPlayerView(View):
     def __init__(self, ctx, user):
@@ -46,14 +49,13 @@ async def ban_player(ctx, user):
     view = view=BanPlayerView(ctx, user)
     view.message = await ctx.channel.send(f"Banning player {user}", view=view)
 
-
-
 @bot.command(name='ban_list')
 async def ban_list(ctx, arg: str = ""):
     if arg == 'all':
         await ctx.send(f"All banned players")
     else:
+        current_bans = await get_outstanding_bans()
         banned_players = Embed(title='Banned Players', color=Colour.dark_red())
-        for player in ['alice', 'bob', 'charles']:
-            banned_players.add_field(name=player, value='Banned until 2023', inline=False)
+        for (player, end, variant, reason) in current_bans:
+            banned_players.add_field(name=f"{player} until {end}", value=f"[{ban_types[variant]}] {reason}", inline=False)
         await ctx.send(embed=banned_players)
