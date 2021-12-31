@@ -29,6 +29,9 @@ ALLOWED_HOSTS = []
 
 AUTH_USER_MODEL = 'core.CustomUser'
 
+DISCORD_TOKEN = ''
+DISCORD_GUILDS = []
+
 # Application definition
 
 INSTALLED_APPS = [
@@ -40,7 +43,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'core',
     'api',
-    'discordbot'
+    'discordbot',
 ]
 
 MIDDLEWARE = [
