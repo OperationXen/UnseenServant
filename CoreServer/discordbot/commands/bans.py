@@ -5,7 +5,9 @@ from discord.ui import View
 from discordbot.bot import bot
 from core.utils.bans import get_outstanding_bans
 
+
 class BanPlayerView(View):
+    """ View for the player banning controls """
     def __init__(self, ctx, user):
         super().__init__(timeout=60)
         self.ctx = ctx
@@ -59,8 +61,7 @@ class BannedPlayerEmbed(Embed):
             self.add_field(name=f"Issued by {issuer}", value=reason, inline=False)
         self.color = self.ban_colours[variant]
 
-
-@bot.command(name='ban_list2')
+@bot.command(name='ban_list')
 async def ban_list(ctx, arg: str = ""):
     """ show the list of banned players """
     embeds = []

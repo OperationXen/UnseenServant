@@ -56,6 +56,9 @@ class Game(models.Model):
     datetime = models.DateTimeField(help_text='Date/Time game is starting')
     length = models.DurationField(help_text='Planned duration of game')
 
+    def __str__(self):
+        return f"{self.dm.discord_name} - {self.name}"
+
 
 class Character(models.Model):
     """ Character instances """
@@ -69,12 +72,14 @@ class Player(models.Model):
     """ Specifies a player within a specific game """
     game = models.ForeignKey(Game, related_name='players', on_delete=models.CASCADE, help_text='Game user is playing in')
     standby = models.BooleanField(default=False, help_text='If player is a standby player')
-    waitlist = models.IntegerField(help_text='Position in queue for place in game')
+    waitlist = models.IntegerField(null=True, blank=True, help_text='Position in queue for place in game')
     discord_name = models.CharField(max_length=32, help_text='Discord username')
-    character = models.ForeignKey(Character, null=True, on_delete=models.SET_NULL, help_text='Character info')
+    character = models.ForeignKey(Character, null=True, blank=True, on_delete=models.SET_NULL, help_text='Character info')
     # waitlisting priority for higher ranks (exact implementation to follow)
     # waitlist alerting logic, perhaps pm users and give an hour to decline?
 
+    def __str__(self):
+        return f"{self.discord_name}"
 
 class Ban(models.Model):
     """ Records of player bans """
@@ -91,3 +96,6 @@ class Ban(models.Model):
     issued_by = models.CharField(max_length=32, help_text='Name of the issuing admin')
     reason = models.TextField(help_text='Reason for the  ban to be issued')
     variant = models.TextField(max_length=2, choices=BanTypes.choices, default=BanTypes.HARD, help_text='Type of ban')
+
+    def __str__(self):
+        return(f"{self.discord_name}")
