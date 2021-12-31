@@ -1,12 +1,9 @@
 import discord
-from discord import Embed, Colour
+from discord import Embed, Colour, Message
 from discord.ui import View
 
 from discordbot.bot import bot
 from core.utils.bans import get_outstanding_bans
-
-ban_types = {'ST': 'Soft ban', 'HD': 'Hard ban', 'PM': 'Permanent ban'}
-
 
 class BanPlayerView(View):
     def __init__(self, ctx, user):
@@ -49,13 +46,31 @@ async def ban_player(ctx, user):
     view = view=BanPlayerView(ctx, user)
     view.message = await ctx.channel.send(f"Banning player {user}", view=view)
 
-@bot.command(name='ban_list')
+
+class BannedPlayerEmbed(Embed):
+    """ Custom embed for representing a player ban """
+    ban_names = {'ST': 'Soft ban', 'HD': 'Hard ban', 'PM': 'Permanent ban'}
+    ban_colours = {'ST': Colour.red(), 'HD': Colour.dark_red(), 'PM': Colour.light_grey()}
+
+    def __init__(self, player, end, variant, issuer='', reason=''):
+        super().__init__(title=player)
+        self.add_field(name=self.ban_names[variant], value=f"Until: {end}", inline=False)
+        if issuer or reason:
+            self.add_field(name=f"Issued by {issuer}", value=reason, inline=False)
+        self.color = self.ban_colours[variant]
+
+
+@bot.command(name='ban_list2')
 async def ban_list(ctx, arg: str = ""):
+    """ show the list of banned players """
+    embeds = []
+    embeds.append(Embed(title='Banned players', colour=Colour.dark_purple()))
+
     if arg == 'all':
         await ctx.send(f"All banned players")
     else:
         current_bans = await get_outstanding_bans()
-        banned_players = Embed(title='Banned Players', color=Colour.dark_red())
-        for (player, end, variant, reason) in current_bans:
-            banned_players.add_field(name=f"{player} until {end}", value=f"[{ban_types[variant]}] {reason}", inline=False)
-        await ctx.send(embed=banned_players)
+        for ban in current_bans:
+            embeds.append(BannedPlayerEmbed(ban.discord_name, ban.datetime_end, ban.variant, ban.issued_by, ban.reason))
+
+        await ctx.send(embeds=embeds)
