@@ -22,3 +22,11 @@ def get_upcoming_games(days=30):
     queryset = Game.objects.filter(datetime__gte=now)
     # force evaluation before leaving this async context
     return list(queryset)
+
+@sync_to_async
+def get_specific_game(game_id):
+    game_obj = Game.objects.get(pk=game_id)
+    if game_obj:
+        return game_obj
+    return None
+    

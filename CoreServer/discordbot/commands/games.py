@@ -13,19 +13,34 @@ game_type_colours = {
 
 class GameSummaryEmbed(Embed):
     """ Custom embed for summary of game """
+    def get_game_time(self, game):
+        time_info = f"<t:{int(game.datetime.timestamp())}:F>"
+        if game.length:
+            time_info = time_info + f"\nDuration: {game.length}"
+        return time_info
+
+    def get_player_info(self, game, players):
+        player_info = f"{min(len(players), game.max_players)} / {game.max_players} players"
+        if len(players) > game.max_players:
+            player_info = player_info + f"\n{len(players) - game.max_players} in waitlist"
+        else:
+            player_info = player_info + "\nWaitlist empty"
+        return player_info
 
     def __init__(self, game, players, dm):
         title = f"{game.variant} ({game.realm}) levels {game.level_min} - {game.level_max} by @{dm.name}"
         super().__init__(title=title, colour=game_type_colours[game.variant])
-        
-        time_info = f"<t:{int(game.datetime.timestamp())}:F>"
-        if game.length:
-            time_info = time_info + f"\nDuration: {game.length}"
 
-        self.add_field(name='When', value=time_info, inline=True)
-        self.add_field(name='Players', value=f"{len(players)} / {game.max_players} players", inline=True)
+        self.add_field(name='When', value=self.get_game_time(game), inline=True)
+        self.add_field(name='Players', value=self.get_player_info(game, players), inline=True)
         self.add_field(name=f"{game.module} | {game.name}", value=f"{game.description[:76]} ... ", inline=False)
         
+
+class GameDetailEmbed(Embed):
+    """ Embed for game detail view """
+    def __init__(self, game, players, dm):
+        super().__init__()
+
 
 @bot.command(name='games')
 async def game_list(ctx, days: int = 30):
@@ -39,3 +54,9 @@ async def game_list(ctx, days: int = 30):
         dm = await get_dm(game)
         embeds.append(GameSummaryEmbed(game, players, dm))
     await ctx.send(embeds=embeds)
+
+@bot.command(name='game')
+async def game_details(ctx, game_id: int = 1):
+    """ Get the details for a specific game """
+    embeds = []
+    game_details = await get_specific_game(game_id)
