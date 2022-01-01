@@ -57,7 +57,7 @@ class Game(models.Model):
     datetime_release = models.DateTimeField(help_text='Date/Time game is released for signups')
     datetime_open_release = models.DateTimeField(help_text='Date/Time game is released to gen-pop')
     datetime = models.DateTimeField(help_text='Date/Time game is starting')
-    length = models.DurationField(help_text='Planned duration of game')
+    length = models.CharField(max_length=48, default="2 hours", blank=True, help_text='Planned duration of game')
 
     def __str__(self):
         return f"{self.dm.discord_name} - {self.name}"
