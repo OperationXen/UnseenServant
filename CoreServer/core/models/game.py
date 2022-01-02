@@ -7,6 +7,9 @@ class DM(models.Model):
     name = models.CharField(max_length=64, help_text='DM\'s chosen alias or handle')
     description = models.TextField(help_text='Flavour text / details to show')
 
+    class Meta:
+        verbose_name = 'DMs'
+
     def __str__(self):
         return f"{self.discord_name}"
 

@@ -1,6 +1,7 @@
 import discord
-from discord import Embed, Colour
-from discord.ui import View, button
+from asyncio import create_task as queue_async_task
+from discord import Embed, Colour, ButtonStyle
+from discord.ui import View, button, Button
 
 from discordbot.bot import bot
 from core.utils.games import get_upcoming_games, get_player_list, get_dm, get_specific_game
@@ -29,9 +30,6 @@ class GameEmbed(Embed):
         else:
             player_info = player_info + "\nWaitlist empty"
         return player_info
-    
-    def get_player_details(self):
-        pass
 
 
 class GameSummaryEmbed(GameEmbed):
@@ -44,29 +42,54 @@ class GameSummaryEmbed(GameEmbed):
         self.add_field(name='When', value=self.get_game_time(game), inline=True)
         self.add_field(name='Players', value=self.get_player_info(game, players), inline=True)
         self.add_field(name=f"{game.module} | {game.name}", value=f"{game.description[:76]} ... ", inline=False)
-        
+
 
 class GameDetailEmbed(GameEmbed):
     """ Embed for game detail view """
-    def __init__(self, game, players, dm):
+
+    def __init__(self, ctx, game, players, dm):
         title = f"{game.variant} ({game.realm})"
         super().__init__(title = title, color=self.game_type_colours[game.variant])
+        self.ctx = ctx
+        self.players = players
 
         self.add_field(name=f"{game.module} | {game.name}", value=f"{game.description}", inline=False)
         self.add_field(name='When', value=self.get_game_time(game), inline=True)
         self.add_field(name='Details', value = f"Character levels {game.level_min} - {game.level_max}\n DMed by @{dm.name}", inline=True)
         self.add_field(name='Content Warnings', value=f"{game.warnings}", inline=False)
-        self.add_field(name='Players', value=self.get_player_details(), inline=True)
+        self.add_field(name='Players', value="Processing...", inline=True)
         self.add_field(name='Waitlist', value="0", inline=True)
-        
+
+        queue_async_task(self.update_players())
+
+    async def update_players(self):
+        print("updating players")
+        """ get a list of players """
+        names = ""
+        for player in self.players:
+            discord_user = await bot.get_or_fetch_user(505745388733595658)
+            if discord_user:
+                names = names + (discord_user.mention)
+            else:
+                names = names + player.discord_name
+        print(names)
+        return names
+
+        # TODO - this doesn't work yet, and I need to update the field I've already created to replace the pending text
+
 class GameControlView(View):
     """ View for game signup controls """
-    def __init__(self, ctx):
-        super().__init__(timeout=0)
+    def __init__(self, ctx, game):
+        super().__init__(timeout=None)
         self.ctx = ctx
+        self.game = game
 
-    @button(label="Signup", style=discord.ButtonStyle.primary, row=1)
+    @button(label='Signup', style=ButtonStyle.primary, custom_id='signup')
     async def signup(self, button, interaction):
+        pass
+
+    @button(label="Dropout", style=ButtonStyle.red, custom_id='dropout')
+    async def dropout(self, button, interaction):
         pass
 
 
@@ -90,4 +113,5 @@ async def game_details(ctx, game_id: int = 1):
     game = await get_specific_game(game_id)
     players = await get_player_list(game)
     dm = await get_dm(game)
-    await ctx.send(embed=GameDetailEmbed(game, players, dm), view=GameControlView(ctx))
+    view = GameControlView(ctx, game)
+    view.message = await ctx.send(embed=GameDetailEmbed(ctx, game, players, dm), view=view)
