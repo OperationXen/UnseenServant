@@ -53,7 +53,7 @@ class Game(models.Model):
     max_players = models.IntegerField(default=6, help_text='Max players for this game')
     level_min = models.IntegerField(default=1, help_text='Minumum starting level')
     level_max = models.IntegerField(default=4, help_text='Maximum player level')
-    warnings = models.TextField(blank=True, default='None', help_text='Content warnings or advisories')
+    warnings = models.TextField(blank=False, default='None', help_text='Content warnings or advisories')
     
     status = models.TextField(max_length=16, choices=Status.choices, default=Status.DRAFT, help_text='Game status')
     channel = models.CharField(blank=True, max_length=32, help_text='Discord channel to use for this game')
