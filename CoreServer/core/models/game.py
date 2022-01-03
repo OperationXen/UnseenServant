@@ -3,12 +3,14 @@ from django.db import models
 
 class DM(models.Model):
     """ Representation of a DM """
-    discord_name = models.CharField(max_length=32, help_text='Discord username')
     name = models.CharField(max_length=64, help_text='DM\'s chosen alias or handle')
-    description = models.TextField(help_text='Flavour text / details to show')
+    discord_id = models.IntegerField(null=True, blank=True, help_text='Discord ID of the DM')
+    discord_name = models.CharField(blank=True, max_length=32, help_text='Discord username')
+    description = models.TextField(blank=True, help_text='Flavour text / details to show')
 
     class Meta:
-        verbose_name = 'DMs'
+        verbose_name = 'DM'
+        verbose_name_plural = 'DMs'
 
     def __str__(self):
         return f"{self.discord_name}"
@@ -68,8 +70,6 @@ class Game(models.Model):
 
 class Character(models.Model):
     """ Character instances """
-
-    # Character details could be placed in a dedicated model
     dnd_beyond_link = models.URLField(blank=True, help_text='Link to character sheet on D&D Beyond')
     forewarning = models.TextField(blank=True, help_text='Warnings of shenanigans, or notes for DM')
 
@@ -79,7 +79,8 @@ class Player(models.Model):
     game = models.ForeignKey(Game, related_name='players', on_delete=models.CASCADE, help_text='Game user is playing in')
     standby = models.BooleanField(default=False, help_text='If player is a standby player')
     waitlist = models.IntegerField(null=True, blank=True, help_text='Position in queue for place in game')
-    discord_name = models.CharField(max_length=32, help_text='Discord username')
+    discord_id = models.IntegerField(null=True, blank=True, help_text='Discord ID of player')
+    discord_name = models.CharField(blank=True, max_length=32, help_text='Discord username')
     character = models.ForeignKey(Character, null=True, blank=True, on_delete=models.SET_NULL, help_text='Character info')
     # waitlisting priority for higher ranks (exact implementation to follow)
     # waitlist alerting logic, perhaps pm users and give an hour to decline?
@@ -96,7 +97,8 @@ class Ban(models.Model):
         HARD = 'HD', ('Hard ban')   # removes player from any games
         SOFT = 'ST', ('Soft ban')   # leaves player in games
 
-    discord_name = models.CharField(max_length=32, help_text='Banned player name')
+    discord_id = models.IntegerField(null=True, blank=True, help_text='Discord ID of player')
+    discord_name = models.CharField(blank=True, max_length=32, help_text='Banned player name')
     datetime_start = models.DateTimeField(help_text='Ban start date/time')
     datetime_end = models.DateTimeField(help_text='Ban expiry date/time')
     issued_by = models.CharField(max_length=32, help_text='Name of the issuing admin')

@@ -9,6 +9,14 @@ from core.utils.games import get_upcoming_games, get_player_list, get_dm, get_sp
 
 class GameEmbed(Embed):
     """ Baseclass for game embeds """
+    def __init__(self, game, players, dm, title, colour=None):
+        if not colour:
+            colour = self.game_type_colours[game.variant]
+        self.game = game
+        self.players = players
+        self.dm = dm
+        super().__init__(title=title, colour=colour)
+
     game_type_colours = {
         'Resident AL': Colour.green(), 
         'Guest AL DM': Colour.blue(), 
@@ -17,16 +25,33 @@ class GameEmbed(Embed):
         'Campaign': Colour.dark_gold()
         }
 
-    def get_game_time(self, game):
-        time_info = f"<t:{int(game.datetime.timestamp())}:F>"
-        if game.length:
-            time_info = time_info + f"\nDuration: {game.length}"
+    def get_game_time(self):
+        time_info = f"<t:{int(self.game.datetime.timestamp())}:F>"
+        if self.game.length:
+            time_info = time_info + f"\nDuration: {self.game.length}"
         return time_info
 
-    def get_player_info(self, game, players):
-        player_info = f"{min(len(players), game.max_players)} / {game.max_players} players"
-        if len(players) > game.max_players:
-            player_info = player_info + f"\n{len(players) - game.max_players} in waitlist"
+    def get_waitlist_count(self):
+        """ Get number of players in waitlist """
+        waitlisted = sum(1 for p in self.players if p.standby)
+        return waitlisted
+
+    def get_player_count(self):
+        """ Get number of confirmed players """
+        player_count = sum(1 for p in self.players if not p.standby)
+        return player_count
+
+    def player_details_list(self):
+        """ get list of all players with a spot in the game """
+        player_list = '\n'.join(f"<@{p.discord_id}>" for p in self.players if not p.standby)
+        return player_list
+
+    def get_player_info(self):
+        """ get a string that shows current player status """
+        player_info = f"{self.get_player_count()} / {self.game.max_players} players"
+        waitlisted = self.get_waitlist_count()
+        if waitlisted:
+            player_info = player_info + f"\n{waitlisted} in waitlist"
         else:
             player_info = player_info + "\nWaitlist empty"
         return player_info
@@ -36,11 +61,11 @@ class GameSummaryEmbed(GameEmbed):
     """ Custom embed for summary of game """
     
     def __init__(self, game, players, dm):
-        title = f"{game.variant} ({game.realm}) levels {game.level_min} - {game.level_max} by @{dm.name}"
-        super().__init__(title=title, colour=self.game_type_colours[game.variant])
+        title = f"{game.variant} ({game.realm}) levels {game.level_min} - {game.level_max} by {dm.name}"
+        super().__init__(game, players, dm, title=title)
 
-        self.add_field(name='When', value=self.get_game_time(game), inline=True)
-        self.add_field(name='Players', value=self.get_player_info(game, players), inline=True)
+        self.add_field(name='When', value=self.get_game_time(), inline=True)
+        self.add_field(name='Players', value=self.get_player_info(), inline=True)
         self.add_field(name=f"{game.module} | {game.name}", value=f"{game.description[:76]} ... ", inline=False)
 
 
@@ -49,33 +74,16 @@ class GameDetailEmbed(GameEmbed):
 
     def __init__(self, ctx, game, players, dm):
         title = f"{game.variant} ({game.realm})"
-        super().__init__(title = title, color=self.game_type_colours[game.variant])
+        super().__init__(game, players, dm, title = title)
         self.ctx = ctx
-        self.players = players
 
         self.add_field(name=f"{game.module} | {game.name}", value=f"{game.description}", inline=False)
-        self.add_field(name='When', value=self.get_game_time(game), inline=True)
-        self.add_field(name='Details', value = f"Character levels {game.level_min} - {game.level_max}\n DMed by @{dm.name}", inline=True)
+        self.add_field(name='When', value=self.get_game_time(), inline=True)
+        self.add_field(name='Details', value = f"Character levels {game.level_min} - {game.level_max}\n DMed by <@{dm.discord_id}>", inline=True)
         self.add_field(name='Content Warnings', value=f"{game.warnings}", inline=False)
-        self.add_field(name='Players', value="Processing...", inline=True)
-        self.add_field(name='Waitlist', value="0", inline=True)
+        self.add_field(name='Players', value=self.player_details_list(), inline=True)
+        self.add_field(name='Waitlist', value=self.get_waitlist_count(), inline=True)
 
-        queue_async_task(self.update_players())
-
-    async def update_players(self):
-        print("updating players")
-        """ get a list of players """
-        names = ""
-        for player in self.players:
-            discord_user = await bot.get_or_fetch_user(505745388733595658)
-            if discord_user:
-                names = names + (discord_user.mention)
-            else:
-                names = names + player.discord_name
-        print(names)
-        return names
-
-        # TODO - this doesn't work yet, and I need to update the field I've already created to replace the pending text
 
 class GameControlView(View):
     """ View for game signup controls """
