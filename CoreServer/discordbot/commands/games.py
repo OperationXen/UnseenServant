@@ -4,6 +4,7 @@ from discord import Embed, Colour, ButtonStyle
 from discord.ui import View, button, Button
 
 from discordbot.bot import bot
+from discordbot.utils.format import generate_calendar_message
 from core.utils.games import get_upcoming_games, get_player_list, get_dm, get_specific_game
 from core.utils.games import add_player_to_game, remove_player_from_game
 
@@ -101,6 +102,10 @@ class GameControlView(View):
             new_players = await get_player_list(self.game)
             await self.message.edit(embed = GameDetailEmbed(self.game, new_players, self.dm))
 
+    @button(label='Add to calendar', style=ButtonStyle.grey)
+    async def calendar(self, button, interaction):
+        message = generate_calendar_message(self.game)
+        await interaction.response.send_message(message, ephemeral=True, embeds=[])
 
     @button(label="Dropout", style=ButtonStyle.red, custom_id='dropout')
     async def dropout(self, button, interaction):
@@ -129,7 +134,10 @@ async def game_details(ctx, game_id: int = 1):
     """ Get the details for a specific game """
     
     game = await get_specific_game(game_id)
-    players = await get_player_list(game)
-    dm = await get_dm(game)
-    view = GameControlView(game, players, dm)
-    view.message = await ctx.send(embed=GameDetailEmbed(game, players, dm), view=view)
+    if game:
+        players = await get_player_list(game)
+        dm = await get_dm(game)
+        view = GameControlView(game, players, dm)
+        view.message = await ctx.send(embed=GameDetailEmbed(game, players, dm), view=view)
+    else:
+        await ctx.send('No game found')
