@@ -105,7 +105,7 @@ class GameControlView(View):
     @button(label='Add to calendar', style=ButtonStyle.grey)
     async def calendar(self, button, interaction):
         message = generate_calendar_message(self.game)
-        await interaction.response.send_message(message, ephemeral=True)
+        await interaction.response.send_message(message, ephemeral=True, embeds=[])
 
     @button(label="Dropout", style=ButtonStyle.red, custom_id='dropout')
     async def dropout(self, button, interaction):
