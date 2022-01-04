@@ -25,10 +25,11 @@ def get_upcoming_games(days=30):
 
 @sync_to_async
 def get_specific_game(game_id):
-    game_obj = Game.objects.get(pk=game_id)
-    if game_obj:
+    try:
+        game_obj = Game.objects.get(pk=game_id)
         return game_obj
-    return None
+    except Game.DoesNotExist:
+        return None
     
 
 def get_waitlist_position():
