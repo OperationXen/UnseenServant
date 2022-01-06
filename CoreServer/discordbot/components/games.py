@@ -111,7 +111,7 @@ class GameDetailEmbed(BaseGameEmbed):
 
 class GameControlView(View):
     """ View for game signup controls """
-    def __init__(self, game, players, dm):
+    def __init__(self, game):
         super().__init__(timeout=None)
         self.game = game
 
