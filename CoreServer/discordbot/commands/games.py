@@ -97,6 +97,96 @@ class GameDetailEmbed(GameEmbed):
         self.add_field(name=f"Waitlist ({self.get_waitlist_count()})", value=self.waitlist_details_list(self.game.max_players), inline=True)
 
 
+
+
+
+
+
+
+
+
+
+
+class GameEmbed2(Embed):
+    """ Baseclass for game embeds """
+    def __init__(self, game, title):
+        colour = self.game_type_colours[game.variant]
+        self.game = game
+        super().__init__(title=title, colour=colour)
+
+    async def get_data(self):
+        """ Asyncronous wrapper to retrieve data """
+        self.players = await get_player_list(self.game)
+        self.waitlist = await get_waitlist(self.game)
+        self.dm = await get_dm(self.game)
+    
+    game_type_colours = {
+        'Resident AL': Colour.green(),
+        'Guest AL DM': Colour.blue(),
+        'Epic AL': Colour.dark_green(),
+        'Non-AL One Shot': Colour.orange(),
+        'Campaign': Colour.dark_gold()
+        }
+
+    def get_game_time(self):
+        time_info = f"<t:{int(self.game.datetime.timestamp())}:F>"
+        if self.game.length:
+            time_info = time_info + f"\nDuration: {self.game.length}"
+        return time_info
+
+    def get_waitlist_count(self):
+        """ Get number of players in waitlist """
+        return len(self.waitlist)
+
+    def get_player_count(self):
+        """ Get number of confirmed players """
+        player_count = sum(1 for p in self.players if not p.standby)
+        return player_count
+
+    def player_details_list(self):
+        """ get list of all players with a spot in the game """
+        player_list = '\n'.join(f"<@{p.discord_id}>" for p in self.players if not p.standby)
+        return player_list or "None"
+
+    def waitlist_details_list(self, max):
+        """ get list of all players in waitlist """
+        if not max:
+            max = 8
+
+        player_list = '\n'.join(f"<@{p.discord_id}>" for p in self.waitlist[:max])
+        if len(self.waitlist) > max:
+            player_list = player_list + f"\nand {len(self.waitlist) - max} more brave souls"
+        return player_list or "None"
+
+    def get_player_info(self):
+        """ get a string that shows current player status """
+        player_info = f"{self.get_player_count()} / {self.game.max_players} players"
+        waitlisted = self.get_waitlist_count()
+        if waitlisted:
+            player_info = player_info + f"\n{waitlisted} in waitlist"
+        else:
+            player_info = player_info + "\nWaitlist empty"
+        return player_info
+
+class GameDetailEmbed2(GameEmbed2):
+    """ Embed for game detail view """
+
+    def __init__(self, game):
+        title = f"{game.variant} ({game.realm})"
+        super().__init__(game, title)
+        self.game = game
+    
+    async def build(self):
+        await(self.get_data())
+
+        self.add_field(name=f"{self.game.module} | {self.game.name}", value=f"{self.game.description}", inline=False)
+        self.add_field(name='When', value=self.get_game_time(), inline=True)
+        self.add_field(name='Details', value = f"Character levels {self.game.level_min} - {self.game.level_max}\n DMed by <@{self.dm.discord_id}>", inline=True)
+        self.add_field(name='Content Warnings', value=f"{self.game.warnings}", inline=False)
+        self.add_field(name=f"Players ({self.get_player_count()} / {self.game.max_players})", value=self.player_details_list(), inline=True)
+        self.add_field(name=f"Waitlist ({self.get_waitlist_count()})", value=self.waitlist_details_list(self.game.max_players), inline=True)
+
+
 class GameControlView(View):
     """ View for game signup controls """
     def __init__(self, game, players, dm):
@@ -153,5 +243,17 @@ async def game_details(ctx, game_id: int = 1):
         dm = await get_dm(game)
         view = GameControlView(game, players, dm)
         view.message = await ctx.send(embed=GameDetailEmbed(game, players, waitlist, dm), view=view)
+    else:
+        await ctx.send('No game found')
+
+@bot.command(name='game2')
+async def game_details2(ctx, game_id: int = 1):
+    """ Get the details of a specific game """
+    game = await get_specific_game(game_id)
+    if game:
+        details_embed = GameDetailEmbed2(game)
+        await details_embed.build()
+
+        await ctx.send(embed=details_embed)
     else:
         await ctx.send('No game found')
