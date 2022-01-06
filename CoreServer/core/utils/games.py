@@ -17,7 +17,7 @@ def get_player_list(game):
     return list(game.players.filter(standby=False))
 
 @sync_to_async
-def get_waitlist(game):
+def get_wait_list(game):
     """ fetch all waitlisted players, arranged in order of position """
     return list(game.players.filter(standby=True).order_by('waitlist'))
 
