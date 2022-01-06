@@ -7,23 +7,25 @@ from discordbot.bot import bot
 from discordbot.utils.format import generate_calendar_message
 from core.utils.games import get_upcoming_games, get_player_list, get_dm, get_specific_game
 from core.utils.games import add_player_to_game, remove_player_from_game
+from core.utils.games import get_waitlist
 
 
 class GameEmbed(Embed):
     """ Baseclass for game embeds """
-    def __init__(self, game, players, dm, title, colour=None):
+    def __init__(self, game, players, waitlist, dm, title, colour=None):
         if not colour:
             colour = self.game_type_colours[game.variant]
         self.game = game
         self.players = players
+        self.waitlist = waitlist
         self.dm = dm
         super().__init__(title=title, colour=colour)
 
     game_type_colours = {
-        'Resident AL': Colour.green(), 
-        'Guest AL DM': Colour.blue(), 
+        'Resident AL': Colour.green(),
+        'Guest AL DM': Colour.blue(),
         'Epic AL': Colour.dark_green(),
-        'Non-AL One Shot': Colour.orange(), 
+        'Non-AL One Shot': Colour.orange(),
         'Campaign': Colour.dark_gold()
         }
 
@@ -35,8 +37,7 @@ class GameEmbed(Embed):
 
     def get_waitlist_count(self):
         """ Get number of players in waitlist """
-        waitlisted = sum(1 for p in self.players if p.standby)
-        return waitlisted
+        return len(self.waitlist)
 
     def get_player_count(self):
         """ Get number of confirmed players """
@@ -46,6 +47,16 @@ class GameEmbed(Embed):
     def player_details_list(self):
         """ get list of all players with a spot in the game """
         player_list = '\n'.join(f"<@{p.discord_id}>" for p in self.players if not p.standby)
+        return player_list or "None"
+
+    def waitlist_details_list(self, max):
+        """ get list of all players in waitlist """
+        if not max:
+            max = 8
+
+        player_list = '\n'.join(f"<@{p.discord_id}>" for p in self.waitlist[:max])
+        if len(self.waitlist) > max:
+            player_list = player_list + f"\nand {len(self.waitlist) - max} more brave souls"
         return player_list or "None"
 
     def get_player_info(self):
@@ -64,7 +75,7 @@ class GameSummaryEmbed(GameEmbed):
     
     def __init__(self, game, players, dm):
         title = f"{game.variant} ({game.realm}) levels {game.level_min} - {game.level_max} by {dm.name}"
-        super().__init__(game, players, dm, title=title)
+        super().__init__(game, players, [], dm, title=title)
 
         self.add_field(name='When', value=self.get_game_time(), inline=True)
         self.add_field(name='Players', value=self.get_player_info(), inline=True)
@@ -74,16 +85,16 @@ class GameSummaryEmbed(GameEmbed):
 class GameDetailEmbed(GameEmbed):
     """ Embed for game detail view """
 
-    def __init__(self, game, players, dm):
+    def __init__(self, game, players, waitlist, dm):
         title = f"{game.variant} ({game.realm})"
-        super().__init__(game, players, dm, title = title)
+        super().__init__(game, players, waitlist, dm, title = title)
 
         self.add_field(name=f"{game.module} | {game.name}", value=f"{game.description}", inline=False)
         self.add_field(name='When', value=self.get_game_time(), inline=True)
         self.add_field(name='Details', value = f"Character levels {game.level_min} - {game.level_max}\n DMed by <@{dm.discord_id}>", inline=True)
         self.add_field(name='Content Warnings', value=f"{game.warnings}", inline=False)
         self.add_field(name=f"Players ({self.get_player_count()} / {self.game.max_players})", value=self.player_details_list(), inline=True)
-        self.add_field(name='Waitlist', value=self.get_waitlist_count(), inline=True)
+        self.add_field(name=f"Waitlist ({self.get_waitlist_count()})", value=self.waitlist_details_list(self.game.max_players), inline=True)
 
 
 class GameControlView(View):
@@ -100,7 +111,8 @@ class GameControlView(View):
         await interaction.response.send_message(message, ephemeral=True)
         if status == True:
             new_players = await get_player_list(self.game)
-            await self.message.edit(embed = GameDetailEmbed(self.game, new_players, self.dm))
+            new_waitlist = await get_waitlist(self.game)
+            await self.message.edit(embed = GameDetailEmbed(self.game, new_players, new_waitlist, self.dm))
 
     @button(label='Add to calendar', style=ButtonStyle.grey)
     async def calendar(self, button, interaction):
@@ -113,7 +125,8 @@ class GameControlView(View):
         await interaction.response.send_message(message, ephemeral=True)
         if status == True:
             new_players = await get_player_list(self.game)
-            await self.message.edit(embed = GameDetailEmbed(self.game, new_players, self.dm))
+            new_waitlist = await get_waitlist(self.game)
+            await self.message.edit(embed = GameDetailEmbed(self.game, new_players, new_waitlist, self.dm))
 
 
 @bot.command(name='games')
@@ -136,8 +149,9 @@ async def game_details(ctx, game_id: int = 1):
     game = await get_specific_game(game_id)
     if game:
         players = await get_player_list(game)
+        waitlist = await get_waitlist(game)
         dm = await get_dm(game)
         view = GameControlView(game, players, dm)
-        view.message = await ctx.send(embed=GameDetailEmbed(game, players, dm), view=view)
+        view.message = await ctx.send(embed=GameDetailEmbed(game, players, waitlist, dm), view=view)
     else:
         await ctx.send('No game found')
