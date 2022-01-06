@@ -14,7 +14,12 @@ def get_dm(game):
 @sync_to_async
 def get_player_list(game):
     """ get a list of players subscribed to a game """
-    return list(game.players.all())
+    return list(game.players.filter(standby=False))
+
+@sync_to_async
+def get_waitlist(game):
+    """ fetch all waitlisted players, arranged in order of position """
+    return list(game.players.filter(standby=True).order_by('waitlist'))
 
 @sync_to_async
 def get_upcoming_games(days=30):
@@ -49,10 +54,9 @@ def add_player_to_game(game, user):
     
     name = f"{user.name}:{user.discriminator}"
     if players.count() >= max_players:
-        print('Game full - adding user to waitlist')
         position = get_waitlist_position()
         player = Player.objects.create(game=game, discord_id = user.id, discord_name = name, character = None, standby=True, waitlist=position)
-        return True, f"Added you to the waitlist, you are in position: {player.waitlist}"
+        return True, f"Added you to the waitlist for {game.name}, you are in position: {player.waitlist}"
     else:
         player = Player.objects.create(game=game, discord_id = user.id, discord_name = name, character = None, standby=False)
         return True, f"Added you to the game, enjoy!"

@@ -32,8 +32,11 @@ A D&D game organisation tool for discord
 
 
 You should see a few lines of text appear in your console including 
+
 > Starting development server at http://127.0.0.1:8000/,
+
  after a few seconds you should see another line appear which resembles 
+
 >Unseen Servant has connected to discord
 
 If so, congratulations, your bot is up and running. You can access the Django admin page at http://127.0.0.1:8000/admin using the credentials you created.
