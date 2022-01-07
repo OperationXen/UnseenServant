@@ -4,7 +4,7 @@ from discord.ui import View, button
 from discordbot.utils.format import generate_calendar_message
 from core.utils.games import get_player_list, get_wait_list, get_dm
 from core.utils.games import add_player_to_game, remove_player_from_game
-
+from core.utils.time import discord_time, discord_countdown
 
 class BaseGameEmbed(Embed):
     """ Baseclass for game embed objects """
@@ -34,7 +34,7 @@ class BaseGameEmbed(Embed):
 
     def get_game_time(self):
         """ Helper function to get the game time string """
-        time_info = f"<t:{int(self.game.datetime.timestamp())}:F>"
+        time_info = f"{discord_time(self.game.datetime)} ({discord_countdown(self.game.datetime)})"
         if self.game.length:
             time_info = time_info + f"\nDuration: {self.game.length}"
         return time_info
