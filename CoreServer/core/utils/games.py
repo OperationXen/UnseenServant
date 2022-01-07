@@ -4,7 +4,7 @@ from asgiref.sync import sync_to_async
 from core.models.game import Game
 from core.models.players import Player
 from core.utils.players import get_player_max_games, get_player_game_count
-from core.utils.players import get_bans_for_user
+from core.utils.players import get_bans_for_user, get_user_rank
 
 
 @sync_to_async
@@ -64,8 +64,11 @@ def add_player_to_game(game, user):
 
     max_games = get_player_max_games(user)
     player_games = get_player_game_count(user)
-    if max_games > player_games:
-        return False, f"You are already signed up for {player_games} games, the most your rank permits"
+    player_rank = get_user_rank(user)
+    if not player_rank:
+        return False, 'You cannot sign up to any games as you do not have a rank'
+    if player_games >= max_games:
+        return False, f"You are already signed up for {player_games} games, the most your rank of {player_rank.name} permits"
 
     name = f"{user.name}:{user.discriminator}"
     if players.count() >= max_players:
