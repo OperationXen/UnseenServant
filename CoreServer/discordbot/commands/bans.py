@@ -1,9 +1,9 @@
 import discord
-from discord import Embed, Colour, Message
+from discord import Embed, Colour
 from discord.ui import View
 
 from discordbot.bot import bot
-from core.utils.bans import get_outstanding_bans
+from core.utils.players import get_outstanding_bans
 
 
 class BanPlayerView(View):

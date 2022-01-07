@@ -3,7 +3,7 @@ from discord import Embed, Colour
 from discordbot.bot import bot
 from core.utils.games import get_specific_game, get_upcoming_games
 
-from discordbot.components.games import GameDetailEmbed, GameSummaryEmbed
+from discordbot.components.games import GameDetailEmbed, GameSummaryEmbed, GameControlView
 
 
 @bot.command(name='games')
@@ -26,6 +26,7 @@ async def game_details(ctx, game_id: int = 1):
     if game:
         details_embed = GameDetailEmbed(game)
         await details_embed.build()
-        await ctx.send(embed=details_embed)
+        controls = GameControlView(game)
+        controls.message = await ctx.send(embed=details_embed, view=controls)
     else:
         await ctx.send('No game found')

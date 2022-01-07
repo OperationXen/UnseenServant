@@ -1,7 +1,10 @@
 from datetime import datetime
 from asgiref.sync import sync_to_async
 
-from core.models.game import Game, Player
+from core.models.game import Game
+from core.models.players import Player
+from core.utils.players import get_player_max_games, get_player_game_count
+from core.utils.players import get_bans_for_user, get_user_rank
 
 
 @sync_to_async
@@ -51,7 +54,22 @@ def add_player_to_game(game, user):
         return False, 'You are already in this game'
     if waitlist.filter(discord_id=user.id):
         return False, f"You\'re already in the waitlist for this game in position: {waitlist.get(discord_id=user.id).waitlist}"
-    
+
+    outstanding_bans = get_bans_for_user(user)
+    if outstanding_bans:
+        message = "Sorry, you are banned from using this bot to register for games."
+        if outstanding_bans[0].variant != 'PM':
+            message = message + f"\nYour ban expires {outstanding_bans[0].datetime_end.strftime('%Y-%m-%d %H:%M')}"
+        return False, message
+
+    max_games = get_player_max_games(user)
+    player_games = get_player_game_count(user)
+    player_rank = get_user_rank(user)
+    if not player_rank:
+        return False, 'You cannot sign up to any games as you do not have a rank'
+    if player_games >= max_games:
+        return False, f"You are already signed up for {player_games} games, the most your rank of {player_rank.name} permits"
+
     name = f"{user.name}:{user.discriminator}"
     if players.count() >= max_players:
         position = get_waitlist_position()
@@ -59,7 +77,7 @@ def add_player_to_game(game, user):
         return True, f"Added you to the waitlist for {game.name}, you are in position: {player.waitlist}"
     else:
         player = Player.objects.create(game=game, discord_id = user.id, discord_name = name, character = None, standby=False)
-        return True, f"Added you to the game, enjoy!"
+        return True, f"Added you to {game.name}, enjoy!"
 
 @sync_to_async
 def remove_player_from_game(game, user):
