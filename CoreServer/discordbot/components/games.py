@@ -3,7 +3,7 @@ from discord.ui import View, button
 
 from discordbot.utils.format import generate_calendar_message
 from core.utils.games import get_player_list, get_wait_list, get_dm
-from core.utils.games import add_player_to_game, remove_player_from_game
+from core.utils.games import add_player_to_game, drop_from_game
 from core.utils.time import discord_time, discord_countdown
 
 class BaseGameEmbed(Embed):
@@ -136,7 +136,7 @@ class GameControlView(View):
 
     @button(label="Dropout", style=ButtonStyle.red, custom_id='dropout')
     async def dropout(self, button, interaction):
-        status, message = await remove_player_from_game(self.game, interaction.user)
+        status, message = await drop_from_game(self.game, interaction.user)
         await interaction.response.send_message(message, ephemeral=True)
         if status == True:
             detail_embed = GameDetailEmbed(self.game)
