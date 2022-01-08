@@ -21,4 +21,4 @@ async def send_channel_message(message, channel = None):
         channel = bot.get_channel(channel)
 
     if channel:
-        await channel.send(message)
+        await channel.send(**message)

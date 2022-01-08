@@ -33,12 +33,27 @@ def get_upcoming_games(days=30):
     return list(queryset)
 
 @sync_to_async
-def get_outstanding_games():
+def get_outstanding_games(priority=False):
     """ Retrieve all game objects that are ready for release """
     now = timezone.now()
-    queryset = Game.objects.filter(status='Pending').filter(datetime_release__lte=now)
+    
+    if priority:
+        queryset = Game.objects.filter(status='Pending').filter(datetime_release__lte=now)
+    else:
+        queryset = Game.objects.filter(status='Priority').filter(datetime_open_release__lte=now)
+        
     # force evaluation before leaving this sync context
     return list(queryset)
+
+@sync_to_async
+def set_game_announced(game):
+    """ Set this game object's status to reflect the fact it's now been published """
+    if game.status == 'Priority':
+        game.status = 'Released'
+    elif game.status == 'Pending':
+        game.status = 'Priority'
+    game.save()
+    return game
 
 @sync_to_async
 def get_specific_game(game_id):
