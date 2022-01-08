@@ -25,11 +25,11 @@ class GamesPoster():
 
         # get games for priority release
         outstanding_games = await get_outstanding_games(priority=True)
-        await self.announce_games(outstanding_games, self.channel_priority)
+        await self.announce_games(outstanding_games, priority=True)
 
         # get games for general release
         outstanding_games = await get_outstanding_games(priority=False)
-        await self.announce_games(outstanding_games, self.channel_general)
+        await self.announce_games(outstanding_games, priority=False)
         
     async def announce_games(self, games, priority=False):
         for game in games:
@@ -43,7 +43,7 @@ class GamesPoster():
         else:
             channel = self.channel_general
 
-        embeds = [GameAnnounceBanner(priority)]
+        embeds = [GameAnnounceBanner(priority=priority)]
         details_embed = GameDetailEmbed(game)
         await details_embed.build()
         embeds.append(details_embed)
