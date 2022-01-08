@@ -4,7 +4,8 @@ from asgiref.sync import sync_to_async
 from core.models.game import Game
 from core.models.players import Player
 from core.utils.players import get_player_max_games, get_player_game_count
-from core.utils.players import get_bans_for_user, get_user_rank
+from core.utils.players import get_bans_for_user, get_user_rank, process_player_removal
+from core.utils.players import get_waitlist_rank, get_last_waitlist_position
 
 
 @sync_to_async
@@ -38,10 +39,6 @@ def get_specific_game(game_id):
         return game_obj
     except Game.DoesNotExist:
         return None
-    
-
-def get_waitlist_position():
-    return 4
 
 @sync_to_async
 def add_player_to_game(game, user):
@@ -72,15 +69,14 @@ def add_player_to_game(game, user):
 
     name = f"{user.name}:{user.discriminator}"
     if players.count() >= max_players:
-        position = get_waitlist_position()
-        player = Player.objects.create(game=game, discord_id = user.id, discord_name = name, character = None, standby=True, waitlist=position)
-        return True, f"Added you to the waitlist for {game.name}, you are in position: {player.waitlist}"
+        player = Player.objects.create(game=game, discord_id = user.id, discord_name = name, character = None, standby=True, waitlist=get_last_waitlist_position(game)+1)
+        return True, f"Added you to the waitlist for {game.name}, you are in position: {get_waitlist_rank(player)}"
     else:
         player = Player.objects.create(game=game, discord_id = user.id, discord_name = name, character = None, standby=False)
         return True, f"Added you to {game.name}, enjoy!"
 
 @sync_to_async
-def remove_player_from_game(game, user):
+def drop_from_game(game, user):
     """ Remove an existing player from a game """
     players = game.players.filter(standby=False)
     waitlist = game.players.filter(standby=True)
@@ -92,5 +88,6 @@ def remove_player_from_game(game, user):
 
     player = players.filter(discord_id=user.id).first()
     if player:
-        player.delete()
+        process_player_removal(player)
         return True, f"You have dropped out of {game.name}"
+    return False, f"You aren't queued for this game..."
