@@ -1,4 +1,4 @@
-from datetime import datetime
+from django.utils import timezone
 from asgiref.sync import sync_to_async
 
 from core.models.game import Game
@@ -27,9 +27,17 @@ def get_wait_list(game):
 
 @sync_to_async
 def get_upcoming_games(days=30):
-    now = datetime.now()
+    now = timezone.now()
     queryset = Game.objects.filter(datetime__gte=now)
-    # force evaluation before leaving this async context
+    # force evaluation before leaving this sync context
+    return list(queryset)
+
+@sync_to_async
+def get_outstanding_games():
+    """ Retrieve all game objects that are ready for release """
+    now = timezone.now()
+    queryset = Game.objects.filter(status='Pending').filter(datetime_release__lte=now)
+    # force evaluation before leaving this sync context
     return list(queryset)
 
 @sync_to_async

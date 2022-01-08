@@ -3,6 +3,7 @@ from config.settings import DISCORD_TOKEN
 
 from discordbot.bot import bot
 from discordbot.commands import *
+from discordbot.schedule import games
 
 
 mutex = Lock()
