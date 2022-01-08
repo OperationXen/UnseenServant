@@ -23,7 +23,9 @@ def start_bot():
 async def on_ready():
     print(f"{bot.user.name} has connected to discord")
 
+    print('Removing stale game links... ')
     await remove_existing_messages([DEFAULT_CHANNEL_NAME, PRIORITY_CHANNEL_NAME])
+    print('Reposting outstanding games...')
     await repost_all_current_games()
 
 ### Django Stuff to run the bot within the Django context ###
