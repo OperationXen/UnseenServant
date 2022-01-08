@@ -22,9 +22,9 @@ class Game(models.Model):
         """ Internal class to specify game statuses """
         CANCELLED = 'Cancelled', ('Cancelled')
         DRAFT = 'Draft', ('Draft')
-        PENDING = 'Pending', ('Pending')
-        PRIORITY = 'Priority', ('Priority')
-        RELEASED = 'Released', ('Released')
+        PENDING = 'Pending', ('Pending release')
+        PRIORITY = 'Priority', ('Released to priority queue')
+        RELEASED = 'Released', ('Released to everyone')
 
     class GameTypes(models.TextChoices):
         """ Internal class to define possible game types """

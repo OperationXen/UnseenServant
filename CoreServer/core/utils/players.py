@@ -33,7 +33,7 @@ def get_player_game_count(discord_user):
 def get_user_rank(discord_user):
     """ go through user roles and identify their best rank """
     roles = [role.name.lower() for role in discord_user.roles]
-    ranks = Rank.objects.all().order_by('priority')
+    ranks = Rank.objects.all().order_by('-priority')
     for rank in ranks:
         if rank.name.lower() in roles:
             return rank

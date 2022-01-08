@@ -30,9 +30,10 @@ ALLOWED_HOSTS = []
 AUTH_USER_MODEL = 'core.CustomUser'
 
 DISCORD_TOKEN = ''
-DISCORD_GUILDS = []
+DISCORD_GUILDS = [123123123123]
 
-# Application definition
+DEFAULT_CHANNEL_NAME = 'bot-test-channel'
+PRIORITY_CHANNEL_NAME = 'bot-test-priority-channel'
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -43,7 +44,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'core',
     'api',
-    'discordbot',
+    'discordbot'
 ]
 
 MIDDLEWARE = [

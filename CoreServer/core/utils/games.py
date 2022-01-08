@@ -1,4 +1,4 @@
-from datetime import datetime
+from django.utils import timezone
 from asgiref.sync import sync_to_async
 
 from core.models.game import Game
@@ -27,10 +27,44 @@ def get_wait_list(game):
 
 @sync_to_async
 def get_upcoming_games(days=30):
-    now = datetime.now()
+    now = timezone.now()
     queryset = Game.objects.filter(datetime__gte=now)
-    # force evaluation before leaving this async context
+    # force evaluation before leaving this sync context
     return list(queryset)
+
+@sync_to_async
+def get_outstanding_games(priority=False):
+    """ Retrieve all game objects that are ready for release """
+    now = timezone.now()
+    
+    if priority:
+        queryset = Game.objects.filter(status='Pending').filter(datetime_release__lte=now)
+    else:
+        queryset = Game.objects.filter(status='Priority').filter(datetime_open_release__lte=now)
+    # force evaluation before leaving this sync context
+    return list(queryset)
+
+@sync_to_async
+def get_current_games(priority=False):
+    """ Get all games currently accepting signups """
+    now = timezone.now()
+    queryset = Game.objects.filter(datetime__gte=now)
+    if priority:
+        queryset = queryset.filter(status='Priority')
+    else:
+        queryset = queryset.filter(status='Released')
+    # force evaluation before leaving this sync context
+    return list(queryset.order_by('datetime'))
+
+@sync_to_async
+def set_game_announced(game):
+    """ Set this game object's status to reflect the fact it's now been published """
+    if game.status == 'Priority':
+        game.status = 'Released'
+    elif game.status == 'Pending':
+        game.status = 'Priority'
+    game.save()
+    return game
 
 @sync_to_async
 def get_specific_game(game_id):
