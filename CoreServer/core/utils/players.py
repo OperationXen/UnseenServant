@@ -39,6 +39,10 @@ def get_user_rank(discord_user):
             return rank
     return None
 
+def get_waitlist_position(discord_user):
+    """ get the waitlist position for a given discord user """
+    player = Player.objects.filter(discord_id = discord_user.id)
+
 def get_player_max_games(discord_user):
     """ get the total number of games a user can sign up for """
     rank = get_user_rank(discord_user)
@@ -58,5 +62,18 @@ def process_player_removal(player):
     """ remove a player from a game and promote from waitlist """
     game = player.game
     player.delete()
-    send_dm(player.id, f"pewpewpew")
     promote_from_waitlist(game)
+
+def get_waitlist_rank(player):
+    """ get the rank of the player in the waitlist """
+    queryset = Player.objects.filter(game = player.game).filter(standby=True)
+    waitlist = list(queryset.order_by('waitlist'))
+    return waitlist.index(player) + 1
+
+def get_last_waitlist_position(game):
+    """ get the position at the end of the waitlist """
+    queryset = Player.objects.filter(game=game).filter(standby=True)
+    last_player = queryset.order_by('waitlist').last()
+    if last_player:
+        return last_player.waitlist
+    return 0
