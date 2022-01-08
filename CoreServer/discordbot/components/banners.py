@@ -23,9 +23,9 @@ class GameAnnounceBanner(BaseEmbed):
         """ Create the embed """
         if priority: 
             colour = Colour.dark_purple()
-            default_title = 'Priority games now available for signup'
+            default_title = 'Priority game now available for signup'
         else:
             colour = Colour.dark_green()
-            default_title = 'New games available for general signup'
+            default_title = 'New game available for general signup'
                         
         super().__init__(title=title or default_title, colour=colour)

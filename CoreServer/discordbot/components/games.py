@@ -111,6 +111,8 @@ class GameDetailEmbed(BaseGameEmbed):
 
 class GameControlView(View):
     """ View for game signup controls """
+    message = None
+
     def __init__(self, game):
         super().__init__(timeout=None)
         self.game = game
@@ -120,14 +122,24 @@ class GameControlView(View):
         self.players = await get_player_list(self.game)
         self.dm = await get_dm(self.game)
 
+    async def update_message(self):
+        """ Update the message this view is attached to """
+        embeds = self.message.embeds
+        detail_embed = GameDetailEmbed(self.game)
+        await detail_embed.build()
+        # Find and replace the game detail embed within the message by comparing titles
+        for embed in embeds:
+            if embed.title == detail_embed.title:
+                index = embeds.index(embed)
+                embeds[index] = detail_embed
+        await self.message.edit(embeds = embeds)
+
     @button(label='Signup', style=ButtonStyle.primary, custom_id='signup')
     async def signup(self, button, interaction):
         status, message = await add_player_to_game(self.game, interaction.user)
         await interaction.response.send_message(message, ephemeral=True)
         if status == True:
-            detail_embed = GameDetailEmbed(self.game)
-            await detail_embed.build()
-            await self.message.edit(embed = detail_embed)
+            await self.update_message()
 
     @button(label='Add to calendar', style=ButtonStyle.grey)
     async def calendar(self, button, interaction):
@@ -139,6 +151,4 @@ class GameControlView(View):
         status, message = await drop_from_game(self.game, interaction.user)
         await interaction.response.send_message(message, ephemeral=True)
         if status == True:
-            detail_embed = GameDetailEmbed(self.game)
-            await detail_embed.build()
-            await self.message.edit(embed = detail_embed)
+            await self.update_message()
