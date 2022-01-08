@@ -1,9 +1,7 @@
-from asgiref.sync import sync_to_async
-from discord.activity import Game
 from discord.ext import tasks
 
 from config.settings import DEFAULT_CHANNEL_NAME, PRIORITY_CHANNEL_NAME
-from discordbot.utils.messaging import get_channel_by_name, send_channel_message
+from discordbot.utils.messaging import get_channel_by_name
 from discordbot.components.banners import GameAnnounceBanner
 from discordbot.components.games import GameDetailEmbed, GameControlView
 from core.utils.games import get_outstanding_games, set_game_announced
