@@ -3,6 +3,7 @@ from config.settings import DISCORD_TOKEN, DEFAULT_CHANNEL_NAME, PRIORITY_CHANNE
 
 from discordbot.bot import bot
 from discordbot.commands import *
+from discordbot.schedule.games import *
 from discordbot.utils.messaging import remove_existing_messages
 from discordbot.utils.announce import repost_all_current_games
 
