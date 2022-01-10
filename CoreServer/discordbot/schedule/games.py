@@ -47,7 +47,8 @@ class GamesPoster():
         embeds.append(details_embed)
 
         control_view = GameControlView(game)
-        control_view.message = await channel.send(embeds=embeds, view=control_view)
+        if channel:
+            control_view.message = await channel.send(embeds=embeds, view=control_view)
 
 
 scheduled_poster = GamesPoster()
