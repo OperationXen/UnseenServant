@@ -26,7 +26,7 @@ class Player(models.Model):
     # waitlist alerting logic, perhaps pm users and give an hour to decline?
 
     def __str__(self):
-        return f"{self.discord_name}"
+        return f"{self.discord_name} - {self.game.name}"
 
 
 class Strike(models.Model):
