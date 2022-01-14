@@ -104,7 +104,9 @@ class GameDetailEmbed(BaseGameEmbed):
         self.add_field(name=f"{self.game.module} | {self.game.name}", value=f"{self.game.description}", inline=False)
         self.add_field(name='When', value=self.get_game_time(), inline=True)
         self.add_field(name='Details', value = f"Character levels {self.game.level_min} - {self.game.level_max}\n DMed by <@{self.dm.discord_id}>", inline=True)
-        self.add_field(name='Content Warnings', value=f"{self.game.warnings}", inline=False)
+        if self.game.streaming:
+            self.add_field(name='Streaming', value = f"This game may be streamed")
+        self.add_field(name='Content Warnings', value=f"{self.game.warnings}", inline=self.game.streaming)
         self.add_field(name=f"Players ({self.player_count()} / {self.game.max_players})", value=self.player_details_list(), inline=True)
         self.add_field(name=f"Waitlist ({self.waitlist_count()})", value=self.waitlist_details_list(self.game.max_players), inline=True)
 
