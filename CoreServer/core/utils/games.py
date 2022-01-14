@@ -36,11 +36,13 @@ def get_upcoming_games(days=30):
 def get_outstanding_games(priority=False):
     """ Retrieve all game objects that are ready for release """
     now = timezone.now()
-    
+
+    # only interested in games in the future
+    queryset = Game.objects.filter(datetime__gte=now)
     if priority:
-        queryset = Game.objects.filter(status='Pending').filter(datetime_release__lte=now)
+        queryset = queryset.filter(status='Pending').filter(datetime_release__lte=now)
     else:
-        queryset = Game.objects.filter(status='Priority').filter(datetime_open_release__lte=now)
+        queryset = queryset.filter(status='Priority').filter(datetime_open_release__lte=now)
     # force evaluation before leaving this sync context
     return list(queryset)
 
