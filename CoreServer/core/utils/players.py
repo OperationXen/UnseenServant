@@ -6,13 +6,14 @@ from core.utils.time import discord_countdown
 from core.models.game import Game
 from core.models.players import Player, Ban, Rank
 
-
+@sync_to_async
 def get_outstanding_bans():
     now = timezone.now()
     queryset = Ban.objects.filter(datetime_end__gte=now).filter(datetime_start__lte=now)
     # force evaluation before leaving this syncronous context
     return list(queryset)
 
+@sync_to_async
 def get_bans_for_user(user, all=False):
     """ Check a given discord user is in good standing """
     now = timezone.now()
