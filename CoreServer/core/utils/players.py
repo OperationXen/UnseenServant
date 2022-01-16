@@ -1,28 +1,61 @@
+from django.db.models import Q
 from django.utils import timezone
+from datetime import timedelta
 from asgiref.sync import sync_to_async
 
 from discordbot.utils.messaging import send_dm
 from core.utils.time import discord_countdown
 from core.models.game import Game
-from core.models.players import Player, Ban, Rank
+from core.models.players import Player, Ban, Rank, Strike
+
+def get_current_user_bans(user):
+    """ Check a given discord user is in good standing - Needs to be syncronous """
+    now = timezone.now()
+    not_expired = Q(datetime_end__gte=now) | Q(datetime_end=None)
+
+    queryset = Ban.objects.filter(discord_id=user.id).filter(datetime_start__lte=now)
+    queryset = queryset.filter(not_expired)
+    return queryset.order_by('datetime_end')
+
+def get_all_current_bans():
+    """ Retrieve all currently outstanding bans """
+    now = timezone.now()
+    not_expired = Q(datetime_end__gte=now) | Q(datetime_end=None)
+
+    queryset = Ban.objects.filter(datetime_start__lte=now)
+    queryset = queryset.filter(not_expired)
+    return queryset.order_by('datetime_end')
+
+def add_new_ban(user, variant, reason, admin, ban_length):
+    """ Add a new ban """
+    now = timezone.now()
+    if ban_length == -1 or variant == 'PM':
+        variant = 'PM'
+        end = None
+    else:
+        end = now + timedelta(days=ban_length)
+    # Remove player from games on hard ban
+    if variant == 'HD' or variant == 'PM':
+        queryset = Player.objects.filter(discord_id = user.id).filter(game__datetime__gte=now)
+        queryset.delete()
+
+    Ban.objects.create(discord_id=user.id, discord_name=f"{user.name}#{user.discriminator}", 
+                    issuer_id=admin.id, issuer_name=f"{admin.name}#{admin.discriminator}",
+                    reason=reason, variant=variant, datetime_end=end)
 
 @sync_to_async
-def get_outstanding_bans():
-    now = timezone.now()
-    queryset = Ban.objects.filter(datetime_end__gte=now).filter(datetime_start__lte=now)
-    # force evaluation before leaving this syncronous context
-    return list(queryset)
+def get_outstanding_bans(user = None):
+    if user:
+        bans = get_current_user_bans(user)
+    else:
+        bans = get_all_current_bans()
+    # force queryset evaluation before returning to async
+    return list(bans)
 
 @sync_to_async
-def get_bans_for_user(user, all=False):
-    """ Check a given discord user is in good standing """
-    now = timezone.now()
-    queryset= Ban.objects.filter(discord_id=user.id)
-    if not all:
-        queryset = queryset.filter(datetime_end__gte=now)
-        queryset = queryset.filter(datetime_start__lte=now)
-    # force evaluation before leaving this syncronous context
-    return list(queryset.order_by('datetime_end'))   
+def issue_player_ban(user, variant, reason, admin, ban_length):
+    """ Ban a player from using the signup bot """
+    add_new_ban(user, variant, reason, admin, ban_length)
 
 def get_player_game_count(discord_user):
     """ get the total number of games a player is in """

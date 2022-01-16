@@ -2,18 +2,38 @@ import discord
 from discord import Embed, Colour, SelectOption
 from discord.ui import View
 
+from core.utils.players import issue_player_ban
 
-class BannedPlayerEmbed(Embed):
+
+class PlayerBanEmbed(Embed):
     """ Custom embed for representing a player ban """
-    ban_names = {'ST': 'Soft ban', 'HD': 'Hard ban', 'PM': 'Permanent ban'}
+    ban_names = {'ST': 'Soft ban - cannot sign up for new games', 'HD': 'Hard ban - removed from all games', 'PM': 'Permanent ban'}
     ban_colours = {'ST': Colour.red(), 'HD': Colour.dark_red(), 'PM': Colour.light_grey()}
 
-    def __init__(self, player, end, variant, issuer='', reason=''):
-        super().__init__(title=player)
-        self.add_field(name=self.ban_names[variant], value=f"Until: {end}", inline=False)
-        if issuer or reason:
-            self.add_field(name=f"Issued by {issuer}", value=reason, inline=False)
-        self.color = self.ban_colours[variant]
+    def __init__(self, ban):
+        super().__init__(title=f"Ban: {ban.discord_name}")
+        self.add_field(name='Ban details', value=self.ban_names[ban.variant], inline=False)
+        if ban.datetime_end:
+            self.add_field(name='Expiry', value=f"{ban.datetime_end.strftime('%Y/%m/%d %H:%M')}", inline=True)
+        else:
+            self.add_field(name='Expiry', value='Permenant ban', inline=True)
+        if ban.issuer_name:
+            self.add_field(name='Issued by', value=f"<@{ban.issuer_id}>", inline=True)
+        if ban.reason:
+            self.add_field(name='Reason', value=f"{ban.reason}", inline=False)
+        self.colour = self.ban_colours[ban.variant]
+
+
+class PlayerStrikeEmbed(Embed):
+    """ Custom embed to represent a player strike """
+    def __init__(self, strike):
+        super().__init__(title=f"Strike: {strike.discord_name}")
+        self.add_field(name='Expiry', value=f"{strike.expires.strftime('%Y/%m/%d %H:%M')}", inline=True)
+        if strike.issuer_name:
+            self.add_field(name='Issued by', value=f"<@{strike.issuer_id}>", inline=True)
+        if strike.reason:
+            self.add_field(name='Reason', value=f"{strike.reason}", inline=False)
+        self.colour = Colour.yellow()
 
 
 class BanPlayerView(View):
@@ -43,12 +63,20 @@ class BanPlayerView(View):
     @discord.ui.button(label="Soft ban", style=discord.ButtonStyle.primary, row=1)
     async def softban(self, button, interaction):
         self.clear_items()
-        await interaction.response.edit_message(content=f"Banned player [{self.user}] from further signups for {self.timeframe} days", view=self)
+        await issue_player_ban(self.user, "ST", self.reason, self.ctx.author, self.timeframe)
+        if self.timeframe > 0:
+            await interaction.response.edit_message(content=f"Banned player [{self.user}] from further signups for {self.timeframe} days", view=self)
+        else:
+            await interaction.response.edit_message(content=f"Banned player [{self.user}] from further signups", view=self)
     
     @discord.ui.button(label="Hard ban", style=discord.ButtonStyle.red, row=1)
     async def hardban(self, button, interaction):
         self.clear_items()
-        await interaction.response.edit_message(content=f"Banned player [{self.user}] for {self.timeframe} days, and removed them from all outstanding games", view=self)
+        await issue_player_ban(self.user, "HD", self.reason, self.ctx.author, self.timeframe)
+        if self.timeframe > 0:
+            await interaction.response.edit_message(content=f"Banned player [{self.user}] for {self.timeframe} days, and removed them from all outstanding games", view=self)
+        else:
+            await interaction.response.edit_message(content=f"Banned player [{self.user}], and removed them from all outstanding games", view=self)
 
     async def on_timeout(self):
         if self.message:
