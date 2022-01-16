@@ -20,6 +20,13 @@ async def strike(ctx,
     else:
         await ctx.respond(f"Strike issued to {user.name}", ephemeral=True, delete_after=15)
 
+    embed_list = []
+    for strike in await get_outstanding_strikes(user):
+        embed_list.append(PlayerStrikeEmbed(strike))
+    for ban in await get_outstanding_bans(user):
+        embed_list.append(PlayerBanEmbed(ban))
+    result = await user.send('You have been issued a bad conduct strike - three of these will result in an automatic ban from bot usage', embeds=embed_list)
+
 @bot.slash_command(guild_ids=[691386983670349824], description='Issue an immediate bot ban to a user')
 @has_role('admin')
 async def ban(ctx, 

@@ -2,7 +2,7 @@ import discord
 from discord import Embed, Colour, SelectOption
 from discord.ui import View
 
-from core.utils.players import issue_player_ban
+from core.utils.players import issue_player_ban, get_outstanding_bans
 
 
 class PlayerBanEmbed(Embed):
@@ -52,6 +52,14 @@ class BanPlayerView(View):
     length_3m = SelectOption(label='3 Months', value=90)
     forever = SelectOption(label='Permanent Ban', value=-1)
 
+    async def notify_user(self):
+        """ Send a DM to the user to let them know """
+        ban_list = []
+        for ban in await get_outstanding_bans(self.user):
+            ban_list.append(PlayerBanEmbed(ban))
+        result = await self.user.send('You have been banned from using this bot', embeds=ban_list)
+
+
     @discord.ui.select(placeholder='Change ban length', row=0, options=[length_1w, length_2w, length_1m, length_2m, length_3m, forever])
     async def update_timescale(self, select, interaction):
         self.timeframe = int(select.values[0])
@@ -68,6 +76,7 @@ class BanPlayerView(View):
             await interaction.response.edit_message(content=f"Banned player [{self.user}] from further signups for {self.timeframe} days", view=self)
         else:
             await interaction.response.edit_message(content=f"Banned player [{self.user}] from further signups", view=self)
+        await self.notify_user()
     
     @discord.ui.button(label="Hard ban", style=discord.ButtonStyle.red, row=1)
     async def hardban(self, button, interaction):
@@ -77,7 +86,12 @@ class BanPlayerView(View):
             await interaction.response.edit_message(content=f"Banned player [{self.user}] for {self.timeframe} days, and removed them from all outstanding games", view=self)
         else:
             await interaction.response.edit_message(content=f"Banned player [{self.user}], and removed them from all outstanding games", view=self)
+        await self.notify_user()
 
     async def on_timeout(self):
-        if self.message:
-            await self.message.delete_original_message()
+        """ When the view times out """
+        try:
+            if self.message:
+                await self.message.delete_original_message()
+        except discord.errors.NotFound:
+            pass

@@ -13,6 +13,7 @@ class DM(models.Model):
     class Meta:
         verbose_name = 'DM'
         verbose_name_plural = 'DMs'
+        indexes = [models.Index(fields=['name', 'discord_id'])]
 
     def __str__(self):
         return f"{self.discord_name}"
@@ -74,6 +75,9 @@ class Game(models.Model):
         now = timezone.now()
         if self.datetime < now:
             raise ValidationError({'datetime': 'Game cannot be in the past'})
+    
+    class Meta:
+        indexes = [models.Index(fields=['dm', 'status', 'datetime', 'datetime_release', 'datetime_open_release'])]
 
 
 class Character(models.Model):

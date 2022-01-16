@@ -13,6 +13,10 @@ class Rank(models.Model):
     def __str__(self):
         return f"{self.priority} - {self.name}"
 
+    class Meta:
+        indexes = [models.Index(fields=['priority', 'name'])]
+
+
 
 class Player(models.Model):
     """ Specifies a player within a specific game """
@@ -27,6 +31,9 @@ class Player(models.Model):
 
     def __str__(self):
         return f"{self.discord_name} - {self.game.name}"
+
+    class Meta:
+        indexes = [models.Index(fields=['discord_id', 'game'])]
 
 
 class Strike(models.Model):
