@@ -1,77 +1,85 @@
 import discord
-from discord import Embed, Colour
-from discord.ui import View
+from discord.commands import Option, has_role
 
 from discordbot.bot import bot
+from discordbot.components.user_management import PlayerBanEmbed, PlayerStrikeEmbed, BanPlayerView
 from core.utils.players import get_outstanding_bans
+from core.utils.strikes import issue_player_strike, get_outstanding_strikes
 
 
-class BanPlayerView(View):
-    """ View for the player banning controls """
-    def __init__(self, ctx, user):
-        super().__init__(timeout=60)
-        self.ctx = ctx
-        self.user = user
-
-    timeframe = 7
-    length_1w = discord.SelectOption(label='1 Week', value=7)
-    length_2w = discord.SelectOption(label='2 Weeks', value=14)
-    length_1m = discord.SelectOption(label='1 Month', value=30)
-    length_2m = discord.SelectOption(label='2 Months', value=60)
-    length_3m = discord.SelectOption(label='3 Months', value=90)
-    forever = discord.SelectOption(label='Permanent Ban', value=-1)
-
-    @discord.ui.select(placeholder='1 week', row=0, options=[length_1w, length_2w, length_1m, length_2m, length_3m, forever])
-    async def update_timescale(self, select, interaction):
-        self.timeframe = int(select.values[0])
-        if self.timeframe > 0:
-            await interaction.response.edit_message(content=f"Banning player [{self.user}] for {self.timeframe} days")
-        else:
-            await interaction.response.edit_message(content=f"Banning player [{self.user}] on a permanent basis")
-
-    @discord.ui.button(label="Soft ban", style=discord.ButtonStyle.grey, row=1)
-    async def softban(self, button, interaction):
-        self.clear_items()
-        await interaction.response.edit_message(content=f"Banned player [{self.user}] from further signups", view=self)
-    
-    @discord.ui.button(label="Hard ban", style=discord.ButtonStyle.grey, row=1)
-    async def hardban(self, button, interaction):
-        self.clear_items()
-        await interaction.response.edit_message(content=f"Banned player [{self.user}], and removed them from all outstanding games", view=self)
-
-    async def on_timeout(self):
-        if self.message:
-            await self.message.delete()
-
-@bot.command(name='ban_player')
-async def ban_player(ctx, user):
-    view = view=BanPlayerView(ctx, user)
-    view.message = await ctx.channel.send(f"Banning player {user}", view=view)
-
-
-class BannedPlayerEmbed(Embed):
-    """ Custom embed for representing a player ban """
-    ban_names = {'ST': 'Soft ban', 'HD': 'Hard ban', 'PM': 'Permanent ban'}
-    ban_colours = {'ST': Colour.red(), 'HD': Colour.dark_red(), 'PM': Colour.light_grey()}
-
-    def __init__(self, player, end, variant, issuer='', reason=''):
-        super().__init__(title=player)
-        self.add_field(name=self.ban_names[variant], value=f"Until: {end}", inline=False)
-        if issuer or reason:
-            self.add_field(name=f"Issued by {issuer}", value=reason, inline=False)
-        self.color = self.ban_colours[variant]
-
-@bot.command(name='ban_list')
-async def ban_list(ctx, arg: str = ""):
-    """ show the list of banned players """
-    embeds = []
-    embeds.append(Embed(title='Banned players', colour=Colour.dark_purple()))
-
-    if arg == 'all':
-        await ctx.send(f"All banned players")
+@bot.slash_command(guild_ids=[691386983670349824], description='Issue a bad conduct strike to a user')
+@has_role('admin')
+async def strike(ctx, 
+    user: Option(discord.Member, 'Member to issue strike against', required=True), 
+    reason: Option(str, 'Reason for issuing the strike', required=False)):
+    """ Issue a strike against a specified discord user """
+    reason = reason if reason else '<Not provided>'
+    ban_issued = await issue_player_strike(user, reason, ctx.author)
+    if ban_issued:
+        await ctx.respond('Strike threshold reached, user has been banned', ephemeral=True, delete_after=15)
     else:
-        current_bans = await get_outstanding_bans()
-        for ban in current_bans:
-            embeds.append(BannedPlayerEmbed(ban.discord_name, ban.datetime_end, ban.variant, ban.issued_by, ban.reason))
+        await ctx.respond(f"Strike issued to {user.name}", ephemeral=True, delete_after=15)
 
-        await ctx.send(embeds=embeds)
+    embed_list = []
+    for strike in await get_outstanding_strikes(user):
+        embed_list.append(PlayerStrikeEmbed(strike))
+    for ban in await get_outstanding_bans(user):
+        embed_list.append(PlayerBanEmbed(ban))
+    result = await user.send('You have been issued a bad conduct strike - three of these will result in an automatic ban from bot usage', embeds=embed_list)
+
+@bot.slash_command(guild_ids=[691386983670349824], description='Issue an immediate bot ban to a user')
+@has_role('admin')
+async def ban(ctx, 
+    user: Option(discord.Member, 'Member to ban', required=True), 
+    reason: Option(str, 'Reason for issuing this instant ban', required=False)):
+    """ Issue an immediate ban to a specified discord user """
+    reason = reason if reason else '<Not provided>'
+    view = BanPlayerView(ctx, user, reason)
+    view.message = await ctx.respond(f"Banning player [{user}] for {7} days\nReason: {reason}", view=view, ephemeral=True)
+
+@bot.slash_command(guild_ids=[691386983670349824], description='Get all currently banned players')
+@has_role('admin')
+async def bans(ctx):
+    """ list all currently banned users """
+    embeds = []
+    current_bans = await get_outstanding_bans()
+    for ban in current_bans:
+        embeds.append(PlayerBanEmbed(ban))
+    if(len(current_bans)):
+        await ctx.respond(content=f"{len(current_bans)} players are currently banned from using this service", embeds=embeds, ephemeral=True)
+    else:
+        await ctx.respond(content='No users are currently banned', ephemeral=True)
+
+@bot.slash_command(guild_ids=[691386983670349824], description='Get outstanding strikes and bans for a specified user')
+@has_role('admin')
+async def user_standing(ctx,
+    user: Option(discord.Member, 'Member to ban', required=True)):
+    """ View current strikes and bans for a given user """
+    embeds = []
+    strikes = await get_outstanding_strikes(user)
+    for strike in strikes:
+        embeds.append(PlayerStrikeEmbed(strike))
+    bans = await get_outstanding_bans(user)
+    for ban in bans:
+        embeds.append(PlayerBanEmbed(ban))
+    if not strikes and not bans:
+        await ctx.respond(f"User {user.name} is in good standing", ephemeral=True, delete_after=15)
+    elif bans:
+        await ctx.respond(f"User {user.name} is currently serving a ban", embeds=embeds, ephemeral=True, delete_after=15)
+    else:
+        await ctx.respond('Outstanding warnings', embeds=embeds, ephemeral=True, delete_after=15)
+
+@bot.slash_command(guild_ids=[691386983670349824], description='Get your current outstanding strikes and bans')
+async def standing(ctx):
+    """ Return current user's bans and strikes """
+    embeds = []
+    strikes = await get_outstanding_strikes(ctx.author)
+    for strike in strikes:
+        embeds.append(PlayerStrikeEmbed(strike))
+    bans = await get_outstanding_bans(ctx.author)
+    for ban in bans:
+        embeds.append(PlayerBanEmbed(ban))
+    if not strikes and not bans:
+        await ctx.respond('You are in good standing with no strikes or bans', ephemeral=True, delete_after=15)
+    else:
+        await ctx.respond('Your outstanding bans and warnings', embeds=embeds, ephemeral=True, delete_after=15)

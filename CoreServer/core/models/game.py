@@ -1,4 +1,6 @@
 from django.db import models
+from django.utils import timezone
+from django.core.exceptions import ValidationError
 
 
 class DM(models.Model):
@@ -11,6 +13,7 @@ class DM(models.Model):
     class Meta:
         verbose_name = 'DM'
         verbose_name_plural = 'DMs'
+        indexes = [models.Index(fields=['name', 'discord_id'])]
 
     def __str__(self):
         return f"{self.discord_name}"
@@ -59,13 +62,22 @@ class Game(models.Model):
     channel = models.CharField(blank=True, max_length=32, help_text='Discord channel to use for this game')
     streaming = models.BooleanField(default=False, help_text='Game is streaming or not')
 
-    datetime_release = models.DateTimeField(help_text='Date/Time game is released for signups')
-    datetime_open_release = models.DateTimeField(help_text='Date/Time game is released to gen-pop')
-    datetime = models.DateTimeField(help_text='Date/Time game is starting')
+    datetime_release = models.DateTimeField(blank=True, null=True, help_text='Date/Time game is released for signups (your local time)')
+    datetime_open_release = models.DateTimeField(blank=True, null=True, help_text='Date/Time game is released to gen-pop (your local time)')
+    datetime = models.DateTimeField(help_text='Date/Time game is starting (your local time)')
     length = models.CharField(max_length=48, default="2 hours", blank=True, help_text='Planned duration of game')
 
     def __str__(self):
         return f"{self.dm.discord_name} - {self.name}"
+
+    def clean(self):
+        """ Validate data before saving """
+        now = timezone.now()
+        if self.datetime < now:
+            raise ValidationError({'datetime': 'Game cannot be in the past'})
+    
+    class Meta:
+        indexes = [models.Index(fields=['dm', 'status', 'datetime', 'datetime_release', 'datetime_open_release'])]
 
 
 class Character(models.Model):

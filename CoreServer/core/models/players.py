@@ -13,6 +13,10 @@ class Rank(models.Model):
     def __str__(self):
         return f"{self.priority} - {self.name}"
 
+    class Meta:
+        indexes = [models.Index(fields=['priority', 'name'])]
+
+
 
 class Player(models.Model):
     """ Specifies a player within a specific game """
@@ -26,7 +30,10 @@ class Player(models.Model):
     # waitlist alerting logic, perhaps pm users and give an hour to decline?
 
     def __str__(self):
-        return f"{self.discord_name}"
+        return f"{self.discord_name} - {self.game.name}"
+
+    class Meta:
+        indexes = [models.Index(fields=['discord_id', 'game'])]
 
 
 class Strike(models.Model):
@@ -35,11 +42,15 @@ class Strike(models.Model):
     discord_name = models.CharField(blank=True, max_length=32, help_text='Banned player name')
     datetime = models.DateTimeField(auto_now_add=True, help_text='Strike issued')
     expires = models.DateTimeField(default=a_year_from_now, help_text='Strike expiry date/time')
-    issued_by = models.CharField(max_length=32, help_text='Name of the issuing admin')
+    issuer_id = models.IntegerField(null=True, blank=True, help_text='Discord ID of issuing admin')
+    issuer_name = models.CharField(max_length=32, help_text='Name of the issuing admin')
     reason = models.TextField(help_text='Reason for issuing the strike')
 
     def __str__(self):
-        return f"{self.discord_name} - {self.datetime}"
+        return f"{self.discord_name} - {self.expires.strftime('%Y/%m/%d %H:%M')}"
+
+    class Meta:
+        indexes = [models.Index(fields=['discord_id', 'issuer_id', 'datetime', 'expires'])]
 
 
 class Ban(models.Model):
@@ -54,10 +65,14 @@ class Ban(models.Model):
     discord_id = models.IntegerField(null=True, blank=True, help_text='Discord ID of player')
     discord_name = models.CharField(blank=True, max_length=32, help_text='Banned player name')
     datetime_start = models.DateTimeField(auto_now_add=True, help_text='Ban start date/time')
-    datetime_end = models.DateTimeField(default=a_month_from_now, help_text='Ban expiry date/time')
-    issued_by = models.CharField(max_length=32, help_text='Name of the issuing admin')
+    datetime_end = models.DateTimeField(blank=True, null=True, default=a_month_from_now, help_text='Ban expiry date/time')
+    issuer_id = models.IntegerField(null=True, blank=True, help_text='Discord ID of issuing admin')
+    issuer_name = models.CharField(max_length=32, help_text='Name of the issuing admin')
     reason = models.TextField(help_text='Reason for the ban to be issued')
     variant = models.TextField(max_length=2, choices=BanTypes.choices, default=BanTypes.HARD, help_text='Type of ban')
 
     def __str__(self):
         return(f"{self.discord_name}")
+    
+    class Meta:
+        indexes = [models.Index(fields=['discord_id', 'issuer_id', 'variant', 'datetime_start', 'datetime_end'])]

@@ -21,13 +21,13 @@ class GamesPoster():
         if not self.channel_priority:
             self.channel_priority = get_channel_by_name(PRIORITY_CHANNEL_NAME)
 
-        # get games for priority release
-        outstanding_games = await get_outstanding_games(priority=True)
-        await self.announce_games(outstanding_games, priority=True)
-
         # get games for general release
         outstanding_games = await get_outstanding_games(priority=False)
         await self.announce_games(outstanding_games, priority=False)
+
+        # get games for priority release
+        outstanding_games = await get_outstanding_games(priority=True)
+        await self.announce_games(outstanding_games, priority=True)
         
     async def announce_games(self, games, priority=False):
         for game in games:

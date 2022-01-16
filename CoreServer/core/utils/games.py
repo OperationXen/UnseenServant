@@ -4,7 +4,7 @@ from asgiref.sync import sync_to_async
 from core.models.game import Game
 from core.models.players import Player
 from core.utils.players import get_player_max_games, get_player_game_count
-from core.utils.players import get_bans_for_user, get_user_rank, process_player_removal
+from core.utils.players import get_current_user_bans, get_user_rank, process_player_removal
 from core.utils.players import get_waitlist_rank, get_last_waitlist_position
 
 
@@ -36,11 +36,13 @@ def get_upcoming_games(days=30):
 def get_outstanding_games(priority=False):
     """ Retrieve all game objects that are ready for release """
     now = timezone.now()
-    
+
+    # only interested in games in the future
+    queryset = Game.objects.filter(datetime__gte=now)
     if priority:
-        queryset = Game.objects.filter(status='Pending').filter(datetime_release__lte=now)
+        queryset = queryset.filter(status='Pending').filter(datetime_release__lte=now)
     else:
-        queryset = Game.objects.filter(status='Priority').filter(datetime_open_release__lte=now)
+        queryset = queryset.filter(status='Priority').filter(datetime_open_release__lte=now)
     # force evaluation before leaving this sync context
     return list(queryset)
 
@@ -86,9 +88,9 @@ def add_player_to_game(game, user):
     if waitlist.filter(discord_id=user.id):
         return False, f"You\'re already in the waitlist for this game in position: {waitlist.get(discord_id=user.id).waitlist}"
 
-    outstanding_bans = get_bans_for_user(user)
+    outstanding_bans = get_current_user_bans(user)
     if outstanding_bans:
-        message = "Sorry, you are banned from using this bot to register for games."
+        message = "Sorry, you are currently banned from using this bot to register for games."
         if outstanding_bans[0].variant != 'PM':
             message = message + f"\nYour ban expires {outstanding_bans[0].datetime_end.strftime('%Y-%m-%d %H:%M')}"
         return False, message
