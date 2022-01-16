@@ -2,12 +2,13 @@ import discord
 from discord.commands import Option, has_role
 
 from discordbot.bot import bot
+from config.settings import DISCORD_GUILDS
 from discordbot.components.user_management import PlayerBanEmbed, PlayerStrikeEmbed, BanPlayerView
 from core.utils.players import get_outstanding_bans
 from core.utils.strikes import issue_player_strike, get_outstanding_strikes
 
 
-@bot.slash_command(guild_ids=[691386983670349824], description='Issue a bad conduct strike to a user')
+@bot.slash_command(guild_ids=DISCORD_GUILDS, description='Issue a bad conduct strike to a user')
 @has_role('admin')
 async def strike(ctx, 
     user: Option(discord.Member, 'Member to issue strike against', required=True), 
@@ -27,7 +28,7 @@ async def strike(ctx,
         embed_list.append(PlayerBanEmbed(ban))
     result = await user.send('You have been issued a bad conduct strike - three of these will result in an automatic ban from bot usage', embeds=embed_list)
 
-@bot.slash_command(guild_ids=[691386983670349824], description='Issue an immediate bot ban to a user')
+@bot.slash_command(guild_ids=DISCORD_GUILDS, description='Issue an immediate bot ban to a user')
 @has_role('admin')
 async def ban(ctx, 
     user: Option(discord.Member, 'Member to ban', required=True), 
@@ -37,7 +38,7 @@ async def ban(ctx,
     view = BanPlayerView(ctx, user, reason)
     view.message = await ctx.respond(f"Banning player [{user}] for {7} days\nReason: {reason}", view=view, ephemeral=True)
 
-@bot.slash_command(guild_ids=[691386983670349824], description='Get all currently banned players')
+@bot.slash_command(guild_ids=DISCORD_GUILDS, description='Get all currently banned players')
 @has_role('admin')
 async def bans(ctx):
     """ list all currently banned users """
@@ -50,7 +51,7 @@ async def bans(ctx):
     else:
         await ctx.respond(content='No users are currently banned', ephemeral=True)
 
-@bot.slash_command(guild_ids=[691386983670349824], description='Get outstanding strikes and bans for a specified user')
+@bot.slash_command(guild_ids=DISCORD_GUILDS, description='Get outstanding strikes and bans for a specified user')
 @has_role('admin')
 async def user_standing(ctx,
     user: Option(discord.Member, 'Member to ban', required=True)):
@@ -69,7 +70,7 @@ async def user_standing(ctx,
     else:
         await ctx.respond('Outstanding warnings', embeds=embeds, ephemeral=True, delete_after=15)
 
-@bot.slash_command(guild_ids=[691386983670349824], description='Get your current outstanding strikes and bans')
+@bot.slash_command(guild_ids=DISCORD_GUILDS, description='Get your current outstanding strikes and bans')
 async def standing(ctx):
     """ Return current user's bans and strikes """
     embeds = []
