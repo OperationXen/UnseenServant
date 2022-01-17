@@ -30,10 +30,13 @@ ALLOWED_HOSTS = []
 AUTH_USER_MODEL = 'core.CustomUser'
 
 DISCORD_TOKEN = ''
-DISCORD_GUILDS = [123123123123]
+DISCORD_GUILDS = []
+DISCORD_ADMIN_ROLES = ['admin', 'Admin']
 
 DEFAULT_CHANNEL_NAME = 'bot-test-channel'
 PRIORITY_CHANNEL_NAME = 'bot-test-priority-channel'
+#DEFAULT_CHANNEL_NAME = 'new-bot-testing-listings'
+#PRIORITY_CHANNEL_NAME = 'new-bot-testing-patron-listings'
 
 INSTALLED_APPS = [
     'django.contrib.admin',

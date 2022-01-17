@@ -1,15 +1,15 @@
 import discord
-from discord.commands import Option, has_role
+from discord.commands import Option, has_any_role
 
 from discordbot.bot import bot
-from config.settings import DISCORD_GUILDS
+from config.settings import DISCORD_GUILDS, DISCORD_ADMIN_ROLES
 from discordbot.components.user_management import PlayerBanEmbed, PlayerStrikeEmbed, BanPlayerView
 from core.utils.players import get_outstanding_bans
 from core.utils.strikes import issue_player_strike, get_outstanding_strikes
 
 
 @bot.slash_command(guild_ids=DISCORD_GUILDS, description='Issue a bad conduct strike to a user')
-@has_role('admin')
+@has_any_role(DISCORD_ADMIN_ROLES)
 async def strike(ctx, 
     user: Option(discord.Member, 'Member to issue strike against', required=True), 
     reason: Option(str, 'Reason for issuing the strike', required=False)):
@@ -29,7 +29,7 @@ async def strike(ctx,
     result = await user.send('You have been issued a bad conduct strike - three of these will result in an automatic ban from bot usage', embeds=embed_list)
 
 @bot.slash_command(guild_ids=DISCORD_GUILDS, description='Issue an immediate bot ban to a user')
-@has_role('admin')
+@has_any_role(DISCORD_ADMIN_ROLES)
 async def ban(ctx, 
     user: Option(discord.Member, 'Member to ban', required=True), 
     reason: Option(str, 'Reason for issuing this instant ban', required=False)):
@@ -39,7 +39,7 @@ async def ban(ctx,
     view.message = await ctx.respond(f"Banning player [{user}] for {7} days\nReason: {reason}", view=view, ephemeral=True)
 
 @bot.slash_command(guild_ids=DISCORD_GUILDS, description='Get all currently banned players')
-@has_role('admin')
+@has_any_role(DISCORD_ADMIN_ROLES)
 async def bans(ctx):
     """ list all currently banned users """
     embeds = []
@@ -52,7 +52,7 @@ async def bans(ctx):
         await ctx.respond(content='No users are currently banned', ephemeral=True)
 
 @bot.slash_command(guild_ids=DISCORD_GUILDS, description='Get outstanding strikes and bans for a specified user')
-@has_role('admin')
+@has_any_role(DISCORD_ADMIN_ROLES)
 async def user_standing(ctx,
     user: Option(discord.Member, 'Member to ban', required=True)):
     """ View current strikes and bans for a given user """
