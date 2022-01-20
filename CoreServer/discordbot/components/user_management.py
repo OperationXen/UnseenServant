@@ -39,7 +39,7 @@ class PlayerStrikeEmbed(Embed):
 class BanPlayerView(View):
     """ View for the player banning controls """
     def __init__(self, ctx, user, reason):
-        super().__init__(timeout=60)
+        super().__init__()
         self.ctx = ctx
         self.user = user
         self.reason = reason
@@ -58,7 +58,6 @@ class BanPlayerView(View):
         for ban in await get_outstanding_bans(self.user):
             ban_list.append(PlayerBanEmbed(ban))
         result = await self.user.send('You have been banned from using this bot', embeds=ban_list)
-
 
     @discord.ui.select(placeholder='Change ban length', row=0, options=[length_1w, length_2w, length_1m, length_2m, length_3m, forever])
     async def update_timescale(self, select, interaction):
@@ -87,11 +86,3 @@ class BanPlayerView(View):
         else:
             await interaction.response.edit_message(content=f"Banned player [{self.user}], and removed them from all outstanding games", view=self)
         await self.notify_user()
-
-    async def on_timeout(self):
-        """ When the view times out """
-        try:
-            if self.message:
-                await self.message.delete_original_message()
-        except discord.errors.NotFound:
-            pass
