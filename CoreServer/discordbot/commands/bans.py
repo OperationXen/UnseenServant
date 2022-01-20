@@ -36,7 +36,7 @@ async def ban(ctx,
     """ Issue an immediate ban to a specified discord user """
     reason = reason if reason else '<Not provided>'
     view = BanPlayerView(ctx, user, reason)
-    view.message = await ctx.respond(f"Banning player [{user}] for {7} days\nReason: {reason}", view=view, ephemeral=True)
+    view.message = await ctx.respond(f"Banning player [{user}] for {7} days\nReason: {reason}", view=view, ephemeral=True, delete_after=60.0)
 
 @bot.slash_command(guild_ids=DISCORD_GUILDS, description='Get all currently banned players')
 @has_any_role(*DISCORD_ADMIN_ROLES)

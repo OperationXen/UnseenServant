@@ -1,5 +1,4 @@
 import discord
-from discord.errors import NotFound
 from discord import Embed, Colour, SelectOption
 from discord.ui import View
 
@@ -40,7 +39,7 @@ class PlayerStrikeEmbed(Embed):
 class BanPlayerView(View):
     """ View for the player banning controls """
     def __init__(self, ctx, user, reason):
-        super().__init__(timeout=5)
+        super().__init__()
         self.ctx = ctx
         self.user = user
         self.reason = reason
@@ -87,11 +86,3 @@ class BanPlayerView(View):
         else:
             await interaction.response.edit_message(content=f"Banned player [{self.user}], and removed them from all outstanding games", view=self)
         await self.notify_user()
-
-    async def on_timeout(self):
-        """ When the view times out """
-        print("View timed out")
-        try:
-            await self.message.delete_original_message()
-        except NotFound:
-            print(self.message)
