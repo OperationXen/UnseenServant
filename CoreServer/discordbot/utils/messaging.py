@@ -12,21 +12,12 @@ def get_channel_by_name(channel_name):
     return None
 
 async def get_guild_channel(channel_name):
-    asdfsadf # TODO - this needs fixing
     """ retrieve a specific named channel for a given guild """
-    for channel in bot.guild.channels:
-        if channel.name == channel_name:
-            return channel
-
-async def send_channel_message(message, channel = None):
-    """ Send a message to a channel """
-    if type(channel) == str:
-        channel = get_channel_by_name('bot-test-channel')
-    elif type(channel) == int:
-        channel = bot.get_channel(channel)
-
-    if channel:
-        await channel.send(**message)
+    for guild in await bot.fetch_guilds().flatten():
+        for channel in await guild.fetch_channels():
+            if channel.name == channel_name:
+                print(f"Found channel named {channel_name}")
+                return channel
 
 def message_should_be_purged(m):
     """ Helper function to determine if a message should be removed or not """

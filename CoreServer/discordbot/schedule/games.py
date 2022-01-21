@@ -16,23 +16,31 @@ class GamesPoster():
 
     def __init__(self):
         """ initialisation function """
-        print("Starting scheduled update daemon...")
         self.check_and_post_games.start()
 
     async def startup(self):
-        await self.get_channels()
+        """ Perform async """
+        await self.get_bot_channels()
         await self.recover_message_state()
         self.initialised = True
+
+    async def get_bot_channels(self):
+        """ Attempt to get the specified channels """
+        self.channel_general = get_channel_by_name(DEFAULT_CHANNEL_NAME)
+        self.channel_priority = get_channel_by_name(PRIORITY_CHANNEL_NAME)
+
+    async def recover_message_state(self):
+        """ Pull game postings from posting history and reconstruct a game/message status from it """
+        self.messages_priority = await get_bot_game_postings(self.channel_general)
+        self.messages_general = await get_bot_game_postings(self.channel_priority)
+
+        for message in self.messages_priority:
+            print(message)
 
     async def announce_games(self, games, priority=False):
         for game in games:
             await self.do_game_announcement(game, priority)
             await set_game_announced(game)
-
-    async def get_channels(self):
-        """ Recover channels give identifiers """
-        self.channel_general = await get_guild_channel(DEFAULT_CHANNEL_NAME)
-        self.channel_priority = await get_guild_channel(PRIORITY_CHANNEL_NAME)
 
     async def do_game_announcement(self, game, priority):
         """ Build an announcement """
@@ -60,13 +68,8 @@ class GamesPoster():
         outstanding_games = await get_outstanding_games(priority=True)
         await self.announce_games(outstanding_games, priority=True)
 
-    async def recover_message_state(self):
-        """ Read the channels and reconnect messages """
-        self.messages_priority = await get_bot_game_postings(self.channel_general)
-        self.messages_general = await get_bot_game_postings(self.channel_priority)
-
-    async def remove_stale_games(self, channel):
-        """ Go through all existing game messages and check for anything stale """
+    async def remove_stale_games(self, message_list):
+        """ Go through existing game and check for anything stale """
         pass
         
     @tasks.loop(seconds=10)
@@ -75,8 +78,6 @@ class GamesPoster():
             await self.startup()
 
         if self.channel_priority and self.channel_general:
-            await self.remove_stale_games()
+            await self.remove_stale_games(self.messages_priority)
+            await self.remove_stale_games(self.messages_general)
             await self.post_outstanding_games()
-        
-    
-scheduled_poster = GamesPoster()

@@ -24,6 +24,9 @@ def start_bot():
 async def on_ready():
     print(f"{bot.user.name} has connected to discord")
 
+    print("Creating Game Controller")
+    game_controller = GamesPoster()
+
     print('Removing stale game links... ')
     await remove_existing_messages([DEFAULT_CHANNEL_NAME, PRIORITY_CHANNEL_NAME])
     print('Reposting outstanding games...')
