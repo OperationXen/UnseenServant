@@ -35,7 +35,14 @@ class GamesPoster():
         self.messages_general = await get_bot_game_postings(self.channel_priority)
 
         for message in self.messages_priority:
-            print(message)
+            for embed in message.embeds:
+                if embed.footer and embed.footer.text:
+                    print(embed.footer.text)
+
+        for message in self.messages_general:
+            for embed in message.embeds:
+                if embed.footer and embed.footer.text:
+                    print(embed.footer.text)
 
     async def announce_games(self, games, priority=False):
         for game in games:

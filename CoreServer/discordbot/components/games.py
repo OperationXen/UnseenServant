@@ -80,6 +80,7 @@ class GameDetailEmbed(BaseGameEmbed):
     def __init__(self, game):
         title = f"{game.variant} ({game.realm})"
         super().__init__(game, title)
+        self.set_footer(text=f"Game #{game.pk}")
         self.game = game
 
     def player_details_list(self):
