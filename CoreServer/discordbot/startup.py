@@ -27,11 +27,6 @@ async def on_ready():
     print("Creating Game Controller")
     game_controller = GamesPoster()
 
-    print('Removing stale game links... ')
-    await remove_existing_messages([DEFAULT_CHANNEL_NAME, PRIORITY_CHANNEL_NAME])
-    print('Reposting outstanding games...')
-    await repost_all_current_games()
-
 ### Django Stuff to run the bot within the Django context ###
 urlpatterns = []
 start_bot()

@@ -4,13 +4,14 @@ from config.settings import DEFAULT_CHANNEL_NAME, PRIORITY_CHANNEL_NAME
 from discordbot.utils.messaging import get_channel_by_name, get_bot_game_postings, get_guild_channel
 from discordbot.components.banners import GameAnnounceBanner
 from discordbot.components.games import GameDetailEmbed, GameControlView
-from discordbot.utils.games import get_game_id_from_message
+from discordbot.utils.games import get_game_id_from_message, add_persistent_view
 from core.utils.games import get_outstanding_games, set_game_announced, get_game_by_id
 
 class GamesPoster():
     initialised = False
     messages_priority = []
     messages_general = []
+    current_games = {}
 
     channel_general = None
     channel_priority = None
@@ -39,7 +40,11 @@ class GamesPoster():
             for message in message_group:
                 game_id = get_game_id_from_message(message)
                 game = await get_game_by_id(game_id)
-                print(game)
+
+                control_view = GameControlView(game)
+                control_view.message = message
+                self.current_games[game.pk] = {'game': game, 'message': message, 'view': control_view}
+                add_persistent_view(control_view)
 
     async def announce_games(self, games, priority=False):
         for game in games:
@@ -61,6 +66,8 @@ class GamesPoster():
         control_view = GameControlView(game)
         if channel:
             control_view.message = await channel.send(embeds=embeds, view=control_view)
+            self.current_games[game.pk] = {'game': game, 'message': control_view.message, 'view': control_view}
+            add_persistent_view(control_view)
 
     async def post_outstanding_games(self):
         """ Create new messages for any games that need to be announced """
