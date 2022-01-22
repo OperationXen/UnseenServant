@@ -33,6 +33,26 @@ def get_upcoming_games(days=30):
     return list(queryset)
 
 @sync_to_async
+def get_upcoming_games_for_player(player_id, waitlisted=False):
+    """ Get all of the upcoming games """
+    now = timezone.now()
+    queryset = Player.objects.filter(discord_id=player_id)
+    queryset = queryset.filter(game__datetime__gte=now)
+    queryset = queryset.filter(standby=waitlisted)
+    queryset = queryset.order_by('game__datetime')
+    # force evaluation before leaving this sync context
+    return list(queryset)
+
+@sync_to_async
+def get_upcoming_games_for_dm(dm_id):
+    now = timezone.now()
+    queryset = Game.objects.filter(datetime__gte=now)
+    queryset = queryset.filter(dm__discord_id=dm_id)
+    queryset = queryset.filter('datetime')
+    # force evaluation before leaving this sync context
+    return list(queryset)
+
+@sync_to_async
 def get_outstanding_games(priority=False):
     """ Retrieve all game objects that are ready for release """
     now = timezone.now()
