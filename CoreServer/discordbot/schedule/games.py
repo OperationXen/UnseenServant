@@ -4,6 +4,7 @@ from config.settings import DEFAULT_CHANNEL_NAME, PRIORITY_CHANNEL_NAME
 from discordbot.utils.messaging import get_channel_by_name, get_bot_game_postings, get_guild_channel
 from discordbot.components.banners import GameAnnounceBanner
 from discordbot.components.games import GameDetailEmbed, GameControlView
+from discordbot.utils.games import get_game_from_message
 from core.utils.games import get_outstanding_games, set_game_announced
 
 class GamesPoster():
@@ -35,14 +36,9 @@ class GamesPoster():
         self.messages_general = await get_bot_game_postings(self.channel_priority)
 
         for message in self.messages_priority:
-            for embed in message.embeds:
-                if embed.footer and embed.footer.text:
-                    print(embed.footer.text)
-
+            get_game_from_message(message)
         for message in self.messages_general:
-            for embed in message.embeds:
-                if embed.footer and embed.footer.text:
-                    print(embed.footer.text)
+            get_game_from_message(message)
 
     async def announce_games(self, games, priority=False):
         for game in games:
