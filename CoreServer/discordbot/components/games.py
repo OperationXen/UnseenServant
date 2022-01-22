@@ -1,5 +1,5 @@
 from discord import Embed, Colour, ButtonStyle
-from discord.ui import View, button
+from discord.ui import View, Button, button
 
 from discordbot.utils.format import generate_calendar_message
 from core.utils.games import get_player_list, get_wait_list, get_dm
@@ -51,9 +51,9 @@ class BaseGameEmbed(Embed):
 class GameSummaryEmbed(BaseGameEmbed):
     """ Custom embed for summary view of game """
 
-    def __init__(self, game):
+    def __init__(self, game, colour=None):
         title = f"{game.variant} ({game.realm}) levels {game.level_min} - {game.level_max}"
-        super().__init__(game, title=title)
+        super().__init__(game, title=title, colour=colour)
 
     def get_player_info(self):
         """ get a string that shows current player status """
@@ -104,11 +104,11 @@ class GameDetailEmbed(BaseGameEmbed):
         self.add_field(name=f"{self.game.module} | {self.game.name}", value=f"{self.game.description}", inline=False)
         self.add_field(name='When', value=self.get_game_time(), inline=True)
         self.add_field(name='Details', value = f"Character levels {self.game.level_min} - {self.game.level_max}\n DMed by <@{self.dm.discord_id}>", inline=True)
-        if self.game.streaming:
-            self.add_field(name='Streaming', value = f"This game may be streamed")
-        self.add_field(name='Content Warnings', value=f"{self.game.warnings}", inline=self.game.streaming)
+        self.add_field(name='Content Warnings', value=f"{self.game.warnings}", inline=False)
         self.add_field(name=f"Players ({self.player_count()} / {self.game.max_players})", value=self.player_details_list(), inline=True)
         self.add_field(name=f"Waitlist ({self.waitlist_count()})", value=self.waitlist_details_list(self.game.max_players), inline=True)
+        if self.game.streaming:
+            self.add_field(name='Streaming', value = f"This game may be streamed")
 
 
 class GameControlView(View):
@@ -116,8 +116,18 @@ class GameControlView(View):
     message = None
 
     def __init__(self, game):
-        super().__init__(timeout=None)
         self.game = game
+        super().__init__(timeout=None)
+        # Creating these longhand instead of using the decorator because I need access to the game variable for unique custom IDs
+        self.signup_button = Button(style=ButtonStyle.primary, label='Signup', custom_id=f"unseen-servant-signup#{game.pk}")
+        self.dropout_button = Button(style=ButtonStyle.red, label='Drop out', custom_id=f"unseen-servant-dropout#{game.pk}")
+        self.calendar_button = Button(style=ButtonStyle.grey, label="Add to calendar", custom_id=f"unseen-servant-calendar#{game.pk}")
+        self.signup_button.callback = self.signup
+        self.dropout_button.callback = self.dropout
+        self.calendar_button.callback = self.calendar
+        self.add_item(self.signup_button)
+        self.add_item(self.calendar_button)
+        self.add_item(self.dropout_button)
 
     async def get_data(self):
         """ retrieve data from Django (syncronous) """
@@ -136,20 +146,17 @@ class GameControlView(View):
                 embeds[index] = detail_embed
         await self.message.edit(embeds = embeds)
 
-    @button(label='Signup', style=ButtonStyle.primary, custom_id='signup')
-    async def signup(self, button, interaction):
+    async def signup(self, interaction):
         status, message = await add_player_to_game(self.game, interaction.user)
         await interaction.response.send_message(message, ephemeral=True)
         if status == True:
             await self.update_message()
 
-    @button(label='Add to calendar', style=ButtonStyle.grey)
-    async def calendar(self, button, interaction):
+    async def calendar(self, interaction):
         message = generate_calendar_message(self.game)
         await interaction.response.send_message(message, ephemeral=True, embeds=[])
 
-    @button(label="Dropout", style=ButtonStyle.red, custom_id='dropout')
-    async def dropout(self, button, interaction):
+    async def dropout(self, interaction):
         status, message = await drop_from_game(self.game, interaction.user)
         await interaction.response.send_message(message, ephemeral=True)
         if status == True:

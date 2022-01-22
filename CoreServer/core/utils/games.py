@@ -1,3 +1,4 @@
+from datetime import timedelta
 from django.utils import timezone
 from asgiref.sync import sync_to_async
 
@@ -28,7 +29,33 @@ def get_wait_list(game):
 @sync_to_async
 def get_upcoming_games(days=30):
     now = timezone.now()
+    end = now + timedelta(days=days)
     queryset = Game.objects.filter(datetime__gte=now)
+    queryset = queryset.filter(datetime__lte=end)
+    # force evaluation before leaving this sync context
+    return list(queryset)
+
+@sync_to_async
+def get_upcoming_games_for_player(player_id, waitlisted=False):
+    """ Get all of the upcoming games """
+    now = timezone.now()
+    players = Player.objects.filter(discord_id=player_id)
+    players = players.filter(standby=waitlisted)
+
+    queryset = Game.objects.filter(players__in=players)
+    queryset = queryset.filter(datetime__gte=now)
+    queryset = queryset.order_by('datetime')
+    # force evaluation before leaving this sync context
+    return list(queryset)
+
+@sync_to_async
+def get_upcoming_games_for_dm(dm_id):
+    now = timezone.now()
+    queryset = Game.objects.filter(datetime__gte=now)
+    # Ignore games still in draft or cancelled
+    queryset = queryset.exclude(status='Draft').exclude(status='Cancelled')
+    queryset = queryset.filter(dm__discord_id=dm_id)
+    queryset = queryset.order_by('datetime')
     # force evaluation before leaving this sync context
     return list(queryset)
 
@@ -68,13 +95,19 @@ def set_game_announced(game):
     game.save()
     return game
 
-@sync_to_async
-def get_specific_game(game_id):
+def _get_game_by_id(game_id):
+    """ Syncronous context worker to get game and forcibly evaluate it"""
     try:
-        game_obj = Game.objects.get(pk=game_id)
-        return game_obj
+        game = Game.objects.get(pk=game_id)
+        # Use conditional logic to force execution of lazy query, note we also need to evaluate linked DM model
+        if game and game.dm:
+            return game
     except Game.DoesNotExist:
         return None
+
+@sync_to_async
+def get_game_by_id(game_id):
+    return _get_game_by_id(game_id)
 
 @sync_to_async
 def add_player_to_game(game, user):
@@ -127,3 +160,15 @@ def drop_from_game(game, user):
         process_player_removal(player)
         return True, f"You have dropped out of {game.name}"
     return False, f"You aren't queued for this game..."
+
+@sync_to_async
+def check_game_expired(game):
+    """ See if a game object has reached expiry """
+    game = _get_game_by_id(game.id)
+    expiry = timezone.now() + timedelta(days=1)
+    if game.datetime < expiry:
+        return True
+
+    if game.status in ['Cancelled', 'Draft', 'Pending']:
+        return True
+    return False

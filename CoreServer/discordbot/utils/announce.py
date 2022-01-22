@@ -1,4 +1,6 @@
 from config.settings import PRIORITY_CHANNEL_NAME, DEFAULT_CHANNEL_NAME
+
+from discordbot.bot import bot
 from discordbot.utils.messaging import get_channel_by_name
 from discordbot.components.games import GameControlView, GameDetailEmbed
 from core.utils.games import get_current_games
@@ -17,6 +19,7 @@ async def announce_game(game, priority):
 
         control_view = GameControlView(game)
         control_view.message = await channel.send(embeds=embeds, view=control_view)
+        bot.add_view(control_view)
 
 async def repost_all_current_games():
     """ go through the database and repost anything currently accepting signups """

@@ -11,15 +11,13 @@ def get_channel_by_name(channel_name):
             return channel
     return None
 
-async def send_channel_message(message, channel = None):
-    """ Send a message to a channel """
-    if type(channel) == str:
-        channel = get_channel_by_name('bot-test-channel')
-    elif type(channel) == int:
-        channel = bot.get_channel(channel)
-
-    if channel:
-        await channel.send(**message)
+async def get_guild_channel(channel_name):
+    """ retrieve a specific named channel for a given guild """
+    for guild in await bot.fetch_guilds().flatten():
+        for channel in await guild.fetch_channels():
+            if channel.name == channel_name:
+                print(f"Found channel named {channel_name}")
+                return channel
 
 def message_should_be_purged(m):
     """ Helper function to determine if a message should be removed or not """
@@ -34,3 +32,9 @@ async def remove_existing_messages(channels):
     for channel in bot.get_all_channels():
         if channel.name in channels:
             await channel.purge(check=message_should_be_purged, limit=5000)
+
+async def get_bot_game_postings(channel):
+    """ Retrieve a list of message objects posted by this bot in this channel """
+    messages = await channel.history().flatten()
+    messages = filter(lambda message: message.author == bot.user, messages)
+    return list(messages)
