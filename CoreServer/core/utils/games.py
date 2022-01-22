@@ -68,13 +68,19 @@ def set_game_announced(game):
     game.save()
     return game
 
-@sync_to_async
-def get_specific_game(game_id):
+def _get_game_by_id(game_id):
+    """ Syncronous context worker to get game and forcibly evaluate it"""
     try:
-        game_obj = Game.objects.get(pk=game_id)
-        return game_obj
+        game = Game.objects.get(pk=game_id)
+        # Use conditional logic to force execution of lazy query, note we also need to evaluate linked DM model
+        if game and game.dm:
+            return game
     except Game.DoesNotExist:
         return None
+
+@sync_to_async
+def get_game_by_id(game_id):
+    return _get_game_by_id(game_id)
 
 @sync_to_async
 def add_player_to_game(game, user):

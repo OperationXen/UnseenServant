@@ -4,8 +4,8 @@ from config.settings import DEFAULT_CHANNEL_NAME, PRIORITY_CHANNEL_NAME
 from discordbot.utils.messaging import get_channel_by_name, get_bot_game_postings, get_guild_channel
 from discordbot.components.banners import GameAnnounceBanner
 from discordbot.components.games import GameDetailEmbed, GameControlView
-from discordbot.utils.games import get_game_from_message
-from core.utils.games import get_outstanding_games, set_game_announced
+from discordbot.utils.games import get_game_id_from_message
+from core.utils.games import get_outstanding_games, set_game_announced, get_game_by_id
 
 class GamesPoster():
     initialised = False
@@ -32,13 +32,14 @@ class GamesPoster():
 
     async def recover_message_state(self):
         """ Pull game postings from posting history and reconstruct a game/message status from it """
-        self.messages_priority = await get_bot_game_postings(self.channel_general)
-        self.messages_general = await get_bot_game_postings(self.channel_priority)
+        self.messages_priority = await get_bot_game_postings(self.channel_priority)
+        self.messages_general = await get_bot_game_postings(self.channel_general)
 
-        for message in self.messages_priority:
-            get_game_from_message(message)
-        for message in self.messages_general:
-            get_game_from_message(message)
+        for message_group in [self.messages_general, self.messages_priority]:
+            for message in message_group:
+                game_id = get_game_id_from_message(message)
+                game = await get_game_by_id(game_id)
+                print(game)
 
     async def announce_games(self, games, priority=False):
         for game in games:
