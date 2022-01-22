@@ -51,9 +51,9 @@ class BaseGameEmbed(Embed):
 class GameSummaryEmbed(BaseGameEmbed):
     """ Custom embed for summary view of game """
 
-    def __init__(self, game):
+    def __init__(self, game, colour=None):
         title = f"{game.variant} ({game.realm}) levels {game.level_min} - {game.level_max}"
-        super().__init__(game, title=title)
+        super().__init__(game, title=title, colour=colour)
 
     def get_player_info(self):
         """ get a string that shows current player status """
@@ -104,11 +104,11 @@ class GameDetailEmbed(BaseGameEmbed):
         self.add_field(name=f"{self.game.module} | {self.game.name}", value=f"{self.game.description}", inline=False)
         self.add_field(name='When', value=self.get_game_time(), inline=True)
         self.add_field(name='Details', value = f"Character levels {self.game.level_min} - {self.game.level_max}\n DMed by <@{self.dm.discord_id}>", inline=True)
-        if self.game.streaming:
-            self.add_field(name='Streaming', value = f"This game may be streamed")
-        self.add_field(name='Content Warnings', value=f"{self.game.warnings}", inline=self.game.streaming)
+        self.add_field(name='Content Warnings', value=f"{self.game.warnings}", inline=False)
         self.add_field(name=f"Players ({self.player_count()} / {self.game.max_players})", value=self.player_details_list(), inline=True)
         self.add_field(name=f"Waitlist ({self.waitlist_count()})", value=self.waitlist_details_list(self.game.max_players), inline=True)
+        if self.game.streaming:
+            self.add_field(name='Streaming', value = f"This game may be streamed")
 
 
 class GameControlView(View):

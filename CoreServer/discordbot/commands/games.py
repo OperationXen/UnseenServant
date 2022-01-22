@@ -3,18 +3,30 @@ from discord.commands import Option, has_any_role
 
 from config.settings import DISCORD_GUILDS, DISCORD_ADMIN_ROLES
 from discordbot.bot import bot
-from core.utils.games import get_upcoming_games, get_upcoming_games_for_user, get_upcoming_games_for_dm
+from core.utils.games import get_upcoming_games, get_upcoming_games_for_player, get_upcoming_games_for_dm
 
 from discordbot.components.games import GameDetailEmbed, GameSummaryEmbed, GameControlView
 
 
-@bot.slash_command(guild_ids=DISCORD_GUILDS, description='Summary of your upcoming games (both playing and DMing')
+@bot.slash_command(guild_ids=DISCORD_GUILDS, description='Summary of your upcoming games (both playing and DMing)')
 async def games(ctx):
     """ Retrieve a list of the users upcoming games and provide a summary """
-    games = get_upcoming_games_for_user(ctx.author)
-    dming = get_upcoming_games_for_dm(ctx.author)
+    embeds = []
+    games = await get_upcoming_games_for_player(ctx.author.id, waitlisted=False)
+    dming = await get_upcoming_games_for_dm(ctx.author.id)
 
-    await ctx.respond(f"Upcoming games", ephemeral=True, delete_after=60.0)
+    if dming:
+        for game in dming:
+            summary_embed = GameSummaryEmbed(game, colour=Colour.red())
+            await summary_embed.build()
+            embeds.append(summary_embed)
+
+    if games:
+        for game in games:
+            summary_embed = GameSummaryEmbed(game, colour=Colour.green())
+            await summary_embed.build()
+            embeds.append(summary_embed)
+    await ctx.respond(f"", ephemeral=True, embeds=embeds)
 
 
 @bot.slash_command(guild_ids=DISCORD_GUILDS, description='All upcoming games within a time period (default is 30 days)')
@@ -29,4 +41,4 @@ async def games_summary(ctx, days: Option(int, 'Number of days', required=False)
         summary_embed = GameSummaryEmbed(game)
         await summary_embed.build()
         embeds.append(summary_embed)
-    await ctx.send(embeds=embeds)
+    await ctx.respond(embeds=embeds, ephemeral=True)
