@@ -160,3 +160,15 @@ def drop_from_game(game, user):
         process_player_removal(player)
         return True, f"You have dropped out of {game.name}"
     return False, f"You aren't queued for this game..."
+
+@sync_to_async
+def check_game_expired(game):
+    """ See if a game object has reached expiry """
+    game = _get_game_by_id(game.id)
+    expiry = timezone.now() + timedelta(days=1)
+    if game.datetime < expiry:
+        return True
+
+    if game.status in ['Cancelled', 'Draft', 'Pending']:
+        return True
+    return False

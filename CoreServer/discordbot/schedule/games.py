@@ -5,7 +5,7 @@ from discordbot.utils.messaging import get_channel_by_name, get_bot_game_posting
 from discordbot.components.banners import GameAnnounceBanner
 from discordbot.components.games import GameDetailEmbed, GameControlView
 from discordbot.utils.games import get_game_id_from_message, add_persistent_view
-from core.utils.games import get_outstanding_games, set_game_announced, get_game_by_id
+from core.utils.games import get_outstanding_games, set_game_announced, get_game_by_id, check_game_expired
 
 class GamesPoster():
     initialised = False
@@ -58,7 +58,7 @@ class GamesPoster():
         else:
             channel = self.channel_general
 
-        embeds = [GameAnnounceBanner(priority=priority)]
+        embeds = []
         details_embed = GameDetailEmbed(game)
         await details_embed.build()
         embeds.append(details_embed)
@@ -79,9 +79,15 @@ class GamesPoster():
         outstanding_games = await get_outstanding_games(priority=True)
         await self.announce_games(outstanding_games, priority=True)
 
-    async def remove_stale_games(self, message_list):
-        """ Go through existing game and check for anything stale """
-        pass
+    async def remove_stale_games(self):
+        """ Go through existing games and check for anything stale """
+        for key in self.current_games:
+            announcement = self.current_games[key]
+            if await check_game_expired(announcement['game']):
+                print(f"Deleteing expired game - {announcement['game']}")
+                await announcement['message'].delete()
+                self.current_games.pop(key)
+                break
         
     @tasks.loop(seconds=10)
     async def check_and_post_games(self):
@@ -89,6 +95,5 @@ class GamesPoster():
             await self.startup()
 
         if self.channel_priority and self.channel_general:
-            await self.remove_stale_games(self.messages_priority)
-            await self.remove_stale_games(self.messages_general)
+            await self.remove_stale_games()
             await self.post_outstanding_games()
