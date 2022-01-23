@@ -66,10 +66,11 @@ def get_outstanding_games(priority=False):
 
     # only interested in games in the future
     queryset = Game.objects.filter(datetime__gte=now)
+    queryset = queryset.exclude(status__in=['Cancelled', 'Draft'])
     if priority:
-        queryset = queryset.filter(status='Pending').filter(datetime_release__lte=now)
+        queryset = queryset.filter(datetime_release__lte=now)
     else:
-        queryset = queryset.filter(status='Priority').filter(datetime_open_release__lte=now)
+        queryset = queryset.filter(datetime_open_release__lte=now)
     # force evaluation before leaving this sync context
     return list(queryset)
 
@@ -86,9 +87,9 @@ def get_current_games(priority=False):
     return list(queryset.order_by('datetime'))
 
 @sync_to_async
-def set_game_announced(game):
+def set_game_announced(game, priority_release=False):
     """ Set this game object's status to reflect the fact it's now been published """
-    if game.status == 'Priority':
+    if game.status == 'Priority' or not priority_release:
         game.status = 'Released'
     elif game.status == 'Pending':
         game.status = 'Priority'
