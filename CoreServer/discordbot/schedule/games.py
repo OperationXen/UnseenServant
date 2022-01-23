@@ -40,6 +40,9 @@ class GamesPoster():
             for message in message_group:
                 game_id = get_game_id_from_message(message)
                 game = await get_game_by_id(game_id)
+                if not game:
+                    await message.delete()
+                    continue
 
                 control_view = GameControlView(game)
                 control_view.message = message
