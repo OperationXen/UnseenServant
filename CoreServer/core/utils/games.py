@@ -165,10 +165,11 @@ def drop_from_game(game, user):
 def check_game_expired(game):
     """ See if a game object has reached expiry """
     game = _get_game_by_id(game.id)
+    if not game:
+        return True
     expiry = timezone.now() + timedelta(days=1)
     if game.datetime < expiry:
         return True
-
     if game.status in ['Cancelled', 'Draft', 'Pending']:
         return True
     return False
