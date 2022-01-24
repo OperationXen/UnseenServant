@@ -15,7 +15,7 @@ def create_google_calendar_link(game):
 
 def generate_calendar_message(game):
     """ Create a series of links to automatically add game to various calendars """
-    message = f"Click to add event for {game.name} to [Google Calendar]({create_google_calendar_link(game)})"
-    message = message + f" / [Apple Calendar](https://www.apple.com)"
-    message = message + f" / [Outlook Calendar](https://www.live.com)"
+    message = f"Click to add event for {game.name} to [Google Calendar](<{create_google_calendar_link(game)}>)"
+    message = message + f" / [Apple Calendar](<https://www.apple.com>)"
+    message = message + f" / [Outlook Calendar](<https://www.live.com>)"
     return message
