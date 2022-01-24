@@ -168,7 +168,7 @@ def check_game_expired(game):
     game = _get_game_by_id(game.id)
     if not game:
         return True
-    expiry = timezone.now() + timedelta(days=1)
+    expiry = timezone.now() - timedelta(days=1)
     if game.datetime < expiry:
         return True
     if game.status in ['Cancelled', 'Draft', 'Pending']:
