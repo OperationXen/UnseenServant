@@ -11,22 +11,28 @@ from discordbot.components.games import GameDetailEmbed, GameSummaryEmbed, GameC
 @bot.slash_command(guild_ids=DISCORD_GUILDS, description='Summary of your upcoming games (both playing and DMing)')
 async def games(ctx):
     """ Retrieve a list of the users upcoming games and provide a summary """
+    message = ""
     embeds = []
     games = await get_upcoming_games_for_player(ctx.author.id, waitlisted=False)
     dming = await get_upcoming_games_for_dm(ctx.author.id)
 
     if dming:
+        message = message + f"You are DMing {len(dming)} games\n"
         for game in dming:
             summary_embed = GameSummaryEmbed(game, colour=Colour.red())
             await summary_embed.build()
             embeds.append(summary_embed)
 
     if games:
+        message = message + f"You are playing in {len(dming)} games"
         for game in games:
             summary_embed = GameSummaryEmbed(game, colour=Colour.green())
             await summary_embed.build()
             embeds.append(summary_embed)
-    await ctx.respond(f"", ephemeral=True, embeds=embeds)
+    
+    if not dming and not games:
+        message = "You are not registered for any games"
+    await ctx.respond(message, ephemeral=True, embeds=embeds)
 
 
 @bot.slash_command(guild_ids=DISCORD_GUILDS, description='All upcoming games within a time period (default is 30 days)')
