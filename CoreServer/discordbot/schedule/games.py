@@ -40,24 +40,17 @@ class GamesPoster():
             for message in message_group:
                 game_id = get_game_id_from_message(message)
                 game = await get_game_by_id(game_id)
+                if not game:
+                    await message.delete()
+                    continue
 
                 control_view = GameControlView(game)
                 control_view.message = message
                 self.current_games[game.pk] = {'game': game, 'message': message, 'view': control_view}
                 add_persistent_view(control_view)
-
-    async def announce_games(self, games, priority=False):
-        for game in games:
-            await self.do_game_announcement(game, priority)
-            await set_game_announced(game)
-
-    async def do_game_announcement(self, game, priority):
+            
+    async def do_game_announcement(self, game, channel):
         """ Build an announcement """
-        if priority:
-            channel = self.channel_priority
-        else:
-            channel = self.channel_general
-
         embeds = []
         details_embed = GameDetailEmbed(game)
         await details_embed.build()
@@ -69,15 +62,20 @@ class GamesPoster():
             self.current_games[game.pk] = {'game': game, 'message': control_view.message, 'view': control_view}
             add_persistent_view(control_view)
 
+    def is_game_posted(self, game):
+        """ determine if the game referenced is currently posted to the channel """
+        if game.id not in self.current_games:
+            return False
+        return True
+
     async def post_outstanding_games(self):
         """ Create new messages for any games that need to be announced """
-        # get games for general release
-        outstanding_games = await get_outstanding_games(priority=False)
-        await self.announce_games(outstanding_games, priority=False)
-
-        # get games for priority release
-        outstanding_games = await get_outstanding_games(priority=True)
-        await self.announce_games(outstanding_games, priority=True)
+        for priority in [False, True]:
+            for game in await get_outstanding_games(priority):
+                if not self.is_game_posted(game):
+                    print(f"Announcing game: {game.name}")
+                    await self.do_game_announcement(game, self.channel_general)
+                    await set_game_announced(game, priority)
 
     async def remove_stale_games(self):
         """ Go through existing games and check for anything stale """
