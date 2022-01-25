@@ -4,7 +4,7 @@ from discord.ui import View, Button, button
 from discordbot.utils.format import generate_calendar_message
 from core.utils.games import get_player_list, get_wait_list, get_dm
 from core.utils.games import add_player_to_game, drop_from_game
-from core.utils.time import discord_time, discord_countdown
+from discordbot.utils.time import discord_time, discord_countdown
 
 class BaseGameEmbed(Embed):
     """ Baseclass for game embed objects """
