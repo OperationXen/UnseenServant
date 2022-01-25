@@ -31,6 +31,7 @@ def get_upcoming_games(days=30):
     now = timezone.now()
     end = now + timedelta(days=days)
     queryset = Game.objects.filter(datetime__gte=now)
+    queryset = queryset.exclude(status__in=['Cancelled', 'Draft'])
     queryset = queryset.filter(datetime__lte=end)
     # force evaluation before leaving this sync context
     return list(queryset)
