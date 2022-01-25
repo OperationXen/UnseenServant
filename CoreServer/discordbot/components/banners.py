@@ -38,12 +38,12 @@ class GameSummaryBanner(BaseEmbed):
     def __init__(self, games=None):
         now = timezone.now()
         if games:
-            title = f"As of {discord_time(now)} you are a player in [{games}] game"
+            title = f"You are a player in [{games}] game"
             if games > 1:
                 title = title + "s"
             colour = Colour.dark_purple()
         else:
-            title = f"As of {discord_time(now)} you are not queued for any games"
+            title = f"You are not queued for any games"
             colour = Colour.dark_red()
         
         super().__init__(title=title, colour=colour)
@@ -54,12 +54,12 @@ class DMSummaryBanner(BaseEmbed):
     def __init__(self, games=None):
         now = timezone.now()
         if games:
-            title = f"As of {discord_time(now)} you are DMing [{games}] upcoming game"
+            title = f"You are DMing [{games}] upcoming game"
             if games > 1:
                 title = title + "s"
             colour = Colour.dark_blue()
         else:
-            title = f"As of {discord_time(now)} you are not DMing any upcoming games"
+            title = f"You are not DMing any upcoming games"
             colour = Colour.dark_red()
 
         super().__init__(title=title, colour=colour)
@@ -70,12 +70,12 @@ class WaitlistSummaryBanner(BaseEmbed):
     def __init__(self, games=None):
         now = timezone.now()
         if games:
-            title = f"As of {discord_time(now)} you are waitlisted for [{games}] game"
+            title = f"You are waitlisted for [{games}] game"
             if games > 1:
                 title = title + "s"
             colour = Colour.dark_green()
         else:
-            title = f"As of {discord_time(now)} you are not on the waitlist for any upcoming games"
+            title = f"You are not on the waitlist for any upcoming games"
             colour = Colour.dark_red()
         
         super().__init__(title=title, colour=colour)

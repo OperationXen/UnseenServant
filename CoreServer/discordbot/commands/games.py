@@ -15,27 +15,23 @@ from discordbot.utils.time import discord_time
 async def games(ctx, send_dm: Option(bool, 'Send information in a DM instead of inline', required=False) = False):
     """ Retrieve a list of the users upcoming games and provide a summary """
     now = timezone.now()
-    message = f"{discord_time(now)}"
+    message = f"As of: {discord_time(now)}"
     embeds = []
     games = await get_upcoming_games_for_player(ctx.author.id, waitlisted=False)
     dming = await get_upcoming_games_for_dm(ctx.author.id)
 
     if dming:
-        embeds.append(DMSummaryBanner(dming))
+        embeds.append(DMSummaryBanner(games=len(dming)))
         for game in dming:
             summary_embed = GameSummaryEmbed(game, colour=Colour.red())
             await summary_embed.build()
             embeds.append(summary_embed)
 
     if games:
-        message = message + f"You are playing in {len(dming)} games"
         for game in games:
             summary_embed = GameSummaryEmbed(game, colour=Colour.green())
             await summary_embed.build()
             embeds.append(summary_embed)
-    
-    if not dming and not games:
-        message = "You are not registered for any games"
     if send_dm:
         await ctx.author.send(message, embeds=embeds)
         await ctx.respond("DM Sent!", delete_after=3)
