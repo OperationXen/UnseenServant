@@ -18,20 +18,28 @@ async def games(ctx, send_dm: Option(bool, 'Send information in a DM instead of 
     message = f"As of: {discord_time(now)}"
     embeds = []
     games = await get_upcoming_games_for_player(ctx.author.id, waitlisted=False)
+    waitlist = await get_upcoming_games_for_player(ctx.author.id, waitlisted=True)
     dming = await get_upcoming_games_for_dm(ctx.author.id)
 
     if dming:
         embeds.append(DMSummaryBanner(games=len(dming)))
         for game in dming:
-            summary_embed = GameSummaryEmbed(game, colour=Colour.red())
+            summary_embed = GameSummaryEmbed(game, colour=Colour.blue())
             await summary_embed.build()
             embeds.append(summary_embed)
 
-    if games:
-        for game in games:
-            summary_embed = GameSummaryEmbed(game, colour=Colour.green())
-            await summary_embed.build()
-            embeds.append(summary_embed)
+    embeds.append(GameSummaryBanner(games=len(games)))    
+    for game in games:
+        summary_embed = GameSummaryEmbed(game, colour=Colour.dark_purple())
+        await summary_embed.build()
+        embeds.append(summary_embed)
+
+    embeds.append(WaitlistSummaryBanner(games=len(waitlist)))
+    for game in games:
+        summary_embed = GameSummaryEmbed(game, colour=Colour.dark_green())
+        await summary_embed.build()
+        embeds.append(summary_embed)
+
     if send_dm:
         await ctx.author.send(message, embeds=embeds)
         await ctx.respond("DM Sent!", delete_after=3)
