@@ -30,8 +30,7 @@ def get_wait_list(game):
 def get_upcoming_games(days=30):
     now = timezone.now()
     end = now + timedelta(days=days)
-    queryset = Game.objects.filter(datetime__gte=now)
-    queryset = queryset.exclude(status__in=['Cancelled', 'Draft'])
+    queryset = Game.objects.filter(ready=True).filter(datetime__gte=now)
     queryset = queryset.filter(datetime__lte=end)
     # force evaluation before leaving this sync context
     return list(queryset)
@@ -44,7 +43,7 @@ def get_upcoming_games_for_player(player_id, waitlisted=False):
     players = players.filter(standby=waitlisted)
 
     queryset = Game.objects.filter(players__in=players)
-    queryset = queryset.filter(datetime__gte=now)
+    queryset = queryset.filter(ready=True).filter(datetime__gte=now)
     queryset = queryset.order_by('datetime')
     # force evaluation before leaving this sync context
     return list(queryset)
@@ -52,9 +51,7 @@ def get_upcoming_games_for_player(player_id, waitlisted=False):
 @sync_to_async
 def get_upcoming_games_for_dm(dm_id):
     now = timezone.now()
-    queryset = Game.objects.filter(datetime__gte=now)
-    # Ignore games still in draft or cancelled
-    queryset = queryset.exclude(status='Draft').exclude(status='Cancelled')
+    queryset = Game.objects.filter(ready=True).filter(datetime__gte=now)
     queryset = queryset.filter(dm__discord_id=dm_id)
     queryset = queryset.order_by('datetime')
     # force evaluation before leaving this sync context
