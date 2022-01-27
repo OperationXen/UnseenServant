@@ -21,14 +21,6 @@ class DM(models.Model):
 
 class Game(models.Model):
     """ Defines an specific scheduled game """
-    class Status(models.TextChoices):
-        """ Internal class to specify game statuses """
-        CANCELLED = 'Cancelled', ('Cancelled')
-        DRAFT = 'Draft', ('Draft')
-        PENDING = 'Pending', ('Pending release')
-        PRIORITY = 'Priority', ('Released to priority queue')
-        RELEASED = 'Released', ('Released to everyone')
-
     class GameTypes(models.TextChoices):
         """ Internal class to define possible game types """
         RES_AL = 'Resident AL', ('Resident Adventurers League')
@@ -58,7 +50,7 @@ class Game(models.Model):
     level_max = models.IntegerField(default=4, help_text='Maximum player level')
     warnings = models.TextField(blank=False, default='None', help_text='Content warnings or advisories')
     
-    status = models.TextField(max_length=16, choices=Status.choices, default=Status.DRAFT, help_text='Game status')
+    ready = models.BooleanField(default=True, help_text='If this game is ready to be published, if this is not set the game will be hidden')
     channel = models.CharField(blank=True, max_length=32, help_text='Discord channel to use for this game')
     streaming = models.BooleanField(default=False, help_text='Game is streaming or not')
 
@@ -77,7 +69,7 @@ class Game(models.Model):
             raise ValidationError({'datetime': 'Game cannot be in the past'})
     
     class Meta:
-        indexes = [models.Index(fields=['dm', 'status', 'datetime', 'datetime_release', 'datetime_open_release'])]
+        indexes = [models.Index(fields=['dm', 'datetime', 'datetime_release', 'datetime_open_release'])]
 
 
 class Character(models.Model):

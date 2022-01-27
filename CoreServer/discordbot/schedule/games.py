@@ -5,12 +5,10 @@ from discordbot.utils.messaging import get_channel_by_name, get_bot_game_posting
 from discordbot.components.banners import GameAnnounceBanner
 from discordbot.components.games import GameDetailEmbed, GameControlView
 from discordbot.utils.games import get_game_id_from_message, add_persistent_view
-from core.utils.games import get_outstanding_games, set_game_announced, get_game_by_id, check_game_expired
+from core.utils.games import get_outstanding_games, get_game_by_id, check_game_expired
 
 class GamesPoster():
     initialised = False
-    messages_priority = []
-    messages_general = []
     current_games = {}
 
     channel_general = None
@@ -33,20 +31,20 @@ class GamesPoster():
 
     async def recover_message_state(self):
         """ Pull game postings from posting history and reconstruct a game/message status from it """
-        self.messages_priority = await get_bot_game_postings(self.channel_priority)
-        self.messages_general = await get_bot_game_postings(self.channel_general)
-
-        for message_group in [self.messages_general, self.messages_priority]:
-            for message in message_group:
+        print("Rebuilding internal message state")
+        for channel in [self.channel_priority, self.channel_general]:
+            messages = await get_bot_game_postings(channel)
+            for message in messages:
                 game_id = get_game_id_from_message(message)
                 game = await get_game_by_id(game_id)
                 if not game:
                     await message.delete()
                     continue
 
+                # Rebuild view handlers
                 control_view = GameControlView(game)
                 control_view.message = message
-                self.current_games[game.pk] = {'game': game, 'message': message, 'view': control_view}
+                self.current_games[game.pk] = {'game': game, 'message': message, 'view': control_view, 'channel': channel}
                 add_persistent_view(control_view)
             
     async def do_game_announcement(self, game, channel):
@@ -59,23 +57,33 @@ class GamesPoster():
         control_view = GameControlView(game)
         if channel:
             control_view.message = await channel.send(embeds=embeds, view=control_view)
-            self.current_games[game.pk] = {'game': game, 'message': control_view.message, 'view': control_view}
+            self.current_games[game.pk] = {'game': game, 'message': control_view.message, 'view': control_view, 'channel': channel}
             add_persistent_view(control_view)
 
     def is_game_posted(self, game):
-        """ determine if the game referenced is currently posted to the channel """
+        """ determine if the game referenced is currently posted, and in which channel """
         if game.id not in self.current_games:
-            return False
-        return True
+            return None
+        return self.current_games[game.id]['channel']
+
+    async def remove_specific_game(self, game_id):
+        """ Pull a specific game ID from the game state and delete the associated message """
+        announcement = self.current_games[game_id]
+        await announcement['message'].delete()
+        self.current_games.pop(game_id)
 
     async def post_outstanding_games(self):
         """ Create new messages for any games that need to be announced """
         for priority in [False, True]:
             for game in await get_outstanding_games(priority):
-                if not self.is_game_posted(game):
-                    print(f"Announcing game: {game.name}")
+                channel = self.is_game_posted(game)
+                if not channel:
+                    print(f"Announcing new game: {game.name}")
+                    await self.do_game_announcement(game, self.channel_priority if priority else self.channel_general)
+                elif (not priority and channel == self.channel_priority):
+                    print(f"Moving game announcement to general")
+                    await self.remove_specific_game(game.id)
                     await self.do_game_announcement(game, self.channel_general)
-                    await set_game_announced(game, priority)
 
     async def remove_stale_games(self):
         """ Go through existing games and check for anything stale """
@@ -85,7 +93,7 @@ class GamesPoster():
                 print(f"Deleteing expired game - {announcement['game']}")
                 await announcement['message'].delete()
                 self.current_games.pop(key)
-                break
+                break  # because we've modified current_games we can't continue to iterate on it
         
     @tasks.loop(seconds=10)
     async def check_and_post_games(self):

@@ -11,7 +11,7 @@ class Rank(models.Model):
     patreon = models.BooleanField(default=False, help_text='this rank is reserved for paying members')
 
     def __str__(self):
-        return f"{self.priority} - {self.name}"
+        return f"{self.priority} - {self.name} ({self.max_games})"
 
     class Meta:
         indexes = [models.Index(fields=['priority', 'name'])]

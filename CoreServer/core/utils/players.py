@@ -4,7 +4,7 @@ from datetime import timedelta
 from asgiref.sync import sync_to_async
 
 from discordbot.utils.messaging import send_dm
-from core.utils.time import discord_countdown
+from discordbot.utils.time import discord_countdown
 from core.models.game import Game
 from core.models.players import Player, Ban, Rank, Strike
 

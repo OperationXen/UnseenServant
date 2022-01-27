@@ -1,3 +1,4 @@
+from django.utils import timezone
 from discord import Embed, Colour
 from discord.commands import Option, has_any_role
 
@@ -5,35 +6,45 @@ from config.settings import DISCORD_GUILDS, DISCORD_ADMIN_ROLES
 from discordbot.bot import bot
 from core.utils.games import get_upcoming_games, get_upcoming_games_for_player, get_upcoming_games_for_dm
 
+from discordbot.components.banners import DMSummaryBanner, GameSummaryBanner, WaitlistSummaryBanner
 from discordbot.components.games import GameDetailEmbed, GameSummaryEmbed, GameControlView
+from discordbot.utils.time import discord_time
 
 
 @bot.slash_command(guild_ids=DISCORD_GUILDS, description='Summary of your upcoming games (both playing and DMing)')
-async def games(ctx):
+async def games(ctx, send_dm: Option(bool, 'Send information in a DM instead of inline', required=False) = False):
     """ Retrieve a list of the users upcoming games and provide a summary """
-    message = ""
+    now = timezone.now()
+    message = f"As of: {discord_time(now)}"
     embeds = []
     games = await get_upcoming_games_for_player(ctx.author.id, waitlisted=False)
+    waitlist = await get_upcoming_games_for_player(ctx.author.id, waitlisted=True)
     dming = await get_upcoming_games_for_dm(ctx.author.id)
 
     if dming:
-        message = message + f"You are DMing {len(dming)} games\n"
+        embeds.append(DMSummaryBanner(games=len(dming)))
         for game in dming:
-            summary_embed = GameSummaryEmbed(game, colour=Colour.red())
+            summary_embed = GameSummaryEmbed(game, colour=Colour.blue())
             await summary_embed.build()
             embeds.append(summary_embed)
 
-    if games:
-        message = message + f"You are playing in {len(dming)} games"
-        for game in games:
-            summary_embed = GameSummaryEmbed(game, colour=Colour.green())
-            await summary_embed.build()
-            embeds.append(summary_embed)
-    
-    if not dming and not games:
-        message = "You are not registered for any games"
-    await ctx.respond(message, ephemeral=True, embeds=embeds)
+    embeds.append(GameSummaryBanner(games=len(games)))    
+    for game in games:
+        summary_embed = GameSummaryEmbed(game, colour=Colour.dark_purple())
+        await summary_embed.build()
+        embeds.append(summary_embed)
 
+    embeds.append(WaitlistSummaryBanner(games=len(waitlist)))
+    for game in waitlist:
+        summary_embed = GameSummaryEmbed(game, colour=Colour.dark_green())
+        await summary_embed.build()
+        embeds.append(summary_embed)
+
+    if send_dm:
+        await ctx.author.send(message, embeds=embeds)
+        await ctx.respond("DM Sent!", delete_after=3)
+    else:
+        await ctx.respond(message, ephemeral=True, embeds=embeds)
 
 @bot.slash_command(guild_ids=DISCORD_GUILDS, description='All upcoming games within a time period (default is 30 days)')
 @has_any_role(*DISCORD_ADMIN_ROLES)
