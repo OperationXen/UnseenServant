@@ -5,7 +5,6 @@ from discordbot.bot import bot
 from discordbot.commands import *
 from discordbot.schedule.games import *
 
-mutex = Lock()
 
 def run_bot():
     while True:

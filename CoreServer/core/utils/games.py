@@ -66,8 +66,8 @@ def get_outstanding_games(priority=False):
     now = timezone.now()
 
     # only interested in games in the future
-    queryset = Game.objects.filter(datetime__gte=now)
-    queryset = queryset.exclude(status__in=['Cancelled', 'Draft'])
+    queryset = Game.objects.filter(ready=True)
+    queryset = queryset.filter(datetime__gte=now)
     if priority:
         # include anything ready for priority release, but not yet ready to go to general
         queryset = queryset.filter(datetime_release__lte=now)
@@ -76,16 +76,6 @@ def get_outstanding_games(priority=False):
         queryset = queryset.filter(datetime_open_release__lte=now)
     # force evaluation before leaving this sync context
     return list(queryset)
-
-@sync_to_async
-def set_game_announced(game, priority_release=False):
-    """ Set this game object's status to reflect the fact it's now been published """
-    if game.status == 'Priority' or not priority_release:
-        game.status = 'Released'
-    elif game.status == 'Pending':
-        game.status = 'Priority'
-    game.save()
-    return game
 
 def _get_game_by_id(game_id):
     """ Syncronous context worker to get game and forcibly evaluate it"""
@@ -162,6 +152,6 @@ def check_game_expired(game):
     expiry = timezone.now() - timedelta(days=1)
     if game.datetime < expiry:
         return True
-    if game.status in ['Cancelled', 'Draft', 'Pending']:
+    if not game.ready:
         return True
     return False
