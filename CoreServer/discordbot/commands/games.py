@@ -35,7 +35,7 @@ async def games(ctx, send_dm: Option(bool, 'Send information in a DM instead of 
         embeds.append(summary_embed)
 
     embeds.append(WaitlistSummaryBanner(games=len(waitlist)))
-    for game in games:
+    for game in waitlist:
         summary_embed = GameSummaryEmbed(game, colour=Colour.dark_green())
         await summary_embed.build()
         embeds.append(summary_embed)

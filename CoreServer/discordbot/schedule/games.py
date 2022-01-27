@@ -9,8 +9,6 @@ from core.utils.games import get_outstanding_games, set_game_announced, get_game
 
 class GamesPoster():
     initialised = False
-    messages_priority = []
-    messages_general = []
     current_games = {}
 
     channel_general = None
@@ -33,20 +31,20 @@ class GamesPoster():
 
     async def recover_message_state(self):
         """ Pull game postings from posting history and reconstruct a game/message status from it """
-        self.messages_priority = await get_bot_game_postings(self.channel_priority)
-        self.messages_general = await get_bot_game_postings(self.channel_general)
-
-        for message_group in [self.messages_general, self.messages_priority]:
-            for message in message_group:
+        print("Rebuilding internal message state")
+        for channel in [self.channel_priority, self.channel_general]:
+            messages = await get_bot_game_postings(channel)
+            for message in messages:
                 game_id = get_game_id_from_message(message)
                 game = await get_game_by_id(game_id)
                 if not game:
                     await message.delete()
                     continue
 
+                # Rebuild view handlers
                 control_view = GameControlView(game)
                 control_view.message = message
-                self.current_games[game.pk] = {'game': game, 'message': message, 'view': control_view}
+                self.current_games[game.pk] = {'game': game, 'message': message, 'view': control_view, 'channel': channel.name}
                 add_persistent_view(control_view)
             
     async def do_game_announcement(self, game, channel):
@@ -55,11 +53,11 @@ class GamesPoster():
         details_embed = GameDetailEmbed(game)
         await details_embed.build()
         embeds.append(details_embed)
-
+        
         control_view = GameControlView(game)
         if channel:
             control_view.message = await channel.send(embeds=embeds, view=control_view)
-            self.current_games[game.pk] = {'game': game, 'message': control_view.message, 'view': control_view}
+            self.current_games[game.pk] = {'game': game, 'message': control_view.message, 'view': control_view, 'channel': channel.name}
             add_persistent_view(control_view)
 
     def is_game_posted(self, game):
@@ -85,7 +83,7 @@ class GamesPoster():
                 print(f"Deleteing expired game - {announcement['game']}")
                 await announcement['message'].delete()
                 self.current_games.pop(key)
-                break
+                break  # because we've modified current_games we can't continue to iterate on it
         
     @tasks.loop(seconds=10)
     async def check_and_post_games(self):

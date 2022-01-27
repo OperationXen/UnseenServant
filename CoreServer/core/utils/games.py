@@ -69,23 +69,13 @@ def get_outstanding_games(priority=False):
     queryset = Game.objects.filter(datetime__gte=now)
     queryset = queryset.exclude(status__in=['Cancelled', 'Draft'])
     if priority:
+        # include anything ready for priority release, but not yet ready to go to general
         queryset = queryset.filter(datetime_release__lte=now)
+        queryset = queryset.exclude(datetime_open_release__lte=now)
     else:
         queryset = queryset.filter(datetime_open_release__lte=now)
     # force evaluation before leaving this sync context
     return list(queryset)
-
-@sync_to_async
-def get_current_games(priority=False):
-    """ Get all games currently accepting signups """
-    now = timezone.now()
-    queryset = Game.objects.filter(datetime__gte=now)
-    if priority:
-        queryset = queryset.filter(status='Priority')
-    else:
-        queryset = queryset.filter(status='Released')
-    # force evaluation before leaving this sync context
-    return list(queryset.order_by('datetime'))
 
 @sync_to_async
 def set_game_announced(game, priority_release=False):
