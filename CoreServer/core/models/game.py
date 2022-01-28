@@ -2,22 +2,7 @@ from django.db import models
 from django.utils import timezone
 from django.core.exceptions import ValidationError
 
-
-class DM(models.Model):
-    """ Representation of a DM """
-    name = models.CharField(max_length=64, help_text='DM\'s chosen alias or handle')
-    discord_id = models.IntegerField(null=True, blank=True, help_text='Discord ID of the DM')
-    discord_name = models.CharField(blank=True, max_length=32, help_text='Discord username')
-    description = models.TextField(blank=True, help_text='Flavour text / details to show')
-
-    class Meta:
-        verbose_name = 'DM'
-        verbose_name_plural = 'DMs'
-        indexes = [models.Index(fields=['name', 'discord_id'])]
-
-    def __str__(self):
-        return f"{self.discord_name}"
-
+from core.models.admin import DM
 
 class Game(models.Model):
     """ Defines an specific scheduled game """
@@ -49,8 +34,6 @@ class Game(models.Model):
     level_min = models.IntegerField(default=1, help_text='Minumum starting level')
     level_max = models.IntegerField(default=4, help_text='Maximum player level')
     warnings = models.TextField(blank=False, default='None', help_text='Content warnings or advisories')
-    
-    ready = models.BooleanField(default=True, help_text='If this game is ready to be published, if this is not set the game will be hidden')
     channel = models.CharField(blank=True, max_length=32, help_text='Discord channel to use for this game')
     streaming = models.BooleanField(default=False, help_text='Game is streaming or not')
 
@@ -58,6 +41,8 @@ class Game(models.Model):
     datetime_open_release = models.DateTimeField(blank=True, null=True, help_text='Date/Time game is released to gen-pop (your local time)')
     datetime = models.DateTimeField(help_text='Date/Time game is starting (your local time)')
     length = models.CharField(max_length=48, default="2 hours", blank=True, help_text='Planned duration of game')
+
+    ready = models.BooleanField(default=True, help_text='If this game is ready to be published, if this is not set the game will be hidden')
 
     def __str__(self):
         return f"{self.dm.discord_name} - {self.name}"

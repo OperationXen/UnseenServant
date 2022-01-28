@@ -17,7 +17,6 @@ class Rank(models.Model):
         indexes = [models.Index(fields=['priority', 'name'])]
 
 
-
 class Player(models.Model):
     """ Specifies a player within a specific game """
     game = models.ForeignKey(Game, related_name='players', on_delete=models.CASCADE, help_text='Game user is playing in')
