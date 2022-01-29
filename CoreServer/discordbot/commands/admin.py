@@ -27,7 +27,9 @@ async def register_as_dm(ctx,
     await user.send(f"", embed = AdminUserCreatedEmbed(username=username, password = password))
     await ctx.respond(f"Registration successful, information PMed to user", ephemeral=True, delete_after=10)
 
-@bot.slash_command(guild_ids=DISCORD_GUILDS, description='Check game controller')
-async def test(ctx):
-    print (discordbot.core.game_controller)
-    await ctx.respond("Test complete")
+@bot.slash_command(guild_ids=DISCORD_GUILDS, description='Resummon the Unseen Servant - rebuilding posts from the arcane store')
+@has_any_role(*DISCORD_ADMIN_ROLES)
+async def resummon(ctx):
+    """ Force the bot to rebuild its internal state """
+    discordbot.core.game_controller.initialised = False
+    await ctx.respond(f"Redraw the summoning circle and light the candles - the Unseen Servant is invoked", ephemeral=True, delete_after=10)

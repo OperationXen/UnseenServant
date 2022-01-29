@@ -19,6 +19,7 @@ class GamesPoster():
 
     async def startup(self):
         """ Perform async """
+        self.current_games = {}
         await self.get_bot_channels()
         await self.recover_message_state()
         self.initialised = True
