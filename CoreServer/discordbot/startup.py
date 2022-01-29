@@ -1,10 +1,9 @@
 from threading import Thread, Lock
 from config.settings import DISCORD_TOKEN
 
-from discordbot.bot import bot
+from discordbot.bot import bot, game_controller
 from discordbot.commands import *
 from discordbot.schedule.games import *
-
 
 def run_bot():
     while True:
@@ -19,6 +18,7 @@ def start_bot():
 
 @bot.event
 async def on_ready():
+    global game_controller
     print(f"{bot.user.name} has connected to discord")
 
     print("Creating Game Controller")

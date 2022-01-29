@@ -60,6 +60,12 @@ class GamesPoster():
             self.current_games[game.pk] = {'game': game, 'message': control_view.message, 'view': control_view, 'channel': channel}
             add_persistent_view(control_view)
 
+    def get_jump_url(self, game):
+        """ Retrieve a link to the posted game details """
+        if game.id not in self.current_games:
+            return None
+        return self.current_games[game.id]['game'].jump_url
+
     def is_game_posted(self, game):
         """ determine if the game referenced is currently posted, and in which channel """
         if game.id not in self.current_games:
