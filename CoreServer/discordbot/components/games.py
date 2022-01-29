@@ -1,6 +1,7 @@
 from discord import Embed, Colour, ButtonStyle
 from discord.ui import View, Button, button
 
+import discordbot.core
 from discordbot.utils.format import generate_calendar_message
 from core.utils.games import get_player_list, get_wait_list, get_dm
 from core.utils.games import add_player_to_game, drop_from_game
@@ -67,12 +68,19 @@ class GameSummaryEmbed(BaseGameEmbed):
 
     async def build(self): 
         """ Worker function that obtains data and populates the embed """
-        await self.get_data()
+        try:
+            await self.get_data()
+            jump_url = discordbot.core.game_controller.get_jump_url(self.game)
+        except Exception as e:
+            print (e )
 
         self.add_field(name='When', value=self.get_game_time(), inline=True)
         self.add_field(name='Players', value=self.get_player_info(), inline=True)
-        self.add_field(name=f"{self.game.module} | {self.game.name}", value=f"{self.game.description[:76]} ... ", inline=False)
-
+        description = f"{self.game.description[:76]} ..."
+        if jump_url:
+            description = description + f"\n[Link to details]({jump_url})"
+        self.add_field(name=f"{self.game.module} | {self.game.name}", value = description, inline=False)
+        
 
 class GameDetailEmbed(BaseGameEmbed):
     """ Embed for game detail view """

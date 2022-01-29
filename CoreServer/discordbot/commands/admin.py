@@ -3,6 +3,7 @@ from discord.commands import Option, has_any_role
 from django.db import IntegrityError
 from django.forms import ValidationError
 
+import discordbot.core
 from discordbot.bot import bot
 from discordbot.components.admin import AdminUserCreatedEmbed
 from config.settings import DISCORD_GUILDS, DISCORD_ADMIN_ROLES
@@ -25,3 +26,8 @@ async def register_as_dm(ctx,
 
     await user.send(f"", embed = AdminUserCreatedEmbed(username=username, password = password))
     await ctx.respond(f"Registration successful, information PMed to user", ephemeral=True, delete_after=10)
+
+@bot.slash_command(guild_ids=DISCORD_GUILDS, description='Check game controller')
+async def test(ctx):
+    print (discordbot.core.game_controller)
+    await ctx.respond("Test complete")
