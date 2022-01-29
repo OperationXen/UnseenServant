@@ -2,7 +2,6 @@ from discord.ext import tasks
 
 from config.settings import DEFAULT_CHANNEL_NAME, PRIORITY_CHANNEL_NAME
 from discordbot.utils.messaging import get_channel_by_name, get_bot_game_postings, get_guild_channel
-from discordbot.components.banners import GameAnnounceBanner
 from discordbot.components.games import GameDetailEmbed, GameControlView
 from discordbot.utils.games import get_game_id_from_message, add_persistent_view
 from core.utils.games import get_outstanding_games, get_game_by_id, check_game_expired
@@ -44,7 +43,7 @@ class GamesPoster():
                 # Rebuild view handlers
                 control_view = GameControlView(game)
                 control_view.message = message
-                self.current_games[game.pk] = {'game': game, 'message': message, 'view': control_view, 'channel': channel}
+                self.current_games[game.pk] = {'game': game, 'message': message, 'view': control_view, 'channel': channel, 'jump_url': message.jump_url}
                 add_persistent_view(control_view)
             
     async def do_game_announcement(self, game, channel):
@@ -56,15 +55,16 @@ class GamesPoster():
 
         control_view = GameControlView(game)
         if channel:
-            control_view.message = await channel.send(embeds=embeds, view=control_view)
-            self.current_games[game.pk] = {'game': game, 'message': control_view.message, 'view': control_view, 'channel': channel}
+            message = await channel.send(embeds=embeds, view=control_view)
+            control_view.message = message
+            self.current_games[game.pk] = {'game': game, 'message': message, 'view': control_view, 'channel': channel, 'jump_url': message.jump_url}
             add_persistent_view(control_view)
 
     def get_jump_url(self, game):
         """ Retrieve a link to the posted game details """
         if game.id not in self.current_games:
             return None
-        return self.current_games[game.id]['game'].jump_url
+        return self.current_games[game.id]['jump_url']
 
     def is_game_posted(self, game):
         """ determine if the game referenced is currently posted, and in which channel """
