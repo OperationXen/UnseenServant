@@ -96,7 +96,7 @@ def add_player_to_game(game, user):
     waitlist = game.players.filter(standby=True)
 
     if user.id == game.dm.discord_id:
-        return False, 'You are DMing this game and therefore cannot play in it. Sorry.'
+        return True, 'You are DMing this game and therefore cannot play in it. Sorry.'
     if players.filter(discord_id=user.id):
         return False, 'You are already in this game'
     if waitlist.filter(discord_id=user.id):
@@ -113,7 +113,7 @@ def add_player_to_game(game, user):
     player_games = get_player_game_count(user)
     player_rank = get_user_rank(user)
     if not player_rank:
-        return False, 'You cannot sign up to any games as you do not have a rank'
+        return True, 'You cannot sign up to any games as you do not have a rank'
     if player_games >= max_games:
         return False, f"You are already signed up for {player_games} games, the most your rank of {player_rank.name} permits"
 
