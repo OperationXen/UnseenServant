@@ -76,7 +76,7 @@ class BanPlayerView(View):
         else:
             await interaction.response.edit_message(content=f"Banned player [{self.user}] from further signups", view=self)
         await self.notify_user()
-    
+
     @discord.ui.button(label="Hard ban", style=discord.ButtonStyle.red, row=1)
     async def hardban(self, button, interaction):
         self.clear_items()

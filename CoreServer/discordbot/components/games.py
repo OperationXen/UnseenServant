@@ -9,7 +9,6 @@ from discordbot.utils.time import discord_time, discord_countdown
 
 class BaseGameEmbed(Embed):
     """ Baseclass for game embed objects """
-
     def __init__(self, game, title = None, colour = None):
         """ Create an empty embed from a Game objected """
         self.game = game
@@ -51,7 +50,6 @@ class BaseGameEmbed(Embed):
 
 class GameSummaryEmbed(BaseGameEmbed):
     """ Custom embed for summary view of game """
-
     def __init__(self, game, colour=None):
         title = f"{game.variant} ({game.realm}) levels {game.level_min} - {game.level_max}"
         super().__init__(game, title=title, colour=colour)
@@ -84,7 +82,6 @@ class GameSummaryEmbed(BaseGameEmbed):
 
 class GameDetailEmbed(BaseGameEmbed):
     """ Embed for game detail view """
-
     def __init__(self, game):
         title = f"{game.variant} ({game.realm})"
         super().__init__(game, title)
