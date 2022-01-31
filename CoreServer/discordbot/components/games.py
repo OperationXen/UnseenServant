@@ -153,7 +153,7 @@ class GameControlView(View):
 
     async def signup(self, interaction):
         status, message = await add_player_to_game(self.game, interaction.user)
-        await interaction.response.send_message(message, ephemeral=True)
+        await interaction.response.send_message(message, ephemeral=True, delete_after=30)
         if status == True:
             await self.update_message()
 

@@ -96,7 +96,7 @@ def add_player_to_game(game, user):
     waitlist = game.players.filter(standby=True)
 
     if user.id == game.dm.discord_id:
-        return False, 'You are DMing this game and therefore cannot play in it. Sorry.'
+        return True, 'You are DMing this game and therefore cannot play in it. Sorry.'
     if players.filter(discord_id=user.id):
         return False, 'You are already in this game'
     if waitlist.filter(discord_id=user.id):
