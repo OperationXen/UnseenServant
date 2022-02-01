@@ -38,11 +38,11 @@ class Player(models.Model):
 class Strike(models.Model):
     """ Disciplinary strikes against a user """
     discord_id = models.IntegerField(null=True, blank=True, help_text='Discord ID of player')
-    discord_name = models.CharField(blank=True, max_length=32, help_text='Banned player name')
+    discord_name = models.CharField(blank=True, max_length=32, help_text='Player name to receive strike')
     datetime = models.DateTimeField(auto_now_add=True, help_text='Strike issued')
     expires = models.DateTimeField(default=a_year_from_now, help_text='Strike expiry date/time')
-    issuer_id = models.IntegerField(null=True, blank=True, help_text='Discord ID of issuing admin')
-    issuer_name = models.CharField(max_length=32, help_text='Name of the issuing admin')
+    issuer_id = models.IntegerField(null=True, blank=True, help_text='Discord ID of issuing moderator')
+    issuer_name = models.CharField(max_length=32, help_text='Name of the issuing moderator')
     reason = models.TextField(help_text='Reason for issuing the strike')
 
     def __str__(self):
@@ -65,10 +65,10 @@ class Ban(models.Model):
     discord_name = models.CharField(blank=True, max_length=32, help_text='Banned player name')
     datetime_start = models.DateTimeField(auto_now_add=True, help_text='Ban start date/time')
     datetime_end = models.DateTimeField(blank=True, null=True, default=a_month_from_now, help_text='Ban expiry date/time')
-    issuer_id = models.IntegerField(null=True, blank=True, help_text='Discord ID of issuing admin')
-    issuer_name = models.CharField(max_length=32, help_text='Name of the issuing admin')
-    reason = models.TextField(help_text='Reason for the ban to be issued')
-    variant = models.TextField(max_length=2, choices=BanTypes.choices, default=BanTypes.HARD, help_text='Type of ban')
+    issuer_id = models.IntegerField(null=True, blank=True, help_text='Discord ID of issuing moderator')
+    issuer_name = models.CharField(max_length=32, help_text='Name of the issuing moderator')
+    reason = models.TextField(help_text='Reason for the ban to be issued (mandatory)')
+    variant = models.TextField(max_length=2, choices=BanTypes.choices, default=BanTypes.HARD, help_text='\'Hard Ban\' removes existing signups, \'Soft\' does not')
 
     def __str__(self):
         return(f"{self.discord_name}")
