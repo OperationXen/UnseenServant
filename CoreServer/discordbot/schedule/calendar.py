@@ -1,14 +1,11 @@
-from datetime import timedelta
-
 from discord.ext import tasks
 from django.utils import timezone
 
 from discordbot.logs import logger as log
 from config.settings import CALENDAR_CHANNEL_NAME
 from discordbot.utils.messaging import get_channel_by_name, get_bot_game_postings
-from discordbot.components.games import GameDetailEmbed, GameControlView
-from discordbot.utils.games import get_game_id_from_message, add_persistent_view
-from core.utils.games import get_outstanding_games, get_game_by_id, check_game_expired
+from discordbot.components.games import GameSummaryEmbed
+from core.utils.games import get_outstanding_games
 
 class GamesCalendarManager():
     initialised = False
@@ -31,13 +28,23 @@ class GamesCalendarManager():
     def check_update_required(self):
         """ Check to see if the messages were posted today or not """
         today = timezone.now().date()
+        if not self.messages:
+            return True
+
         header = self.messages[0]
         if today > header.created_at.date():
             print("pew")
             return True
         return False
 
-    async def 
+    async def remove_messages(self):
+        """ Remove all messages """
+        for message in self.messages:
+            await message.delete()
+
+    async def post_upcoming_games(self, days=30):
+        """ Post a summary for each game occuring in the next N days """
+        log.info("Updating upcoming games calendar post")
 
     @tasks.loop(seconds=10)
     async def check_and_update_calendar(self):
@@ -50,4 +57,4 @@ class GamesCalendarManager():
 
         if self.channel_calendar:
             await self.remove_messages()
-            await self.post_upcoming()
+            await self.post_upcoming_games()
