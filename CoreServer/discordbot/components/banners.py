@@ -1,16 +1,9 @@
 from django.utils import timezone
-from discord import Embed, Colour, ButtonStyle
-from discord.ui import View, button
-
-from discordbot.utils.format import generate_calendar_message
-from core.utils.games import get_player_list, get_wait_list, get_dm
-from core.utils.games import add_player_to_game, drop_from_game
-from discordbot.utils.time import discord_time, discord_countdown
+from discord import Embed, Colour
 
 
 class BaseEmbed(Embed):
     """ Baseclass for banner type embed objects """
-
     def __init__(self, title = None, colour=Colour.dark_grey()):
         """ Create an empty embed """
         if not title:
@@ -18,19 +11,13 @@ class BaseEmbed(Embed):
         super().__init__(title=title, colour=colour)
 
 
-class GameAnnounceBanner(BaseEmbed):
-    """ An embed to top posts about new game releases """
-
-    def __init__(self, title = None, priority = False):
+class CalendarSummaryBanner(BaseEmbed):
+    """ An embed to top calendar channel posts about upcoming """
+    def __init__(self, title = None):
         """ Create the embed """
-        if priority: 
-            colour = Colour.dark_purple()
-            default_title = 'Priority game now available for signup'
-        else:
-            colour = Colour.dark_green()
-            default_title = 'New game available for general signup'
-                        
-        super().__init__(title=title or default_title, colour=colour)
+        if not title:
+            title = 'Upcoming games'
+        super().__init__(title=title, colour = Colour.dark_purple())
 
 
 class GameSummaryBanner(BaseEmbed):
