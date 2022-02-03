@@ -154,3 +154,11 @@ def check_game_expired(game):
     if not game.ready:
         return True
     return False
+
+def is_patreon_exclusive(game):
+    """ Check if the passed game is currently a patreon exclusive """
+    now = timezone.now()
+    if game.datetime_release and game.datetime_release < now:
+        if not game.datetime_open_release or game.datetime_open_release > now:
+            return True
+    return False
