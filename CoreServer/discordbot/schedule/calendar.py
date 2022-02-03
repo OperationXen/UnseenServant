@@ -26,24 +26,7 @@ class GamesCalendarManager():
         log.info("GamesCalendarManager initialising in background")
         self.channel_calendar = get_channel_by_name(CALENDAR_CHANNEL_NAME)
         if self.channel_calendar:
-            self.messages = await get_bot_game_postings(self.channel_calendar)
             self.initialised = True
-
-    def check_update_required(self):
-        """ Check to see if the messages were posted today or not """
-        today = timezone.now().date()
-        if not self.messages:
-            return True
-
-        header = self.messages[0]
-        if today > header.created_at.date():
-            return True
-        return False
-
-    async def remove_messages(self):
-        """ Remove all messages """
-        for message in self.messages:
-            await message.delete()
 
     async def post_upcoming_games(self, days=30, games = []):
         """ Post a summary for each game occuring in the next N days """
@@ -60,18 +43,16 @@ class GamesCalendarManager():
             await summary.build()
             embeds.append(summary)
         
-        await self.channel_calendar.send("", embeds=embeds)
+        if self.messages:
+            await self.messages[0].edit("", embeds=embeds)
+        else:
+            await self.channel_calendar.send("", embeds=embeds)
 
-    @tasks.loop(seconds=300)
+    @tasks.loop(seconds=30)
     async def check_and_update_calendar(self):
         """ post a summary of the next N days of games """
         if not self.initialised:
             await self.startup()
 
         self.messages = await get_bot_game_postings(self.channel_calendar)
-        if not self.check_update_required():
-            return
-
-        if self.channel_calendar:
-            await self.remove_messages()
-            await self.post_upcoming_games()
+        await self.post_upcoming_games()

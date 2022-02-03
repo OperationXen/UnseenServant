@@ -45,7 +45,7 @@ class Game(models.Model):
     ready = models.BooleanField(default=True, help_text='Unset this if the game is not yet ready for release (i.e. still in draft)')
 
     def __str__(self):
-        return f"{self.dm.discord_name} - {self.name}"
+        return f"{self.datetime.date()} | {self.dm.discord_name} - {self.name}"
 
     def clean(self):
         """ Validate data before saving """

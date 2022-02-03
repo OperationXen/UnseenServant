@@ -174,4 +174,3 @@ class GameControlView(View):
         """ Button to force a refresh """
         await interaction.response.send_message(f"Refreshing game view...", ephemeral=True, delete_after=5)
         await self.update_message()
-
