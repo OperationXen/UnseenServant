@@ -52,6 +52,8 @@ class Game(models.Model):
         now = timezone.now()
         if self.datetime < now:
             raise ValidationError({'datetime': 'Game cannot be in the past'})
+        if not self.datetime_release and not self.datetime_open_release:
+            raise ValidationError({'datetime_release': 'Game needs at least one release time', 'datetime_open_release': 'Game needs at least one release time'})
     
     class Meta:
         indexes = [models.Index(fields=['dm', 'datetime', 'datetime_release', 'datetime_open_release'])]

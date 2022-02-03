@@ -8,7 +8,7 @@ from discordbot.utils.messaging import get_channel_by_name, get_bot_game_posting
 from discordbot.utils.time import discord_date
 from discordbot.components.games import GameSummaryEmbed
 from discordbot.components.banners import CalendarSummaryBanner
-from core.utils.games import get_outstanding_games
+from core.utils.games import get_upcoming_games
 
 
 class GamesCalendarManager():
@@ -38,7 +38,7 @@ class GamesCalendarManager():
         header = self.messages[0]
         if today > header.created_at.date():
             return True
-        return True
+        return False
 
     async def remove_messages(self):
         """ Remove all messages """
@@ -50,20 +50,25 @@ class GamesCalendarManager():
         log.info("Updating upcoming games calendar post")
         start = timezone.now()
         end = start + timedelta(days=days)
+        games = await get_upcoming_games(days=days)
 
         title = f"[{len(games)}] Upcoming games in the next [{days}] days;"
         title = title + f"\n\t{discord_date(start)} to {discord_date(end)}"
         embeds = [CalendarSummaryBanner(title=title)]
+        for game in games:
+            summary = GameSummaryEmbed(game)
+            await summary.build()
+            embeds.append(summary)
         
         await self.channel_calendar.send("", embeds=embeds)
 
-
-    @tasks.loop(seconds=10)
+    @tasks.loop(seconds=300)
     async def check_and_update_calendar(self):
         """ post a summary of the next N days of games """
         if not self.initialised:
             await self.startup()
 
+        self.messages = await get_bot_game_postings(self.channel_calendar)
         if not self.check_update_required():
             return
 
