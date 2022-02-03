@@ -4,7 +4,7 @@ from discord.ui import View, Button, button
 import discordbot.core
 from discordbot.utils.format import generate_calendar_message
 from core.utils.games import get_player_list, get_wait_list, get_dm
-from core.utils.games import add_player_to_game, drop_from_game
+from core.utils.games import add_player_to_game, drop_from_game, is_patreon_exclusive
 from discordbot.utils.time import discord_time, discord_countdown
 
 class BaseGameEmbed(Embed):
@@ -19,9 +19,9 @@ class BaseGameEmbed(Embed):
         super().__init__(title=title, colour=colour)
 
     game_type_colours = {
-        'Resident AL': Colour.green(),
-        'Guest AL DM': Colour.blue(),
-        'Epic AL': Colour.dark_green(),
+        'Resident AL': Colour.blue(),
+        'Guest AL DM': Colour.purple(),
+        'Epic AL': Colour.dark_blue(),
         'Non-AL One Shot': Colour.orange(),
         'Campaign': Colour.dark_gold()
         }
@@ -67,18 +67,28 @@ class GameSummaryEmbed(BaseGameEmbed):
     async def build(self): 
         """ Worker function that obtains data and populates the embed """
         try:
+            patreon_game = is_patreon_exclusive(self.game)
             await self.get_data()
             jump_url = discordbot.core.game_controller.get_jump_url(self.game)
         except Exception as e:
-            print (e )
+            print (e)
 
         self.add_field(name='When', value=self.get_game_time(), inline=True)
         self.add_field(name='Players', value=self.get_player_info(), inline=True)
         description = f"{self.game.description[:76]} ..."
-        if jump_url:
-            description = description + f"\n[Link to details]({jump_url})"
         self.add_field(name=f"{self.game.module} | {self.game.name}", value = description, inline=False)
-        
+
+        if patreon_game:
+            if self.game.datetime_open_release:
+                details = f"Release to general {discord_countdown(self.game.datetime_open_release)}\n"
+            else:
+                details = 'This game is exclusive to patreons\n'
+        else:
+            details = 'Game available for general signup\n'
+        if jump_url:
+            details = details + f"[Click here to view]({jump_url})"
+        self.add_field(name='Game Details', value=details)
+
 
 class GameDetailEmbed(BaseGameEmbed):
     """ Embed for game detail view """
