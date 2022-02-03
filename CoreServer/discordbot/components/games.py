@@ -126,12 +126,15 @@ class GameControlView(View):
         # Creating these longhand instead of using the decorator because I need access to the game variable for unique custom IDs
         self.signup_button = Button(style=ButtonStyle.primary, label='Signup', custom_id=f"unseen-servant-signup#{game.pk}")
         self.dropout_button = Button(style=ButtonStyle.red, label='Drop out', custom_id=f"unseen-servant-dropout#{game.pk}")
+        self.refresh_button = Button(style=ButtonStyle.primary, emoji= "🔄", custom_id=f"unseen-servant-refresh#{game.pk}")
         self.calendar_button = Button(style=ButtonStyle.grey, label="Add to calendar", custom_id=f"unseen-servant-calendar#{game.pk}")
         self.signup_button.callback = self.signup
         self.dropout_button.callback = self.dropout
+        self.refresh_button.callback = self.refresh
         self.calendar_button.callback = self.calendar
         self.add_item(self.signup_button)
         self.add_item(self.calendar_button)
+        self.add_item(self.refresh_button)
         self.add_item(self.dropout_button)
 
     async def get_data(self):
@@ -166,3 +169,8 @@ class GameControlView(View):
         await interaction.response.send_message(message, ephemeral=True)
         if status == True:
             await self.update_message()
+
+    async def refresh(self, interaction):
+        """ Button to force a refresh """
+        await interaction.response.send_message(f"Refreshing game view...", ephemeral=True, delete_after=5)
+        await self.update_message()
