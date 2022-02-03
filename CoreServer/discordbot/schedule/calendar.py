@@ -33,7 +33,7 @@ class GamesCalendarManager():
         log.info("Updating upcoming games calendar post")
         start = timezone.now()
         end = start + timedelta(days=days)
-        games = await get_upcoming_games(days=days)
+        games = await get_upcoming_games(days=days, released=True)
 
         title = f"[{len(games)}] Upcoming games in the next [{days}] days;"
         title = title + f"\n\t{discord_date(start)} to {discord_date(end)}"

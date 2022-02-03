@@ -1,5 +1,6 @@
 from datetime import timedelta
 from django.utils import timezone
+from django.db.models import Q
 from asgiref.sync import sync_to_async
 
 from core.models.game import Game
@@ -27,11 +28,14 @@ def get_wait_list(game):
     return list(game.players.filter(standby=True).order_by('waitlist'))
 
 @sync_to_async
-def get_upcoming_games(days=30):
+def get_upcoming_games(days=30, released=False):
     now = timezone.now()
     end = now + timedelta(days=days)
     queryset = Game.objects.filter(ready=True).filter(datetime__gte=now)
     queryset = queryset.filter(datetime__lte=end)
+    if released:
+        released_filter = Q(datetime_release__lte=now) | Q(datetime_open_release__lte=now)
+        queryset = queryset.filter(released_filter)
     # force evaluation before leaving this sync context
     return list(queryset)
 
