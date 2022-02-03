@@ -30,12 +30,13 @@ ALLOWED_HOSTS = []
 AUTH_USER_MODEL = 'core.CustomUser'
 
 DISCORD_TOKEN = ''
-DISCORD_GUILDS = [123123123123]
+DISCORD_GUILDS = [123123123]
 DISCORD_ADMIN_ROLES = ['admin']
-DISCORD_DM_ROLES = ['dm']
+DISCORD_DM_ROLES = ['Dungeon Master']
 
 DEFAULT_CHANNEL_NAME = 'bot-test-channel'
 PRIORITY_CHANNEL_NAME = 'bot-test-priority-channel'
+CALENDAR_CHANNEL_NAME = 'bot-test-calendar-channel'
 
 INSTALLED_APPS = [
     'django.contrib.admin',

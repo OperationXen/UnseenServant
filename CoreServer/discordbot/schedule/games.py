@@ -1,7 +1,7 @@
 from discord.ext import tasks
 
 from config.settings import DEFAULT_CHANNEL_NAME, PRIORITY_CHANNEL_NAME
-from discordbot.utils.messaging import get_channel_by_name, get_bot_game_postings, get_guild_channel
+from discordbot.utils.messaging import get_channel_by_name, get_bot_game_postings
 from discordbot.components.games import GameDetailEmbed, GameControlView
 from discordbot.utils.games import get_game_id_from_message, add_persistent_view
 from core.utils.games import get_outstanding_games, get_game_by_id, check_game_expired
@@ -18,7 +18,7 @@ class GamesPoster():
         self.check_and_post_games.start()
 
     async def startup(self):
-        """ Perform async """
+        """ Perform async initialisation """
         self.current_games = {}
         await self.get_bot_channels()
         await self.recover_message_state()
