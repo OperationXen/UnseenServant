@@ -5,9 +5,10 @@ from discord.commands import Option, has_any_role
 from config.settings import DISCORD_GUILDS, DISCORD_ADMIN_ROLES
 from discordbot.bot import bot
 from core.utils.games import get_upcoming_games, get_upcoming_games_for_player, get_upcoming_games_for_dm
+from core.utils.players import get_player_signups_remaining
 
 from discordbot.components.banners import DMSummaryBanner, GameSummaryBanner, WaitlistSummaryBanner
-from discordbot.components.games import GameDetailEmbed, GameSummaryEmbed, GameControlView
+from discordbot.components.games import GameSummaryEmbed
 from discordbot.utils.time import discord_time
 
 
@@ -15,11 +16,12 @@ from discordbot.utils.time import discord_time
 async def games(ctx, send_dm: Option(bool, 'Send information in a DM instead of inline', required=False) = False):
     """ Retrieve a list of the users upcoming games and provide a summary """
     now = timezone.now()
-    message = f"As of: {discord_time(now)}"
     embeds = []
+    game_credits = await get_player_signups_remaining(ctx.author)
     games = await get_upcoming_games_for_player(ctx.author.id, waitlisted=False)
     waitlist = await get_upcoming_games_for_player(ctx.author.id, waitlisted=True)
     dming = await get_upcoming_games_for_dm(ctx.author.id)
+    message = f"As of: {discord_time(now)}\nYou have [{game_credits}] game credits available"
 
     if dming:
         embeds.append(DMSummaryBanner(games=len(dming)))
@@ -59,3 +61,12 @@ async def games_summary(ctx, days: Option(int, 'Number of days', required=False)
         await summary_embed.build()
         embeds.append(summary_embed)
     await ctx.respond(embeds=embeds, ephemeral=True)
+
+@bot.slash_command(guild_ids=DISCORD_GUILDS, description='Get your current game credit balance')
+async def credit(ctx):
+    """ Show a user their game credit balance """
+    now = timezone.now()
+    game_credits = await get_player_signups_remaining(ctx.author)
+    message = f"As of: {discord_time(now)}\nYou have [{game_credits}] game credits available"
+
+    await ctx.respond(message, ephemeral=True, delete_after=30)

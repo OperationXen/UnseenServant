@@ -5,7 +5,7 @@ from asgiref.sync import sync_to_async
 
 from core.models.game import Game
 from core.models.players import Player
-from core.utils.players import get_player_max_games, get_player_game_count
+from core.utils.players import get_player_max_games, get_player_game_count, get_player_available_games
 from core.utils.players import get_current_user_bans, get_user_rank, process_player_removal
 from core.utils.players import get_waitlist_rank, get_last_waitlist_position
 
@@ -75,6 +75,7 @@ def get_outstanding_games(priority=False):
         queryset = queryset.exclude(datetime_open_release__lte=now)
     else:
         queryset = queryset.filter(datetime_open_release__lte=now)
+    queryset = queryset.order_by('datetime')
     # force evaluation before leaving this sync context
     return list(queryset)
 

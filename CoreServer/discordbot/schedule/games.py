@@ -15,6 +15,7 @@ class GamesPoster():
 
     def __init__(self):
         """ initialisation function """
+        self.refresh_state.start()
         self.check_and_post_games.start()
 
     async def startup(self):
@@ -110,3 +111,9 @@ class GamesPoster():
         if self.channel_priority and self.channel_general:
             await self.remove_stale_games()
             await self.post_outstanding_games()
+
+    @tasks.loop(seconds=60)
+    async def refresh_state(self):
+        """ Force a refresh every minute """
+        if self.initialised:
+            self.initialised = False
