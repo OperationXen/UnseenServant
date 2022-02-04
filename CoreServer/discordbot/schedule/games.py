@@ -15,7 +15,7 @@ class GamesPoster():
 
     def __init__(self):
         """ initialisation function """
-        self.refresh_state.start()
+        # self.refresh_state.start()
         self.check_and_post_games.start()
 
     async def startup(self):
