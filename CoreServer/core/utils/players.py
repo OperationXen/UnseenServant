@@ -83,6 +83,20 @@ def get_player_max_games(discord_user):
     if rank:
         return rank.max_games
     return 0
+
+def get_player_available_games(discord_user):
+    """ Get the games available for a given user """
+    now = timezone.now()
+    max_games = get_player_max_games(discord_user)
+    queryset = Player.objects.filter(discord_id=discord_user.id)
+    queryset = queryset.filter(game__datetime__gte=now)
+    pending_games = queryset.count()
+    return max_games - pending_games
+
+@sync_to_async
+def get_player_signups_remaining(user):
+    """ Get the total number of signups the user has availble to them """
+    return get_player_available_games(user)
     
 def promote_from_waitlist(game):
     """ Identify the next player in line to join the specified game """
