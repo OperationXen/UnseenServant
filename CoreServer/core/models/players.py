@@ -29,7 +29,7 @@ class Player(models.Model):
     # waitlist alerting logic, perhaps pm users and give an hour to decline?
 
     def __str__(self):
-        return f"{self.datetime.date()} | {self.discord_name} - {self.game.name}"
+        return f"{self.game.datetime.date()} | {self.game.name} - {self.discord_name}"
 
     class Meta:
         indexes = [models.Index(fields=['discord_id', 'game'])]

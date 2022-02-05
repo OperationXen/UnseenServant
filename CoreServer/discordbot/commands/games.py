@@ -5,7 +5,7 @@ from discord.commands import Option, has_any_role
 from config.settings import DISCORD_GUILDS, DISCORD_ADMIN_ROLES
 from discordbot.bot import bot
 from core.utils.games import get_upcoming_games, get_upcoming_games_for_player, get_upcoming_games_for_dm
-from core.utils.players import get_player_signups_remaining
+from core.utils.players import get_player_credit_text
 
 from discordbot.components.banners import DMSummaryBanner, GameSummaryBanner, WaitlistSummaryBanner
 from discordbot.components.games import GameSummaryEmbed
@@ -17,11 +17,11 @@ async def games(ctx, send_dm: Option(bool, 'Send information in a DM instead of 
     """ Retrieve a list of the users upcoming games and provide a summary """
     now = timezone.now()
     embeds = []
-    game_credits = await get_player_signups_remaining(ctx.author)
+    game_credit_text = await get_player_credit_text(ctx.author)
     games = await get_upcoming_games_for_player(ctx.author.id, waitlisted=False)
     waitlist = await get_upcoming_games_for_player(ctx.author.id, waitlisted=True)
     dming = await get_upcoming_games_for_dm(ctx.author.id)
-    message = f"As of: {discord_time(now)}\nYou have [{game_credits}] game credits available"
+    message = f"As of: {discord_time(now)}\n{game_credit_text}"
 
     if dming:
         embeds.append(DMSummaryBanner(games=len(dming)))
@@ -66,7 +66,7 @@ async def games_summary(ctx, days: Option(int, 'Number of days', required=False)
 async def credit(ctx):
     """ Show a user their game credit balance """
     now = timezone.now()
-    game_credits = await get_player_signups_remaining(ctx.author)
-    message = f"As of: {discord_time(now)}\nYou have [{game_credits}] game credits available"
+    game_credit_text = await get_player_credit_text(ctx.author)
+    message = f"As of: {discord_time(now)}\n{game_credit_text}"
 
     await ctx.respond(message, ephemeral=True, delete_after=30)
