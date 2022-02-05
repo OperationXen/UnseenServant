@@ -97,6 +97,15 @@ def get_player_available_games(discord_user):
 def get_player_signups_remaining(user):
     """ Get the total number of signups the user has availble to them """
     return get_player_available_games(user)
+
+@sync_to_async
+def get_player_credit_text(user):
+    """ Get a text string explaining to the user how many game credits they have """
+    credits = get_player_available_games(user)
+    if credits:
+        return f"You have [{credits}] game credits available"
+    else:
+        return 'You have no remaining game credits'
     
 def promote_from_waitlist(game):
     """ Identify the next player in line to join the specified game """

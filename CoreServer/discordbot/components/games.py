@@ -5,6 +5,7 @@ import discordbot.core
 from discordbot.utils.format import generate_calendar_message
 from core.utils.games import get_player_list, get_wait_list, get_dm
 from core.utils.games import add_player_to_game, drop_from_game, is_patreon_exclusive
+from core.utils.players import get_player_credit_text
 from discordbot.utils.time import discord_time, discord_countdown
 
 class BaseGameEmbed(Embed):
@@ -165,22 +166,27 @@ class GameControlView(View):
         await self.message.edit(embeds = embeds)
 
     async def signup(self, interaction):
+        """ Callback for signup button pressed """
         status, message = await add_player_to_game(self.game, interaction.user)
+        await self.update_message()
+        games_remaining_text = await get_player_credit_text(interaction.user)
+        message = f"{message}\n{games_remaining_text}"
         await interaction.response.send_message(message, ephemeral=True, delete_after=30)
-        if status == True:
-            await self.update_message()
 
     async def calendar(self, interaction):
+        """ Calendar button callback """
         message = generate_calendar_message(self.game)
         await interaction.response.send_message(message, ephemeral=True, embeds=[])
 
     async def dropout(self, interaction):
+        """ Callback for dropout button pressed """
         status, message = await drop_from_game(self.game, interaction.user)
-        await interaction.response.send_message(message, ephemeral=True)
-        if status == True:
-            await self.update_message()
+        await self.update_message()
+        games_remaining_text = await get_player_credit_text(interaction.user)
+        message = f"{message}\n{games_remaining_text}"
+        await interaction.response.send_message(message, ephemeral=True, delete_after=30) 
 
     async def refresh(self, interaction):
-        """ Button to force a refresh """
+        """ Force refresh button callback """
         await interaction.response.send_message(f"Refreshing game view...", ephemeral=True, delete_after=5)
         await self.update_message()
