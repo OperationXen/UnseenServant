@@ -17,6 +17,23 @@ class Rank(models.Model):
         indexes = [models.Index(fields=['priority', 'name'])]
 
 
+class BonusCredit(models.Model):
+    """ Describes a number of additional bonus games awarded to a given player """
+    discord_id = models.IntegerField(null=True, blank=True, help_text='Discord ID of player')
+    discord_name = models.CharField(blank=True, max_length=32, help_text='Player name to receive bonus game credits')
+    credits = models.IntegerField(default=1, help_text='Number of additional credits', verbose_name='Number of bonus games')
+    expires = models.DateTimeField(null=True, blank=True, help_text='Date that these credits expire', verbose_name='Expiry date (optional)')
+    issuer_id = models.IntegerField(null=True, blank=True, help_text='Discord ID of issuing moderator')
+    issuer_name = models.CharField(max_length=32, help_text='Name of the issuing moderator')
+    reason = models.TextField(blank=True, null=True, help_text='The reason that these games have been awarded')
+    
+    def __str__(self):
+        return f"{self.discord_name} ({self.credits})"
+
+    class Meta:
+        indexes = [models.Index(fields=['discord_id', 'expires'])]
+
+
 class Player(models.Model):
     """ Specifies a player within a specific game """
     game = models.ForeignKey(Game, related_name='players', on_delete=models.CASCADE, help_text='Game user is playing in')

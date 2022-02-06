@@ -1,12 +1,12 @@
-from django.db.models import Q
+from operator import not_
+from django.db.models import Q, Sum
 from django.utils import timezone
 from datetime import timedelta
 from asgiref.sync import sync_to_async
 
 from discordbot.utils.messaging import send_dm
 from discordbot.utils.time import discord_countdown
-from core.models.game import Game
-from core.models.players import Player, Ban, Rank, Strike
+from core.models.players import Player, Ban, Rank, BonusCredit
 
 def get_current_user_bans(user):
     """ Check a given discord user is in good standing - Needs to be syncronous """
@@ -57,6 +57,19 @@ def issue_player_ban(user, variant, reason, admin, ban_length):
     """ Ban a player from using the signup bot """
     add_new_ban(user, variant, reason, admin, ban_length)
 
+@sync_to_async
+def issue_player_bonus_credit(user, number, issuer, reason='Not supplied', valid_for=None):
+    """ Give a player some bonus credits """
+    if valid_for:
+        now = timezone.now()
+        end_date = now + timedelta(days=valid_for)
+    else:
+        end_date = None
+    obj = BonusCredit.objects.create(discord_id=user.id, discord_name=f"{user.name}#{user.discriminator}", 
+                            issuer_id=issuer.id, issuer_name=f"{issuer.name}#{issuer.discriminator}",
+                            credits=number, reason=reason, expires=end_date)
+    return obj
+
 def get_player_game_count(discord_user):
     """ get the total number of games a player is in """
     now = timezone.now() 
@@ -77,12 +90,23 @@ def get_waitlist_position(discord_user):
     """ get the waitlist position for a given discord user """
     player = Player.objects.filter(discord_id = discord_user.id)
 
+def get_bonus_credits(discord_user):
+    """ Get the total number of bonus games awarded to the user and currently valid """
+    now = timezone.now()
+    queryset = BonusCredit.objects.filter(discord_id = discord_user.id)
+    not_expired = Q(expires__gte=now) | Q(expires=None)
+    queryset = queryset.filter(not_expired)
+    total = queryset.aggregate(Sum('credits'))
+    return total['credits__sum'] or 0
+
 def get_player_max_games(discord_user):
     """ get the total number of games a user can sign up for """
+    max_games = 0
     rank = get_user_rank(discord_user)
+    bonuses = get_bonus_credits(discord_user)
     if rank:
-        return rank.max_games
-    return 0
+        max_games = max_games + rank.max_games
+    return max_games + bonuses
 
 def get_player_available_games(discord_user):
     """ Get the games available for a given user """

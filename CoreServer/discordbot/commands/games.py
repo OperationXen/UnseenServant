@@ -61,12 +61,3 @@ async def games_summary(ctx, days: Option(int, 'Number of days', required=False)
         await summary_embed.build()
         embeds.append(summary_embed)
     await ctx.respond(embeds=embeds, ephemeral=True)
-
-@bot.slash_command(guild_ids=DISCORD_GUILDS, description='Get your current game credit balance')
-async def credit(ctx):
-    """ Show a user their game credit balance """
-    now = timezone.now()
-    game_credit_text = await get_player_credit_text(ctx.author)
-    message = f"As of: {discord_time(now)}\n{game_credit_text}"
-
-    await ctx.respond(message, ephemeral=True, delete_after=30)
