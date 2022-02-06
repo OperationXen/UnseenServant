@@ -57,6 +57,19 @@ def issue_player_ban(user, variant, reason, admin, ban_length):
     """ Ban a player from using the signup bot """
     add_new_ban(user, variant, reason, admin, ban_length)
 
+@sync_to_async
+def issue_player_bonus_credit(user, number, issuer, reason='Not supplied', valid_for=None):
+    """ Give a player some bonus credits """
+    if valid_for:
+        now = timezone.now()
+        end_date = now + timedelta(days=valid_for)
+    else:
+        end_date = None
+    obj = BonusCredit.objects.create(discord_id=user.id, discord_name=f"{user.name}#{user.discriminator}", 
+                            issuer_id=issuer.id, issuer_name=f"{issuer.name}#{issuer.discriminator}",
+                            credits=number, reason=reason, expires=end_date)
+    return obj
+
 def get_player_game_count(discord_user):
     """ get the total number of games a player is in """
     now = timezone.now() 
