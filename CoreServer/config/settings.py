@@ -30,8 +30,9 @@ ALLOWED_HOSTS = []
 AUTH_USER_MODEL = 'core.CustomUser'
 
 DISCORD_TOKEN = ''
-DISCORD_GUILDS = [123123123]
+DISCORD_GUILDS = []
 DISCORD_ADMIN_ROLES = ['admin']
+DISCORD_SIGNUP_ROLES = ['Signup Master']
 DISCORD_DM_ROLES = ['Dungeon Master']
 
 DEFAULT_CHANNEL_NAME = 'bot-test-channel'

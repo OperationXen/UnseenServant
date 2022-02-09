@@ -28,7 +28,7 @@ class BonusCredit(models.Model):
     reason = models.TextField(blank=True, null=True, help_text='The reason that these games have been awarded')
     
     def __str__(self):
-        return f"{self.discord_name} ({self.credits})"
+        return f"[{self.expires.date()}] {self.discord_name} ({self.credits})"
 
     class Meta:
         indexes = [models.Index(fields=['discord_id', 'expires'])]
