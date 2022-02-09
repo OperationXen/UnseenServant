@@ -126,10 +126,11 @@ def get_player_signups_remaining(user):
 def get_player_credit_text(user):
     """ Get a text string explaining to the user how many game credits they have """
     credits = get_player_available_games(user)
+    max_games = get_player_max_games(user)
     if credits:
-        return f"You have [{credits}] game credits available"
+        return f"You have [{credits}] game credits available out of [{max_games}]"
     else:
-        return 'You have no remaining game credits'
+        return f"You have no game credits available from your [{max_games}] total"
     
 def promote_from_waitlist(game):
     """ Identify the next player in line to join the specified game """
