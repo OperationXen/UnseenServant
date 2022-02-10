@@ -1,9 +1,9 @@
 from discord import Embed, Colour, ButtonStyle
-from discord.ui import View, Button, button
+from discord.ui import View, Button
 
 import discordbot.core
 from discordbot.utils.format import generate_calendar_message
-from core.utils.games import get_player_list, get_wait_list, get_dm
+from core.utils.games import get_player_list, get_wait_list, get_dm, get_game_by_id
 from core.utils.games import add_player_to_game, drop_from_game, is_patreon_exclusive
 from core.utils.players import get_player_credit_text
 from discordbot.utils.time import discord_time, discord_countdown
@@ -156,6 +156,7 @@ class GameControlView(View):
     async def update_message(self):
         """ Update the message this view is attached to """
         embeds = self.message.embeds
+        self.game = await get_game_by_id(self.game.id)
         detail_embed = GameDetailEmbed(self.game)
         await detail_embed.build()
         # Find and replace the game detail embed within the message by comparing titles
