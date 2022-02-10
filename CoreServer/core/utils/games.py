@@ -104,8 +104,9 @@ def add_player_to_game(game, user):
         return True, 'You are DMing this game and therefore cannot play in it. Sorry.'
     if players.filter(discord_id=user.id):
         return False, 'You are already in this game'
-    if waitlist.filter(discord_id=user.id):
-        return False, f"You\'re already in the waitlist for this game in position: {waitlist.get(discord_id=user.id).waitlist}"
+    waitlisted = waitlist.filter(discord_id=user.id).first()
+    if waitlisted:
+        return False, f"You\'re already in the waitlist for this game in position: {get_waitlist_rank(waitlisted)}"
 
     outstanding_bans = get_current_user_bans(user)
     if outstanding_bans:
