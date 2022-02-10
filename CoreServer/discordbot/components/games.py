@@ -107,6 +107,8 @@ class GameDetailEmbed(BaseGameEmbed):
         """ get list of all players in waitlist """
         if not max:
             max = 8
+        if max < 3:
+            max = 3
 
         player_list = '\n'.join(f"<@{p.discord_id}>" for p in self.waitlist[:max])
         if len(self.waitlist) > max:
