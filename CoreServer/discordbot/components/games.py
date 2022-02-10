@@ -168,10 +168,10 @@ class GameControlView(View):
     async def signup(self, interaction):
         """ Callback for signup button pressed """
         status, message = await add_player_to_game(self.game, interaction.user)
-        await self.update_message()
         games_remaining_text = await get_player_credit_text(interaction.user)
         message = f"{message}\n{games_remaining_text}"
         await interaction.response.send_message(message, ephemeral=True, delete_after=30)
+        await self.update_message()
 
     async def calendar(self, interaction):
         """ Calendar button callback """
@@ -181,10 +181,10 @@ class GameControlView(View):
     async def dropout(self, interaction):
         """ Callback for dropout button pressed """
         status, message = await drop_from_game(self.game, interaction.user)
-        await self.update_message()
         games_remaining_text = await get_player_credit_text(interaction.user)
         message = f"{message}\n{games_remaining_text}"
-        await interaction.response.send_message(message, ephemeral=True, delete_after=30) 
+        await interaction.response.send_message(message, ephemeral=True, delete_after=30)
+        await self.update_message() 
 
     async def refresh(self, interaction):
         """ Force refresh button callback """

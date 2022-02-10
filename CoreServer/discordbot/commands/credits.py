@@ -2,7 +2,7 @@ from django.utils import timezone
 from discord.commands import Option, has_any_role
 from discord import Member
 
-from config.settings import DISCORD_GUILDS, DISCORD_ADMIN_ROLES
+from config.settings import DISCORD_GUILDS, DISCORD_ADMIN_ROLES, DISCORD_SIGNUP_ROLES
 from discordbot.bot import bot
 from core.utils.players import get_player_credit_text, issue_player_bonus_credit
 
@@ -19,7 +19,7 @@ async def credit(ctx):
     await ctx.respond(message, ephemeral=True, delete_after=30)
 
 @bot.slash_command(guild_ids=DISCORD_GUILDS, description='Award bonus credits to a given user')
-@has_any_role(*DISCORD_ADMIN_ROLES)
+@has_any_role(*DISCORD_ADMIN_ROLES, *DISCORD_SIGNUP_ROLES)
 async def issue_credit(ctx, 
                     user: Option(Member, 'Member to issue bonus games to', required=True), 
                     reason: Option(str, 'Reason for granting the bonus credits', required=False),
