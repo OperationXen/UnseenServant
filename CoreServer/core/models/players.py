@@ -37,8 +37,8 @@ class BonusCredit(models.Model):
 class Player(models.Model):
     """ Specifies a player within a specific game """
     game = models.ForeignKey(Game, related_name='players', on_delete=models.CASCADE, help_text='Game user is playing in')
-    standby = models.BooleanField(default=False, help_text='If player is a standby player')
-    waitlist = models.IntegerField(null=True, blank=True, help_text='Position in queue for place in game')
+    standby = models.BooleanField(default=False, help_text='If player is a waitlist player', verbose_name='Waitlist')
+    waitlist = models.IntegerField(null=True, blank=True, help_text='Rank in queue for place in game', verbose_name='Waitlist Position')
     discord_id = models.IntegerField(null=True, blank=True, help_text='Discord ID of player')
     discord_name = models.CharField(blank=True, max_length=32, help_text='Discord username')
     character = models.ForeignKey(Character, null=True, blank=True, on_delete=models.SET_NULL, help_text='Character info')
