@@ -8,6 +8,7 @@ from discordbot.commands import *
 from discordbot.schedule.games import GamesPoster
 from discordbot.schedule.calendar import GamesCalendarManager
 
+
 def run_bot():
     while True:
         log.info("Starting bot...")
@@ -26,8 +27,3 @@ async def on_ready():
     log.info("Starting automated services")
     discordbot.core.game_controller = GamesPoster()
     discordbot.core.game_calendar_manager = GamesCalendarManager()
-    
-
-### Django Stuff to run the bot within the Django context ###
-urlpatterns = []
-start_bot()
