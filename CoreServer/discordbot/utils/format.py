@@ -1,5 +1,7 @@
 import urllib.parse
 
+from config.settings import ALLOWED_HOSTS
+
 def create_google_calendar_link(game):
     """ build a google calendar link for an event """
     link = f"https://www.google.com/calendar/render?"
@@ -19,3 +21,17 @@ def generate_calendar_message(game):
     # message = message + f" / [Apple Calendar](<https://www.apple.com>)"
     # message = message + f" / [Outlook Calendar](<https://www.live.com>)"
     return message
+
+def documentation_url():
+    """ Generate a link to the documentation """
+    try:
+        return f"https://{ALLOWED_HOSTS[0]}/invisibleservant/bot_documentation/"
+    except IndexError:
+        return f"https://127.0.0.1:8000/bot_documentation/"
+
+def admin_panel_url():
+    """ Generate a link to the admin panel """
+    try:
+        return f"https://{ALLOWED_HOSTS[0]}/invisibleservant/admin"
+    except IndexError:
+        return f"https://127.0.0.1:8000/admin"
