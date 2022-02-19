@@ -1,6 +1,6 @@
 from discord import Embed, Colour
 
-from config.settings import ALLOWED_HOSTS
+from discordbot.utils.format import documentation_url, admin_panel_url
 
 class AdminUserCreatedEmbed(Embed):
     """ Embed to give a users who have successfully registered on the admin page """
@@ -10,8 +10,8 @@ class AdminUserCreatedEmbed(Embed):
 
         self.add_field(name='Credentials', value=f"Username: {username}\nPassword: {password}", inline=False)
         try:
-            self.add_field(name='URL', value=f"<https://{ALLOWED_HOSTS[0]}/invisibleservant/admin>", inline=False)
+            self.add_field(name='URL', value=f"<{admin_panel_url()}>", inline=False)
         except IndexError:
             self.add_field(name='URL', value=f"Please ask your server owner for the admin link", inline=False)
-        self.add_field(name='Documentation', value=f"<https://{ALLOWED_HOSTS[0]}/invisibleservant/bot_documentation/>")
+        self.add_field(name='Documentation', value=f"<{documentation_url()}>")
         self.add_field(name='Details', value='Please bookmark the above link, you can (and should) change your password on the admin page after logging in')

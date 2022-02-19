@@ -36,6 +36,7 @@ def get_upcoming_games(days=30, released=False):
     if released:
         released_filter = Q(datetime_release__lte=now) | Q(datetime_open_release__lte=now)
         queryset = queryset.filter(released_filter)
+    queryset = queryset.order_by('datetime')
     # force evaluation before leaving this sync context
     return list(queryset)
 
