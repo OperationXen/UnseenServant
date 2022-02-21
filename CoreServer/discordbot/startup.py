@@ -30,7 +30,7 @@ async def on_ready():
 
     log.info("Starting automated services")
     discordbot.core.game_controller = GamesPoster()
-    discordbot.core.game_calendar_manager = GamesCalendarManager()
+    # discordbot.core.game_calendar_manager = GamesCalendarManager()
 
 urlpatterns = []
 start_bot()
