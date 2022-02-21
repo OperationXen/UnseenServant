@@ -6,6 +6,7 @@ from asgiref.sync import sync_to_async
 
 from discordbot.utils.messaging import send_dm
 from discordbot.utils.time import discord_countdown
+from discordbot.logs import logger as log
 from core.models.players import Player, Ban, Rank, BonusCredit
 
 def get_current_user_bans(user):
@@ -139,6 +140,24 @@ def promote_from_waitlist(game):
         player.standby = False
         player.save()
         send_dm(player.id, f"You have been promoted from the waitlist for {game.name} in {discord_countdown(game.datetime)}!")
+
+@sync_to_async
+def populate_game_from_waitlist(game):
+    """ fill a game up using the waitlist, return a list of the promoted players """
+    promoted = []
+    players = Player.objects.filter(game=game).filter(standby=False)
+
+    while(len(players) < game.max_players):
+        next = Player.objects.filter(game=game).filter(standby=True).order_by('waitlist').first()
+        if next:
+            next.standby=False
+            next.save()
+            promoted.append(next)
+            players = Player.objects.filter(game=game).filter(standby=False)
+        else:
+            log.info("Not enough waitlisted players to fill game")
+            break
+    return promoted
 
 def process_player_removal(player):
     """ remove a player from a game and promote from waitlist """
