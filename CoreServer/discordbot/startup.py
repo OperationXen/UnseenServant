@@ -1,4 +1,4 @@
-from threading import Thread
+from threading import Thread, Lock
 from config.settings import DISCORD_TOKEN
 
 import discordbot.core
@@ -8,11 +8,15 @@ from discordbot.commands import *
 from discordbot.schedule.games import GamesPoster
 from discordbot.schedule.calendar import GamesCalendarManager
 
+mutex = Lock()
+
 
 def run_bot():
     while True:
+        mutex.acquire()
         log.info("Starting bot...")
         bot.run(DISCORD_TOKEN)
+        mutex.release()
         log.error("Bot died... performing some light necromancy")
 
 def start_bot():
@@ -27,3 +31,6 @@ async def on_ready():
     log.info("Starting automated services")
     discordbot.core.game_controller = GamesPoster()
     discordbot.core.game_calendar_manager = GamesCalendarManager()
+
+urlpatterns = []
+start_bot()
