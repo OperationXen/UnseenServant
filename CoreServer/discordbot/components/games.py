@@ -7,6 +7,7 @@ from core.utils.games import get_player_list, get_wait_list, get_dm, get_game_by
 from core.utils.games import add_player_to_game, drop_from_game, is_patreon_exclusive
 from core.utils.players import get_player_credit_text
 from discordbot.utils.time import discord_time, discord_countdown
+from discordbot.utils.players import do_waitlist_updates
 
 class BaseGameEmbed(Embed):
     """ Baseclass for game embed objects """
@@ -155,7 +156,7 @@ class GameControlView(View):
         self.players = await get_player_list(self.game)
         self.dm = await get_dm(self.game)
 
-    async def update_message(self):
+    async def update_message(self, followup_hook = None, response_hook = None):
         """ Update the message this view is attached to """
         embeds = self.message.embeds
         self.game = await get_game_by_id(self.game.id)
@@ -166,7 +167,12 @@ class GameControlView(View):
             if embed.title == detail_embed.title:
                 index = embeds.index(embed)
                 embeds[index] = detail_embed
-        await self.message.edit(embeds = embeds)
+        if followup_hook:
+            await followup_hook.edit_message(message_id = self.message.id, embeds=embeds)
+        elif response_hook:
+            await response_hook.edit_message(embeds=embeds)
+        else:
+            await self.message.edit(embeds = embeds)
 
     async def signup(self, interaction):
         """ Callback for signup button pressed """
@@ -174,7 +180,8 @@ class GameControlView(View):
         games_remaining_text = await get_player_credit_text(interaction.user)
         message = f"{message}\n{games_remaining_text}"
         await interaction.response.send_message(message, ephemeral=True, delete_after=30)
-        await self.update_message()
+        await do_waitlist_updates(self.game)
+        await self.update_message(followup_hook = interaction.followup)
 
     async def calendar(self, interaction):
         """ Calendar button callback """
@@ -187,9 +194,11 @@ class GameControlView(View):
         games_remaining_text = await get_player_credit_text(interaction.user)
         message = f"{message}\n{games_remaining_text}"
         await interaction.response.send_message(message, ephemeral=True, delete_after=30)
-        await self.update_message() 
+        await do_waitlist_updates(self.game)
+        await self.update_message(followup_hook = interaction.followup)
 
     async def refresh(self, interaction):
         """ Force refresh button callback """
-        await interaction.response.send_message(f"Refreshing game view...", ephemeral=True, delete_after=5)
-        await self.update_message()
+        # await interaction.response.send_message(f"Refreshing game view...", ephemeral=True, delete_after=5)
+        await do_waitlist_updates(self.game)
+        await self.update_message(response_hook = interaction.response)

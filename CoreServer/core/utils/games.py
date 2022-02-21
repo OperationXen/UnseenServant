@@ -5,7 +5,7 @@ from asgiref.sync import sync_to_async
 
 from core.models.game import Game
 from core.models.players import Player
-from core.utils.players import get_player_max_games, get_player_game_count, get_player_available_games
+from core.utils.players import get_player_max_games, get_player_game_count
 from core.utils.players import get_current_user_bans, get_user_rank, process_player_removal
 from core.utils.players import get_waitlist_rank, get_last_waitlist_position
 
@@ -147,7 +147,7 @@ def drop_from_game(game, user):
     if player:
         process_player_removal(player)
         return True, f"You have dropped out of {game.name}"
-    return False, f"You aren't queued for this game..."
+    return False, f"You aren't queued for this game..."      
 
 @sync_to_async
 def check_game_expired(game):
