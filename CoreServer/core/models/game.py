@@ -50,6 +50,8 @@ class Game(models.Model):
     def clean(self):
         """ Validate data before saving """
         now = timezone.now()
+        if not self.datetime:
+            raise ValidationError({'datetime': 'Game must have a time'})
         if self.datetime < now:
             raise ValidationError({'datetime': 'Game cannot be in the past'})
         if not self.datetime_release and not self.datetime_open_release:
