@@ -53,6 +53,7 @@ async def games(ctx, send_dm: Option(bool, 'Send information in a DM instead of 
 async def games_summary(ctx, days: Option(int, 'Number of days', required=False) = 30): 
     """ Find all upcoming games for the next N days and list them as a summary print """
     embeds = []
+    await ctx.response.defer(ephemeral=True)
     upcoming_games = await get_upcoming_games(days)
     embeds.append(Embed(title=f"Games in the next {days} days: [{len(upcoming_games)}]", colour=Colour.dark_purple()))
 
