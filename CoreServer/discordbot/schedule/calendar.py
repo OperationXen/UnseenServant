@@ -35,10 +35,13 @@ class GamesCalendarManager():
         end = start + timedelta(days=days)
         games = await get_upcoming_games(days=days, released=True)
 
+        description = ""
         title = f"[{len(games)}] Upcoming games in the next [{days}] days;"
         title = title + f"\n\t{discord_date(start)} to {discord_date(end)}"
-        embeds = [CalendarSummaryBanner(title=title)]
-        for game in games:
+        if len(games) > 9:
+            description = f"Display limited to the first nine events"
+        embeds = [CalendarSummaryBanner(title=title, description=description)]
+        for game in games[0:9]:
             summary = GameSummaryEmbed(game)
             await summary.build()
             embeds.append(summary)
