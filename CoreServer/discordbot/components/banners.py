@@ -13,11 +13,13 @@ class BaseEmbed(Embed):
 
 class CalendarSummaryBanner(BaseEmbed):
     """ An embed to top calendar channel posts about upcoming """
-    def __init__(self, title = None):
+    def __init__(self, title = None, description = None):
         """ Create the embed """
         if not title:
             title = 'Upcoming games'
         super().__init__(title=title, colour = Colour.dark_purple())
+        if description:
+            self.description = description
 
 
 class GameSummaryBanner(BaseEmbed):

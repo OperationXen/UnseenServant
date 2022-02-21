@@ -57,7 +57,7 @@ async def games_summary(ctx, days: Option(int, 'Number of days', required=False)
     upcoming_games = await get_upcoming_games(days)
     embeds.append(Embed(title=f"Games in the next {days} days: [{len(upcoming_games)}]", colour=Colour.dark_purple()))
 
-    for game in upcoming_games:
+    for game in upcoming_games[0:9]:
         summary_embed = GameSummaryEmbed(game)
         await summary_embed.build()
         embeds.append(summary_embed)
