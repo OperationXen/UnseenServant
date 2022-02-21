@@ -40,7 +40,7 @@ class Game(models.Model):
     datetime_release = models.DateTimeField(blank=True, null=True, help_text='Date/Time game is released for PATREON signups (your local time)', verbose_name='Patreon Release Time')
     datetime_open_release = models.DateTimeField(blank=True, null=True, help_text='Date/Time game is released for GENERAL signups (your local time)', verbose_name='General Release Time')
     datetime = models.DateTimeField(help_text='Date/Time game is starting (your local time)', verbose_name='Game Time')
-    length = models.CharField(max_length=48, default="2 hours", blank=True, help_text='Planned duration of game')
+    length = models.CharField(max_length=48, default="4 hours", blank=True, help_text='Planned duration of game')
 
     ready = models.BooleanField(default=True, help_text='Unset this if the game is not yet ready for release (i.e. still in draft)')
 
