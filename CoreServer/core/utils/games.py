@@ -124,7 +124,7 @@ def add_player_to_game(game, user):
     if player_games >= max_games:
         return False, f"You are already signed up for {player_games} games, the most your rank of {player_rank.name} permits"
 
-    name = f"{user.name}:{user.discriminator}"
+    name = f"{user.name}"
     if players.count() >= max_players:
         player = Player.objects.create(game=game, discord_id = user.id, discord_name = name, character = None, standby=True, waitlist=get_last_waitlist_position(game)+1)
         return True, f"Added you to the waitlist for {game.name}, you are in position: {get_waitlist_rank(player)}"
