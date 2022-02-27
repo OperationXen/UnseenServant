@@ -9,6 +9,6 @@ class GamesViewSet(ViewSet):
     """ Views for game objects """
     def list(self, request):
         """ List games """
-        queryset = Game.objects.all()
+        queryset = Game.objects.filter(ready=True)
         serialised = GameSerialiser(queryset, many=True)
         return Response(serialised.data)

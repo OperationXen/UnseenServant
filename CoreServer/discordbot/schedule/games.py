@@ -1,5 +1,6 @@
 from discord.ext import tasks
 
+from discordbot.logs import logger as log
 from config.settings import DEFAULT_CHANNEL_NAME, PRIORITY_CHANNEL_NAME
 from discordbot.utils.messaging import get_channel_by_name, get_bot_game_postings
 from discordbot.components.games import GameDetailEmbed, GameControlView
@@ -32,13 +33,14 @@ class GamesPoster():
 
     async def recover_message_state(self):
         """ Pull game postings from posting history and reconstruct a game/message status from it """
-        print("Rebuilding internal message state")
+        log.info("Rebuilding internal message state")
         for channel in [self.channel_priority, self.channel_general]:
             messages = await get_bot_game_postings(channel)
             for message in messages:
                 game_id = get_game_id_from_message(message)
                 game = await get_game_by_id(game_id)
                 if not game:
+                    log.info(f"Removing orphaned message (no game to match) for game ID: {game_id}")
                     await message.delete()
                     continue
 
@@ -86,10 +88,10 @@ class GamesPoster():
             for game in await get_outstanding_games(priority):
                 channel = self.is_game_posted(game)
                 if not channel:
-                    print(f"Announcing new game: {game.name}")
+                    log.info(f"Announcing new game: {game.name}")
                     await self.do_game_announcement(game, self.channel_priority if priority else self.channel_general)
                 elif (not priority and channel == self.channel_priority):
-                    print(f"Moving game announcement to general")
+                    log.info(f"Moving game announcement to general")
                     await self.remove_specific_game(game.id)
                     await self.do_game_announcement(game, self.channel_general)
 
@@ -98,7 +100,7 @@ class GamesPoster():
         for key in self.current_games:
             announcement = self.current_games[key]
             if await check_game_expired(announcement['game']):
-                print(f"Deleteing expired game - {announcement['game']}")
+                log.info(f"Deleteing expired game - {announcement['game']}")
                 await announcement['message'].delete()
                 self.current_games.pop(key)
                 break  # because we've modified current_games we can't continue to iterate on it
