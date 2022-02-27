@@ -9,7 +9,8 @@ class GameSerialiser(ModelSerializer):
 
     def get_number_of_players(self, game):
         """ Retrieve the current number of players for a given game """
-        return 42
+        players = game.players.filter(standby=False)
+        return players.count()
 
     class Meta:
         model = Game
