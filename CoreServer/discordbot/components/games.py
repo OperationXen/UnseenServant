@@ -2,6 +2,7 @@ from discord import Embed, Colour, ButtonStyle
 from discord.ui import View, Button
 
 import discordbot.core
+from discordbot.logs import logger as log
 from discordbot.utils.format import generate_calendar_message
 from core.utils.games import get_player_list, get_wait_list, get_dm, get_game_by_id
 from core.utils.games import add_player_to_game, drop_from_game, is_patreon_exclusive
@@ -180,6 +181,7 @@ class GameControlView(View):
         games_remaining_text = await get_player_credit_text(interaction.user)
         message = f"{message}\n{games_remaining_text}"
         await interaction.response.send_message(message, ephemeral=True, delete_after=30)
+        log.info(f"Player {interaction.user.name} signed up for game {self.game.name}")
         await do_waitlist_updates(self.game)
         await self.update_message(followup_hook = interaction.followup)
 
@@ -194,6 +196,7 @@ class GameControlView(View):
         games_remaining_text = await get_player_credit_text(interaction.user)
         message = f"{message}\n{games_remaining_text}"
         await interaction.response.send_message(message, ephemeral=True, delete_after=30)
+        log.info(f"Player {interaction.user.name} dropped from game {self.game.name}")
         await do_waitlist_updates(self.game)
         await self.update_message(followup_hook = interaction.followup)
 
