@@ -1,13 +1,12 @@
 from django.utils import timezone
-from discord import Embed, Colour
-from discord.commands import Option, has_any_role
+from discord import Embed, Colour, Option
 
 from config.settings import DISCORD_GUILDS, DISCORD_ADMIN_ROLES
 from discordbot.bot import bot
+from discordbot.logs import logger as log
 from core.utils.games import get_upcoming_games, get_upcoming_games_for_player, get_upcoming_games_for_dm
 from core.utils.players import get_player_credit_text
 
-from discordbot.components.banners import DMSummaryBanner, GameSummaryBanner, WaitlistSummaryBanner
 from discordbot.components.games import GameSummaryEmbed
 from discordbot.utils.time import discord_time
 
@@ -16,37 +15,54 @@ from discordbot.utils.time import discord_time
 async def games(ctx, send_dm: Option(bool, 'Send information in a DM instead of inline', required=False) = False):
     """ Retrieve a list of the users upcoming games and provide a summary """
     now = timezone.now()
-    embeds = []
     game_credit_text = await get_player_credit_text(ctx.author)
     games = await get_upcoming_games_for_player(ctx.author.id, waitlisted=False)
     waitlist = await get_upcoming_games_for_player(ctx.author.id, waitlisted=True)
     dming = await get_upcoming_games_for_dm(ctx.author.id)
-    message = f"As of: {discord_time(now)}\n{game_credit_text}"
+
+    log.debug(f"Command: [/games] used by User [{ctx.author.name}], PM requested [{send_dm}], DMing [{len(dming)}], Playing [{len(games)}], Waitlist [{len(waitlist)}]")
+
+    if send_dm:
+        await ctx.author.send(f"As of: {discord_time(now)}\n{game_credit_text}")
+        await ctx.respond(f"Please check your PMs", ephemeral = True, delete_after = 15)
+    else:
+        await ctx.respond(f"As of: {discord_time(now)}\n{game_credit_text}", ephemeral = True)
 
     if dming:
-        embeds.append(DMSummaryBanner(games=len(dming)))
-        for game in dming:
+        embeds = []
+        for game in dming[:10]:
             summary_embed = GameSummaryEmbed(game, colour=Colour.blue())
             await summary_embed.build()
             embeds.append(summary_embed)
+        message = f"You are DMing {len(dming)} games"
+        if send_dm:
+            await ctx.author.send(message, embeds = embeds)
+        else:
+            await ctx.respond(message, embeds = embeds, ephemeral = True)
 
-    embeds.append(GameSummaryBanner(games=len(games)))    
-    for game in games:
-        summary_embed = GameSummaryEmbed(game, colour=Colour.dark_purple())
-        await summary_embed.build()
-        embeds.append(summary_embed)
+    if games:
+        embeds = []
+        for game in games[:10]:
+            summary_embed = GameSummaryEmbed(game, colour=Colour.dark_purple())
+            await summary_embed.build()
+            embeds.append(summary_embed)
+        message = f"You are registered for {len(games)} games"
+        if send_dm:
+            await ctx.author.send(message, embeds = embeds)
+        else:
+            await ctx.respond(message, embeds = embeds, ephemeral = True)
 
-    embeds.append(WaitlistSummaryBanner(games=len(waitlist)))
-    for game in waitlist:
-        summary_embed = GameSummaryEmbed(game, colour=Colour.dark_green())
-        await summary_embed.build()
-        embeds.append(summary_embed)
-
-    if send_dm:
-        await ctx.author.send(message, embeds=embeds)
-        await ctx.respond("DM Sent!", delete_after=3)
-    else:
-        await ctx.respond(message, ephemeral=True, embeds=embeds)
+    if waitlist:
+        embeds = []
+        for game in waitlist[:10]:
+            summary_embed = GameSummaryEmbed(game, colour=Colour.dark_green())
+            await summary_embed.build()
+            embeds.append(summary_embed)
+        message = f"You are waitlisted for {len(waitlist)} games"
+        if send_dm:
+            await ctx.author.send(message, embeds = embeds)
+        else:
+            await ctx.respond(message, embeds = embeds, ephemeral = True)
 
 @bot.slash_command(guild_ids=DISCORD_GUILDS, description='All upcoming games within a time period (default is 30 days)')
 async def games_summary(ctx, days: Option(int, 'Number of days', required=False) = 30): 
