@@ -1,7 +1,7 @@
 from django.utils import timezone
 from discord import Embed, Colour, Option
 
-from config.settings import DISCORD_GUILDS, DISCORD_ADMIN_ROLES
+from config.settings import DISCORD_GUILDS
 from discordbot.bot import bot
 from discordbot.logs import logger as log
 from core.utils.games import get_upcoming_games, get_upcoming_games_for_player, get_upcoming_games_for_dm
