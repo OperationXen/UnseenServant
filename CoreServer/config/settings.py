@@ -30,7 +30,7 @@ ALLOWED_HOSTS = []
 AUTH_USER_MODEL = 'core.CustomUser'
 
 DISCORD_TOKEN = ''
-DISCORD_GUILDS = [123123123]
+DISCORD_GUILDS = [132132131321]
 DISCORD_ADMIN_ROLES = ['admin']
 DISCORD_SIGNUP_ROLES = ['Signup Master']
 DISCORD_DM_ROLES = ['Dungeon Master']
@@ -46,12 +46,14 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'corsheaders',
     'core',
     'api',
     'discordbot'
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -61,6 +63,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
+CORS_ORIGIN_ALLOW_ALL = True
 ROOT_URLCONF = 'config.urls'
 
 TEMPLATES = [
