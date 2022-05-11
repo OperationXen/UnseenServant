@@ -2,6 +2,7 @@ from datetime import timedelta
 from django.utils import timezone
 from asgiref.sync import sync_to_async
 
+from core.models.channel import GameChannel
 from core.models.game import Game
 
 
@@ -28,6 +29,8 @@ def get_game_channels_pending_reminder():
     """Identify games in need of a 24 hour warning sending"""
     queryset = get_games_pending(hours=24)
     queryset = queryset.exclude(channel=None)  # not interested in anything without a channel
+    queryset = queryset.exclude(game__text_channel_status=GameChannel.ChannelStatuses.REMINDED)
+    queryset = queryset.exclude(game__text_channel_status=GameChannel.ChannelStatuses.WARNED)
     return list(queryset)  # force evaluation before leaving this sync context
 
 
@@ -36,4 +39,5 @@ def get_game_channels_pending_warning():
     """Get those games which need a 1 hour warning sending"""
     queryset = get_games_pending(hours=1)
     queryset = queryset.exclude(channel=None)  # not interested in anything without a channel
+    queryset = queryset.exclude(game__channel_status=GameChannel.ChannelStatuses.WARNED)
     return list(queryset)  # force evaluation before leaving this sync context
