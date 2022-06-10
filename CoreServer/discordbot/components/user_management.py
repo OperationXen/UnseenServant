@@ -45,12 +45,12 @@ class BanPlayerView(View):
         self.reason = reason
 
     timeframe = 7
-    length_1w = SelectOption(label='1 Week', value=7)
-    length_2w = SelectOption(label='2 Weeks', value=14)
-    length_1m = SelectOption(label='1 Month', value=30)
-    length_2m = SelectOption(label='2 Months', value=60)
-    length_3m = SelectOption(label='3 Months', value=90)
-    forever = SelectOption(label='Permanent Ban', value=-1)
+    length_1w = SelectOption(label='1 Week', value='7')
+    length_2w = SelectOption(label='2 Weeks', value='14')
+    length_1m = SelectOption(label='1 Month', value='30')
+    length_2m = SelectOption(label='2 Months', value='60')
+    length_3m = SelectOption(label='3 Months', value='90')
+    forever = SelectOption(label='Permanent Ban', value='0')
 
     async def notify_user(self):
         """ Send a DM to the user to let them know """
@@ -62,7 +62,7 @@ class BanPlayerView(View):
     @discord.ui.select(placeholder='Change ban length', row=0, options=[length_1w, length_2w, length_1m, length_2m, length_3m, forever])
     async def update_timescale(self, select, interaction):
         self.timeframe = int(select.values[0])
-        if self.timeframe > 0:
+        if self.timeframe:
             await interaction.response.edit_message(content=f"Banning player [{self.user}] for {self.timeframe} days\nReason: {self.reason}")
         else:
             await interaction.response.edit_message(content=f"Banning player [{self.user}] on a permanent basis\nReason: {self.reason}")

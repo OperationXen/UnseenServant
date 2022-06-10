@@ -1,5 +1,6 @@
 from django.utils import timezone
-from discord.commands import Option, has_any_role
+from discord.commands import Option
+from discord.ext.commands import has_any_role
 from discord import Member
 
 from config.settings import DISCORD_GUILDS, DISCORD_ADMIN_ROLES, DISCORD_SIGNUP_ROLES

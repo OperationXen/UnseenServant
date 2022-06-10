@@ -12,9 +12,10 @@ from discordbot.schedule.calendar import GamesCalendarManager
 
 def start_bot():
     log.info("Creating dedicated discordbot thread")
-    loop = asyncio.get_event_loop()
-    loop.create_task(bot.run(DISCORD_TOKEN))
-    Thread(target=loop.run_forever).start()
+    Thread(target=bot.run, args=(DISCORD_TOKEN,)).start()
+    #loop = asyncio.get_event_loop()
+    #loop.create_task(bot.run(DISCORD_TOKEN))
+    #Thread(target=loop.run_forever).start()
 
 @bot.event
 async def on_ready():
@@ -23,6 +24,3 @@ async def on_ready():
     log.info("Starting automated services")
     discordbot.core.game_controller = GamesPoster()
     # discordbot.core.game_calendar_manager = GamesCalendarManager()
-
-urlpatterns = []
-start_bot()
