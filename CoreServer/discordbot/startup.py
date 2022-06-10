@@ -1,4 +1,5 @@
-from threading import Thread, Lock
+import asyncio
+from threading import Thread
 from config.settings import DISCORD_TOKEN
 
 import discordbot.core
@@ -8,21 +9,12 @@ from discordbot.commands import *
 from discordbot.schedule.games import GamesPoster
 from discordbot.schedule.calendar import GamesCalendarManager
 
-mutex = Lock()
-
-
-def run_bot():
-    while True:
-        mutex.acquire()
-        log.info("Starting bot...")
-        bot.run(DISCORD_TOKEN)
-        mutex.release()
-        log.error("Bot died... performing some light necromancy")
 
 def start_bot():
     log.info("Creating dedicated discordbot thread")
-    bot_thread = Thread(target=run_bot, daemon=True)
-    bot_thread.start()
+    loop = asyncio.get_event_loop()
+    loop.create_task(bot.run(DISCORD_TOKEN))
+    Thread(target=loop.run_forever).start()
 
 @bot.event
 async def on_ready():
