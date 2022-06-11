@@ -11,8 +11,10 @@ from discordbot.schedule.calendar import GamesCalendarManager
 
 
 def start_bot():
-    log.info("Creating dedicated discordbot thread")
-    Thread(target=bot.run, args=(DISCORD_TOKEN,)).start()
+    #log.info("Creating dedicated discordbot thread")
+    #Thread(target=bot.run, args=(DISCORD_TOKEN,)).start()
+    
+    bot.run(DISCORD_TOKEN)
     #loop = asyncio.get_event_loop()
     #loop.create_task(bot.run(DISCORD_TOKEN))
     #Thread(target=loop.run_forever).start()
