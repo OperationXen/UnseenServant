@@ -58,7 +58,7 @@ jobs:
           username: ${{ secrets.USERNAME }}
           key: ${{ secrets.SSH_KEY }}
           script: |
-            cp /var/opt/unseen_servant/db.sqlite3 /var/opt/unseen_servant/db.backup
+            sudo cp /var/opt/unseen_servant/db.sqlite3 /var/opt/unseen_servant/db.backup
 
       - name: Deploy new container
         uses: appleboy/ssh-action@v0.1.4
