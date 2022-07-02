@@ -11,8 +11,9 @@ import os, sys
 
 from django.core.wsgi import get_wsgi_application
 
-sys.path.append('/opt/UnseenServant/CoreServer/')
-sys.path.append('/opt/UnseenServant/venv/lib/site-packages')
+sys.path.append('/opt/venv')
+sys.path.append('/unseen_servant')
+
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings')
 
 application = get_wsgi_application()
