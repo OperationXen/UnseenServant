@@ -72,9 +72,10 @@ jobs:
             docker rm ${{ secrets.CONTAINER_NAME }} || true
             docker run -d --name ${{ secrets.CONTAINER_NAME }} --network=unseen_servant_net -p 127.0.0.1:8000:80 \
               -e DJANGO_SECRET=${{ secrets.DJANGO_SECRET }} -e DB_HOST=${{ secrets.DB_HOST }} \
-              -e DB_USER=${{ secrets.DB_USER }} -e DB_PASS=${{ secrets.DB_PASS }} \
-              -e SERVER=${{ secrets.SERVER }} \
+              -e DB_USER=${{ secrets.DB_USER }} -e DB_PASS=${{ secrets.DB_PASS }} -e SERVER=${{ secrets.SERVER }} \
+              -e DISCORD_TOKEN=${{ secrets.DISCORD_TOKEN }} -e DISCORD_GUILDS=${{ secrets.DISCORD_GUILDS }} \
               -v /var/opt/unseen_servant:/unseen_servant/database \
+              --restart always \
               operationxen/unseen_servant:main
 
       - name: Database migrations
