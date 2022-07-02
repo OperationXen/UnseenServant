@@ -51,40 +51,36 @@ jobs:
     needs: Build-Docker-Container
 
     steps:
-      - name: Prep for deployment
+      - name: Predeployment backup
         uses: appleboy/ssh-action@v0.1.4
         with:
           host: ${{ secrets.SERVER }}
           username: ${{ secrets.USERNAME }}
           key: ${{ secrets.SSH_KEY }}
           script: |
-            sudo service apache2 stop
-            sudo service unseenservant stop
-            cp /opt/UnseenServant/CoreServer/config/settings.py ~/settings.backup
-            cp /opt/UnseenServant/CoreServer/db.sqlite3 ~/db.backup
+            cp /var/opt/unseen_servant/db.sqlite3 /var/opt/unseen_servant/db.backup
 
-      - name: Deploy build
+      - name: Deploy new container
         uses: appleboy/ssh-action@v0.1.4
         with:
           host: ${{ secrets.SERVER }}
           username: ${{ secrets.USERNAME }}
           key: ${{ secrets.SSH_KEY }}
           script: |
-            cd /opt/UnseenServant
-            git fetch
-            git checkout origin/main -f
-            cp ~/settings.backup CoreServer/config/settings.py
-            cp ~/db.backup CoreServer/db.sqlite3
+            docker pull operationxen/unseen_servant:main
+            docker stop ${{ secrets.CONTAINER_NAME }} || true
+            docker rm ${{ secrets.CONTAINER_NAME }} || true
+            docker run -d --name ${{ secrets.CONTAINER_NAME }} --network=unseen_servant_net -p 127.0.0.1:8000:80 \
+              -e DJANGO_SECRET=${{ secrets.DJANGO_SECRET }} -e DB_HOST=${{ secrets.DB_HOST }} \
+              -e DB_USER=${{ secrets.DB_USER }} -e DB_PASS=${{ secrets.DB_PASS }} \
+              -e SERVER=${{ secrets.SERVER }} \
+              -v /var/opt/unseen_servant:/unseen_servant/database \
+              operationxen/unseen_servant:main
 
-      - name: Resume operations
+      - name: Database migrations
         uses: appleboy/ssh-action@v0.1.4
         with:
           host: ${{ secrets.SERVER }}
           username: ${{ secrets.USERNAME }}
           key: ${{ secrets.SSH_KEY }}
-          script: |
-            source /opt/UnseenServant/venv/bin/python
-            /opt/UnseenServant/CoreServer/manage.py showmigrations
-            /opt/UnseenServant/CoreServer/manage.py migrate
-            sudo service apache2 start
-            sudo service unseenservant start
+          script: docker exec ${{ secrets.CONTAINER_NAME }} python manage.py migrate
