@@ -19,6 +19,7 @@ ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 
 # Update tooling and install required packages
 RUN pip install --upgrade pip setuptools wheel && pip install -r requirements.txt
+RUN touch debugging.log && chmod 777 debugging.log
 RUN python manage.py collectstatic --no-input
 # Enable site
 RUN mv /unseen_servant/deploy/bot.conf /etc/apache2/sites-available/000-default.conf && a2ensite 000-default
