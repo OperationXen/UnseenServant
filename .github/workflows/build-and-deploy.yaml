@@ -74,7 +74,7 @@ jobs:
               -e DJANGO_SECRET=${{ secrets.DJANGO_SECRET }} -e DB_HOST=${{ secrets.DB_HOST }} \
               -e DB_USER=${{ secrets.DB_USER }} -e DB_PASS=${{ secrets.DB_PASS }} \
               -e SERVER=${{ secrets.SERVER }} \
-              -v /var/opt/unseen_servant:/unseen_servant/CoreServer/database \
+              -v /var/opt/unseen_servant:/unseen_servant/database \
               operationxen/unseen_servant:main
 
       - name: Database migrations
