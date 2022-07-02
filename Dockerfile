@@ -10,7 +10,7 @@ ENV TZ=Europe/London
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
 # Install python external libs, and web server packages
-RUN apt update && apt install python3 python3-pip python3-venv apache2 libapache2-mod-wsgi-py3 libpq-dev -y
+RUN apt update && apt install git python3 python3-pip python3-venv apache2 libapache2-mod-wsgi-py3 libpq-dev -y
 
 # Create python virtual env
 ENV VIRTUAL_ENV=/opt/venv
