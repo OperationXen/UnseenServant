@@ -14,8 +14,17 @@ if DJANGO_SECRET:
     DEBUG = False
     FORCE_SCRIPT_NAME = "/unseenservant/"
     ADMIN_URL = "/unseenservant/admin"
+
+    DEFAULT_CHANNEL_NAME = 'general-game-signups'
+    PRIORITY_CHANNEL_NAME = 'patron-game-signups'
+    CALENDAR_CHANNEL_NAME = 'new-bot-testing-calendar'
+
 else:
     DEBUG = True
+
+    DEFAULT_CHANNEL_NAME = 'bot-test-channel'
+    PRIORITY_CHANNEL_NAME = 'bot-test-priority-channel'
+    CALENDAR_CHANNEL_NAME = 'bot-test-calendar-channel'
 
 SERVER = getenv("SERVER")
 ALLOWED_HOSTS = ["127.0.0.1"] if SERVER else []
@@ -25,13 +34,9 @@ AUTH_USER_MODEL = 'core.CustomUser'
 
 DISCORD_TOKEN = getenv('DISCORD_TOKEN')
 DISCORD_GUILDS = [getenv('DISCORD_GUILDS')]
-DISCORD_ADMIN_ROLES = ['admin']
+DISCORD_ADMIN_ROLES = ['Admin', 'CodeWiz', 'Moderator']
 DISCORD_SIGNUP_ROLES = ['Signup Master']
 DISCORD_DM_ROLES = ['Dungeon Master']
-
-DEFAULT_CHANNEL_NAME = 'bot-test-channel'
-PRIORITY_CHANNEL_NAME = 'bot-test-priority-channel'
-CALENDAR_CHANNEL_NAME = 'bot-test-calendar-channel'
 
 INSTALLED_APPS = [
     'django.contrib.admin',
