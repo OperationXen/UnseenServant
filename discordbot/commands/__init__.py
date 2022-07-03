@@ -4,3 +4,5 @@ from .games import *
 from .admin import *
 from .credits import *
 from .misc import *
+
+from .moonseacodex import *

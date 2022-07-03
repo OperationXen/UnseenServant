@@ -36,6 +36,8 @@ DISCORD_ADMIN_ROLES = ['Admin', 'CodeWiz', 'Moderator']
 DISCORD_SIGNUP_ROLES = ['Signup Master']
 DISCORD_DM_ROLES = ['Dungeon Master']
 
+MOONSEACODEX_APIKEY = getenv('MOONSEACODEX_APIKEY')
+
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',

@@ -25,13 +25,13 @@ def generate_calendar_message(game):
 def documentation_url():
     """ Generate a link to the documentation """
     try:
-        return f"https://{ALLOWED_HOSTS[0]}/invisibleservant/bot_documentation/"
+        return f"https://{ALLOWED_HOSTS[0]}/bot_documentation/"
     except IndexError:
         return f"https://127.0.0.1:8000/bot_documentation/"
 
 def admin_panel_url():
     """ Generate a link to the admin panel """
     try:
-        return f"https://{ALLOWED_HOSTS[0]}/invisibleservant/admin"
+        return f"https://{ALLOWED_HOSTS[0]}/admin"
     except IndexError:
         return f"https://127.0.0.1:8000/admin"
