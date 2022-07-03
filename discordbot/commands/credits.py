@@ -5,7 +5,7 @@ from discord import Member
 
 from config.settings import DISCORD_GUILDS, DISCORD_ADMIN_ROLES, DISCORD_SIGNUP_ROLES, DISCORD_DM_ROLES
 from discordbot.bot import bot
-from core.utils.players import get_player_credit_text, issue_player_bonus_credit
+from core.utils.players import get_player_credit_text, issue_player_bonus_credit, get_player_signups_remaining
 
 from discordbot.utils.time import discord_time
 
@@ -55,6 +55,6 @@ async def issue_credit(
 async def check_credits(ctx, user: Option(Member, "Member to check", required=True)):
     """check current game credit balance"""
     await ctx.defer(ephemeral=True)
-    credits = await get_player_credit(user)
+    credits = await get_player_signups_remaining(user)
     message = f"{user.name} has [{credits}] credits available"
     await ctx.respond(message, ephemeral=True)
