@@ -1,0 +1,25 @@
+[
+  {
+    "model": "core.game",
+    "pk": 1,
+    "fields": {
+      "dm": 1,
+      "name": "Test",
+      "module": "DDAL0212",
+      "realm": "Forgotten Realms",
+      "variant": "Resident AL",
+      "description": "pewpewpew",
+      "max_players": 6,
+      "level_min": 1,
+      "level_max": 4,
+      "warnings": "None",
+      "channel": "",
+      "streaming": false,
+      "datetime_release": null,
+      "datetime_open_release": "2022-06-11T12:02:09Z",
+      "datetime": "2022-07-07T22:50:05Z",
+      "length": "4 hours",
+      "ready": true
+    }
+  }
+]
