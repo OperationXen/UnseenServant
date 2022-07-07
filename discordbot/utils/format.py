@@ -1,6 +1,6 @@
 import urllib.parse
 
-from config.settings import ALLOWED_HOSTS
+from config.settings import SERVER
 
 def create_google_calendar_link(game):
     """ build a google calendar link for an event """
@@ -24,14 +24,11 @@ def generate_calendar_message(game):
 
 def documentation_url():
     """ Generate a link to the documentation """
-    try:
-        return f"https://{ALLOWED_HOSTS[0]}/bot_documentation/"
-    except IndexError:
-        return f"https://127.0.0.1:8000/bot_documentation/"
+    return "https://tinyurl.com/TridenBotGuide"
 
 def admin_panel_url():
     """ Generate a link to the admin panel """
     try:
-        return f"https://{ALLOWED_HOSTS[0]}/admin"
+        return f"https://{SERVER}/admin"
     except IndexError:
-        return f"https://127.0.0.1:8000/admin"
+        return f""
