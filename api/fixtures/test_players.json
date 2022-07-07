@@ -1,0 +1,26 @@
+[
+  {
+    "model": "core.player",
+    "pk": 1,
+    "fields": {
+      "game": 1,
+      "standby": false,
+      "waitlist": null,
+      "discord_id": 123123123123123,
+      "discord_name": "TheGreatAndPowerfulOz",
+      "character": null
+    }
+  },
+  {
+    "model": "core.player",
+    "pk": 2,
+    "fields": {
+      "game": 1,
+      "standby": true,
+      "waitlist": null,
+      "discord_id": 123123123123123123,
+      "discord_name": "Waitlister",
+      "character": null
+    }
+  }
+]
