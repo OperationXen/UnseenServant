@@ -29,10 +29,11 @@ ALLOWED_HOSTS = ["127.0.0.1"] if SERVER else []
 CSRF_TRUSTED_ORIGINS = [f"https://{SERVER}"] if SERVER else []
 
 AUTH_USER_MODEL = 'core.CustomUser'
+AUTHENTICATION_BACKENDS = ["api.utils.backends.CustomUserModelBackend"]
 
 DISCORD_TOKEN = getenv('DISCORD_TOKEN')
 DISCORD_GUILDS = [getenv('DISCORD_GUILDS')]
-DISCORD_ADMIN_ROLES = ['Admin', 'CodeWiz', 'Moderator']
+DISCORD_ADMIN_ROLES = ['Admin', 'admin', 'CodeWiz', 'Moderator']
 DISCORD_SIGNUP_ROLES = ['Signup Master']
 DISCORD_DM_ROLES = ['Dungeon Master']
 
