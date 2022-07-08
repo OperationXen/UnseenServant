@@ -29,7 +29,7 @@ class Game(models.Model):
     module = models.CharField(blank=True, max_length=32, help_text='Adventure Code (e.g. CCC-GHC-09)')
     realm = models.TextField(max_length=16, choices=Realms.choices, default=Realms.FAERUN, help_text='Game setting')
     variant = models.TextField(max_length=16, choices=GameTypes.choices, default=GameTypes.RES_AL, help_text='Game type')
-    description = models.TextField(blank=True, help_text='Description of this game or flavour text')
+    description = models.TextField(max_length=1024, blank=True, help_text='Description of this game or flavour text')
     max_players = models.IntegerField(default=6, help_text='Max players for this game')
     level_min = models.IntegerField(default=1, help_text='Minumum starting level')
     level_max = models.IntegerField(default=4, help_text='Maximum player level')

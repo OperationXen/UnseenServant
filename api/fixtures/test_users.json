@@ -1,0 +1,40 @@
+[
+  {
+    "model": "core.customuser",
+    "pk": 1,
+    "fields": {
+      "password": "pbkdf2_sha256$320000$ErnfaXZbxLBeRUmrqkCWjk$Nr88785PgBr4IbsZ7pX2qoliVlhSazNk6WUFuyWDJcc=",
+      "last_login": null,
+      "is_superuser": false,
+      "username": "testuser1",
+      "first_name": "",
+      "last_name": "",
+      "email": "testuser1@localhost",
+      "is_staff": false,
+      "is_active": true,
+      "date_joined": "2022-07-08T18:44:52Z",
+      "discord_name": "testuser#1337",
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "core.customuser",
+    "pk": 2,
+    "fields": {
+      "password": "pbkdf2_sha256$320000$0tI1LgH6pOcZPIxIHImUTA$FacQUNvOKycVOwTu7zSKfVQgJmwXeA53NJJAgbWUfug=",
+      "last_login": null,
+      "is_superuser": false,
+      "username": "testuser2",
+      "first_name": "",
+      "last_name": "",
+      "email": "testuser2@localhost",
+      "is_staff": false,
+      "is_active": true,
+      "date_joined": "2022-07-08T18:45:07Z",
+      "discord_name": "seconduser#4321",
+      "groups": [],
+      "user_permissions": []
+    }
+  }
+]
