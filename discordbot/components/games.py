@@ -121,7 +121,7 @@ class GameDetailEmbed(BaseGameEmbed):
         """ Get data from database and populate the embed """
         await(self.get_data())
 
-        self.add_field(name=f"{self.game.module} | {self.game.name}", value=f"{self.game.description or 'None'}", inline=False)
+        self.add_field(name=f"{self.game.module} | {self.game.name}", value=f"{self.game.description[:1024] or 'None'}", inline=False)
         self.add_field(name='When', value=self.get_game_time(), inline=True)
         self.add_field(name='Details', value = f"Character levels {self.game.level_min} - {self.game.level_max}\n DMed by {self.dm.discord_name}", inline=True)
         self.add_field(name='Content Warnings', value=f"{self.game.warnings or 'None'}", inline=False)
