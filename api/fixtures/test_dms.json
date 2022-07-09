@@ -8,5 +8,15 @@
       "discord_name": "OpXen",
       "description": "An awesome DM"
     }
+  },
+  {
+    "model": "core.dm",
+    "pk": 2,
+    "fields": {
+      "name": "TestUser1",
+      "discord_id": 456456456456,
+      "discord_name": "TestUser",
+      "description": "Test DM"
+    }
   }
 ]
