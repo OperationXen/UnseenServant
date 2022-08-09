@@ -48,6 +48,7 @@ class TestGameViews(TestCase):
         self.assertEqual('Test', response.data[0].get('name'))
         self.assertIn('players', response.data[0])
         self.assertIsInstance(response.data[0].get('players'), list)
+        self.assertIn('discord_id', response.data[0]['players'][0])
 
     def test_anonymous_user_cant_create_game(self) -> None:
         """ An anonymous user should get a 403 error """
