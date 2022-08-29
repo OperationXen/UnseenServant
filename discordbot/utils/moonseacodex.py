@@ -3,12 +3,30 @@ import requests
 
 from config.settings import MOONSEACODEX_APIKEY
 
+def _get_rarity_string(x: str) -> str:
+    """ Get a user friendly representation of the item rarity """
+    if x == 'common':
+        return 'Common'
+    if x == 'uncommon':
+        return 'Uncommon'
+    if x == 'rare':
+        return 'Rare'
+    if x == 'veryrare':
+        return 'Very rare'
+    if x == 'legendary':
+        return 'Legendary'
+    if x == 'artefact':
+        return 'Artefact'
+    return 'Unknown rarity'
+
 
 def _get_item_string(x: dict) -> str:
     """ get a string representation of a single magic item """
+    rarity = _get_rarity_string(x.get('rarity'))
+
     if x.get('attunement'):
-        return f"{x.get('name')} ({x.get('rarity')}, attuned)"
-    return f"{x.get('name')} ({x.get('rarity')})"
+        return f"{x.get('name')} ({rarity}, attuned)"
+    return f"{x.get('name')} ({rarity})"
 
 def get_items_string(items: list) -> str:
     """ A string to represent the characters currently equipped items """        
