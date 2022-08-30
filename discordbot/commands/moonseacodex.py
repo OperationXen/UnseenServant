@@ -18,6 +18,8 @@ async def character(ctx, uuid: Option(str, 'Character ID to show', required=Fals
 
     if not uuid:
         characters = get_msc_characters(discord_id=str(ctx.author))
-        view = MSCCharacterList(ctx, characters)
-
-    view.message = await ctx.followup.send(f"Characters for {ctx.author} from the Moonsea Codex:", view=view, ephemeral=True)
+        if characters:
+            view = MSCCharacterList(ctx, characters)
+            view.message = await ctx.followup.send(f"Characters for {ctx.author} from the Moonsea Codex:", view=view, ephemeral=True)
+        else:
+            message = await ctx.followup.send(f"Cannot find any characters for you on Moonsea Codex, have you set your discord profile ID?")
