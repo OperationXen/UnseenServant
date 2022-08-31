@@ -12,14 +12,13 @@ from core.utils.players import get_player_credit_text, issue_player_bonus_credit
 
 
 @bot.slash_command(guild_ids=DISCORD_GUILDS, description="Display a character from the Moonsea Codex")
-async def character(ctx, uuid: Option(str, 'Character ID to show', required=False)):
+async def character(ctx):
     """Show a user their moonsea codex characters"""
     await ctx.defer(ephemeral=True)
 
-    if not uuid:
-        characters = get_msc_characters(discord_id=str(ctx.author))
-        if characters:
-            view = MSCCharacterList(ctx, characters)
-            view.message = await ctx.followup.send(f"Characters for {ctx.author} from the Moonsea Codex:", view=view, ephemeral=True)
-        else:
-            message = await ctx.followup.send(f"Cannot find any characters for you on Moonsea Codex, have you set your discord profile ID?")
+    characters = get_msc_characters(discord_id=str(ctx.author))
+    if characters:
+        view = MSCCharacterList(ctx, characters)
+        view.message = await ctx.followup.send(f"Characters for {ctx.author} from the Moonsea Codex:", view=view, ephemeral=True)
+    else:
+        message = await ctx.followup.send(f"Cannot find any characters for you on Moonsea Codex, have you set your discord profile ID?")
