@@ -102,7 +102,7 @@ class GameDetailEmbed(BaseGameEmbed):
 
     def player_details_list(self):
         """ get list of all players with a spot in the game """
-        player_list = '\n'.join(f"{p.discord_name}" for p in self.players if not p.standby)
+        player_list = '\n'.join(f"<@{p.discord_id}>" for p in self.players if not p.standby)
         return player_list or "None"
 
     def waitlist_details_list(self, max):
