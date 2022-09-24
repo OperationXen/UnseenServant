@@ -34,7 +34,6 @@ class Game(models.Model):
     level_min = models.IntegerField(default=1, help_text='Minumum starting level')
     level_max = models.IntegerField(default=4, help_text='Maximum player level')
     warnings = models.TextField(blank=False, default='None', help_text='Content warnings or advisories')
-    channel = models.CharField(blank=True, max_length=32, help_text='This field is not yet used')
     streaming = models.BooleanField(default=False, help_text='Set to indicate that you may wish to stream the game')
 
     datetime_release = models.DateTimeField(blank=True, null=True, help_text='Date/Time game is released for PATREON signups (UTC)', verbose_name='Patreon Release Time')

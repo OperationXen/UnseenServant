@@ -18,3 +18,12 @@ class GameChannel(models.Model):
     link = models.URLField(null=True, blank=True, help_text="Link to the channel on discord")
     name = models.CharField(blank=False, max_length=64, default="Unnamed game")
     status = models.TextField(choices=ChannelStatuses.choices, max_length=32, default=ChannelStatuses.READY, help_text='Status of the channel') 
+
+    class Meta:
+        indexes=[
+            models.Index('game', name='gamechannel_game_idx'),
+            models.Index('discord_id', name='gamechannel_discord_idx')
+        ]
+
+    def __str__(self):
+        return f"{self.name} [{self.status}]"

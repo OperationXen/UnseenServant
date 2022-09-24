@@ -1,28 +1,29 @@
-import asyncio
-from threading import Thread
-from config.settings import DISCORD_TOKEN
+from ast import Index
+from config.settings import DISCORD_TOKEN, DISCORD_GUILDS
 
 import discordbot.core
 from discordbot.logs import logger as log
 from discordbot.bot import bot
 from discordbot.commands import *
 from discordbot.schedule.games import GamesPoster
-from discordbot.schedule.calendar import GamesCalendarManager
+from discordbot.schedule.channel import ChannelManager
 
 
 def start_bot():
-    #log.info("Creating dedicated discordbot thread")
-    #Thread(target=bot.run, args=(DISCORD_TOKEN,)).start()
-    
+    """ bot startup routine """
     bot.run(DISCORD_TOKEN)
-    #loop = asyncio.get_event_loop()
-    #loop.create_task(bot.run(DISCORD_TOKEN))
-    #Thread(target=loop.run_forever).start()
+
 
 @bot.event
 async def on_ready():
     log.info(f"{bot.user.name} has connected to discord")
-
     log.info("Starting automated services")
-    discordbot.core.game_controller = GamesPoster()
+
+    try:
+        guild_id = int(DISCORD_GUILDS[0])
+        guild = bot.get_guild(guild_id)
+        discordbot.core.game_controller = GamesPoster()
+        discordbot.core.channel_controller = ChannelManager(guild)
+    except IndexError:
+        log.info("Unable to find the specified guild")
     # discordbot.core.game_calendar_manager = GamesCalendarManager()

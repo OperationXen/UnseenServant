@@ -9,3 +9,7 @@ def discord_countdown(datetime):
 def discord_date(datetime):
     """ create a discord time that displays as a date string """
     return f"<t:{int(datetime.timestamp())}:D>"
+
+def get_hammertime(datetime):
+    """ Wrapper for easy use of schedule info """
+    return f"{discord_time(datetime)} ({discord_countdown(datetime)})"

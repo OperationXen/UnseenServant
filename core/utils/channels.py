@@ -15,14 +15,20 @@ def get_games_pending(hours=0, days=0):
     queryset = queryset.filter(datetime__gte=now).filter(datetime__lte=end_time)
     return queryset.order_by("datetime")
 
-
 @sync_to_async
 def get_game_channels_pending_creation():
     """Retrieve all game objects that need a channel posting"""
     queryset = get_games_pending(days=7)
-    queryset = queryset.filter(channel=None)  # Only interested in games which don't yet have a channel
+    queryset = queryset.filter(text_channel=None)  # Only interested in games which don't yet have a channel
     return list(queryset)  # force evaluation before leaving this sync context
 
+@sync_to_async
+def set_game_channel_created(game, channel_id, link='', name=''):
+    """ Set the game channel status to created"""
+    game_channel = GameChannel.objects.create(game=game, discord_id=channel_id, link=link, name=name)
+    if game_channel:
+        return game_channel
+    return None
 
 @sync_to_async
 def get_game_channels_pending_reminder():
