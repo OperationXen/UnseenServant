@@ -3,7 +3,7 @@ from discord.utils import get
 
 from discordbot.logs import logger as log
 from discordbot.utils.time import get_hammertime
-from core.utils.games import get_dm
+from core.utils.games import get_dm, get_player_list
 from core.utils.channels import get_game_channels_pending_reminder, get_game_channels_pending_warning
 from core.utils.channels import get_game_channels_pending_creation, set_game_channel_created
 from discordbot.components.channels import MusteringBanner, MusteringView
@@ -32,7 +32,9 @@ class ChannelManager:
         """send the welcome banner"""
         banner = MusteringBanner(game)
         await banner.build()
-        await channel.send('', embed=banner)
+        players = await get_player_list(game)
+        ping_text = ','.join(f"<@{p.discord_id}>" for p in players if not p.standby)
+        await channel.send(ping_text, embed=banner)
 
     async def check_and_create_channels(self):
         """ Get outstanding channels needed and create them where missing """
