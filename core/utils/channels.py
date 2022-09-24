@@ -23,6 +23,22 @@ def get_game_channels_pending_creation():
     return list(queryset)  # force evaluation before leaving this sync context
 
 @sync_to_async
+def destroy_game_channel(game_channel):
+    """ Destroy a given game channel object """
+    game_channel.delete()
+    return True
+
+@sync_to_async
+def get_game_channels_pending_destruction():
+    """ Retrieve all game channel objects which are defunct """
+    now = timezone.now()
+    expiry_time = now - timedelta(days=3)
+
+    queryset = GameChannel.objects.filter(game__datetime__lte=expiry_time)
+    queryset = queryset.order_by('game__datetime')
+    return list(queryset)   # force evaluation before dropping back to async
+
+@sync_to_async
 def set_game_channel_created(game, channel_id, link='', name=''):
     """ Set the game channel status to created"""
     game_channel = GameChannel.objects.create(game=game, discord_id=channel_id, link=link, name=name)

@@ -5,7 +5,7 @@ from discordbot.logs import logger as log
 from discordbot.utils.time import get_hammertime
 from core.utils.games import get_dm, get_player_list
 from core.utils.channels import get_game_channels_pending_reminder, get_game_channels_pending_warning
-from core.utils.channels import get_game_channels_pending_creation, set_game_channel_created
+from core.utils.channels import get_game_channels_pending_creation, set_game_channel_created, get_game_channels_pending_destruction, destroy_game_channel
 from discordbot.components.channels import MusteringBanner, MusteringView
 
 
@@ -52,6 +52,18 @@ class ChannelManager:
                 game_channel = await set_game_channel_created(upcoming_game, channel.id, channel.jump_url, channel.name)
                 await self.send_banner_message(channel, upcoming_game)
 
+    async def check_and_delete_channels(self):
+        """ Go through any outstanding channels and delete anything older than 3 days """
+        try:
+            expired_game_channels = await get_game_channels_pending_destruction()
+            for game_channel in expired_game_channels:
+                log.info(f"Removing game channel: {game_channel.name}")
+                channel = self.guild.get_channel(int(game_channel.discord_id))
+                await channel.delete()
+                await destroy_game_channel(game_channel)
+        except Exception as e:
+            log.error(e)
+
     @tasks.loop(seconds=10)
     async def channel_event_loop(self):
         if not self.initialised:
@@ -60,3 +72,4 @@ class ChannelManager:
             self.initialised = True
 
         await self.check_and_create_channels()
+        await self.check_and_delete_channels()
