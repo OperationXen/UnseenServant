@@ -30,11 +30,15 @@ class ChannelManager:
 
     async def send_banner_message(self, channel, game):
         """send the welcome banner"""
+        control_view = MusteringView(game)
         banner = MusteringBanner(game)
         await banner.build()
+
         players = await get_player_list(game)
-        ping_text = ','.join(f"<@{p.discord_id}>" for p in players if not p.standby)
-        await channel.send(ping_text, embed=banner)
+        ping_text = 'Players: '
+        ping_text+= ','.join(f"<@{p.discord_id}>" for p in players if not p.standby)
+        message = await channel.send(ping_text, embed=banner, view=control_view)
+        control_view.message = message
 
     async def check_and_create_channels(self):
         """ Get outstanding channels needed and create them where missing """

@@ -55,9 +55,9 @@ class MSCCharacterList(View):
     characters = None
     character_picker = None
 
-    def __init__(self, ctx, characters):
+    def __init__(self, user, characters):
         super().__init__()
-        self.ctx = ctx
+        self.user = user
         self.characters = characters
 
         character_list = []
@@ -72,7 +72,7 @@ class MSCCharacterList(View):
         for character in self.characters:
             if character.get('uuid') == self.character_picker.values[0]:
                 embed = MSCCharacterEmbed(character)
-                await interaction.channel.send(content=f"{self.ctx.author} presents a Moonsea Codex character", embed=embed)
+                await interaction.channel.send(content=f"<@{self.user.id}> presents a Moonsea Codex character", embed=embed)
                 await interaction.response.edit_message(content=f"{character.get('name')} posted to channel", view=None, delete_after=5)
 
 
