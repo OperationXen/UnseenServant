@@ -47,12 +47,26 @@ def set_game_channel_created(game, channel_id, link='', name=''):
     return None
 
 @sync_to_async
+def set_game_channel_reminded(game_channel):
+    """ Update a game channel object to show the reminder has been sent """
+    game_channel.status=GameChannel.ChannelStatuses.REMINDED
+    game_channel.save()
+    return True
+
+@sync_to_async
+def set_game_channel_warned(game_channel):
+    """ Update a game channel object to show the 1 hour warning """
+    game_channel.status=GameChannel.ChannelStatuses.WARNED
+    game_channel.save()
+    return True
+
+@sync_to_async
 def get_game_channels_pending_reminder():
     """Identify games in need of a 24 hour warning sending"""
     queryset = get_games_pending(hours=24)
-    queryset = queryset.exclude(channel=None)  # not interested in anything without a channel
-    queryset = queryset.exclude(game__text_channel_status=GameChannel.ChannelStatuses.REMINDED)
-    queryset = queryset.exclude(game__text_channel_status=GameChannel.ChannelStatuses.WARNED)
+    queryset = queryset.exclude(text_channel=None)  # not interested in anything without a channel
+    queryset = queryset.exclude(text_channel__status=GameChannel.ChannelStatuses.REMINDED)
+    queryset = queryset.exclude(text_channel__status=GameChannel.ChannelStatuses.WARNED)
     return list(queryset)  # force evaluation before leaving this sync context
 
 
@@ -60,6 +74,11 @@ def get_game_channels_pending_reminder():
 def get_game_channels_pending_warning():
     """Get those games which need a 1 hour warning sending"""
     queryset = get_games_pending(hours=1)
-    queryset = queryset.exclude(channel=None)  # not interested in anything without a channel
-    queryset = queryset.exclude(game__channel_status=GameChannel.ChannelStatuses.WARNED)
+    queryset = queryset.exclude(text_channel=None)  # not interested in anything without a channel
+    queryset = queryset.exclude(text_channel__status=GameChannel.ChannelStatuses.WARNED)
     return list(queryset)  # force evaluation before leaving this sync context
+
+@sync_to_async
+def get_game_channel_for_game(game):
+    """ Get the game channel object related to a game """
+    return game.text_channel.first()
