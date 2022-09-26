@@ -24,10 +24,12 @@ class MusteringBanner(BaseGameEmbed):
         player_list = '\n'.join(f"<@{p.discord_id}>" for p in self.players if not p.standby)
         return player_list or "None"
 
-    def get_footer_text(self):
+    def get_muster_text(self):
         """ mustering instructions """
-        text = "Greetings! Please submit the character you are bringing to this adventure at the earliest opportunity"
-        return text
+        if self.dm.muster_text:
+            return self.dm.muster_text
+        else:
+            return f"Greetings! Please submit the character you are bringing to this adventure at the earliest opportunity"
 
     async def build(self):
         """ Get data from database and populate the embed """
@@ -40,7 +42,9 @@ class MusteringBanner(BaseGameEmbed):
         self.add_field(name=f"Players ({self.player_count()} / {self.game.max_players})", value=self.player_details_list(), inline=True)
         if self.game.streaming:
             self.add_field(name='Streaming', value = f"Reminder, this game may be streamed")
-        self.set_footer(text=self.get_footer_text())
+        if self.dm.rules_text:
+            self.add_field(name='DM Rules', value=self.dm.rules_text, inline=False)
+        self.add_field(name='Instructions for players', value=self.get_muster_text(), inline=False)
 
 
 class MusteringView(View):

@@ -16,7 +16,7 @@ class DM(models.Model):
     discord_id = models.IntegerField(null=True, blank=True, help_text='Discord ID of the DM')
     discord_name = models.CharField(blank=True, max_length=32, help_text='Discord username')
     description = models.TextField(blank=True, null=True, help_text='Flavour text / details to show')
-    dm_rules = models.TextField(blank=True, null=True, help_text='Any banned items / spells, etc')
+    rules_text = models.TextField(blank=True, null=True, help_text='Any banned items / spells, etc')
     muster_text = models.TextField(blank=True, null=True, help_text='Default text to add to mustering embed (option)')
 
     class Meta:
