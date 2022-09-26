@@ -133,14 +133,6 @@ def get_player_credit_text(user):
     else:
         return f"You have no game credits available from your [{max_games}] total"
     
-def promote_from_waitlist(game):
-    """ Identify the next player in line to join the specified game """
-    player = Player.objects.filter(game=game).filter(standby=True).order_by('waitlist').first()
-    if player:
-        player.standby = False
-        player.save()
-        send_dm(player.id, f"You have been promoted from the waitlist for {game.name} in {discord_countdown(game.datetime)}!")
-
 @sync_to_async
 def populate_game_from_waitlist(game):
     """ fill a game up using the waitlist, return a list of the promoted players """
@@ -158,12 +150,6 @@ def populate_game_from_waitlist(game):
             log.info("Not enough waitlisted players to fill game")
             break
     return promoted
-
-def process_player_removal(player):
-    """ remove a player from a game and promote from waitlist """
-    game = player.game
-    player.delete()
-    promote_from_waitlist(game)
 
 def get_waitlist_rank(player):
     """ get the rank of the player in the waitlist """

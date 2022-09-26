@@ -135,19 +135,12 @@ def add_player_to_game(game, user):
 @sync_to_async
 def drop_from_game(game, user):
     """ Remove an existing player from a game """
-    players = game.players.filter(standby=False)
-    waitlist = game.players.filter(standby=True)
-
-    player = waitlist.filter(discord_id=user.id).first()
+    queryset = game.players.filter(standby=False)
+    player = queryset.filter(discord_id=user.id).first()
     if player:
         player.delete()
-        return True, f"You have been removed from the waitlist for {game.name}"    
-
-    player = players.filter(discord_id=user.id).first()
-    if player:
-        process_player_removal(player)
-        return True, f"You have dropped out of {game.name}"
-    return False, f"You aren't queued for this game..."      
+        return True
+    return False
 
 @sync_to_async
 def check_game_expired(game):

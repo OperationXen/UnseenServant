@@ -7,8 +7,7 @@ from discordbot.utils.players import do_waitlist_updates
 from core.utils.players import get_player_credit_text
 from discordbot.components.games import BaseGameEmbed
 
-
-from core.utils.games import drop_from_game
+from discordbot.utils.players import remove_player_from_game
 from discordbot.logs import logger as log
 
 
@@ -82,7 +81,8 @@ class MusteringView(View):
     
     async def dropout(self, interaction):
         """ Callback for dropout button pressed """
-        status, message = await drop_from_game(self.game, interaction.user)
+
+        message = await remove_player_from_game(self.game, interaction.user)
         games_remaining_text = await get_player_credit_text(interaction.user)
         message = f"{message}\n{games_remaining_text}"
         await interaction.response.send_message(message, ephemeral=True, delete_after=30)
