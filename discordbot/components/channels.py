@@ -35,7 +35,7 @@ class MusteringBanner(BaseGameEmbed):
 
         self.add_field(name=f"{self.game.module} | {self.game.name}", value=f"{self.game.description[:1024] or 'None'}", inline=False)
         self.add_field(name='When', value=self.get_game_time(), inline=True)
-        self.add_field(name='Details', value = f"Character levels {self.game.level_min} - {self.game.level_max}\n DMed by {self.dm.discord_name}", inline=True)
+        self.add_field(name='Details', value = f"Character levels {self.game.level_min} - {self.game.level_max}\n DMed by <@{self.dm.discord_id}>", inline=True)
         self.add_field(name='Content Warnings', value=f"{self.game.warnings or 'None'}", inline=False)
         self.add_field(name=f"Players ({self.player_count()} / {self.game.max_players})", value=self.player_details_list(), inline=True)
         if self.game.streaming:
@@ -51,7 +51,7 @@ class MusteringView(View):
         self.game = game
         super().__init__(timeout=None)
         # Creating these longhand instead of using the decorator because I need access to the game variable for unique custom IDs
-        self.msc_button = Button(style=ButtonStyle.grey, emoji= '🔄', label='Import Character from Moonsea Codex', custom_id=f"unseen-servant-muster-import#{game.pk}")
+        self.msc_button = Button(style=ButtonStyle.grey, emoji= '📜', label='Import Character from Moonsea Codex', custom_id=f"unseen-servant-muster-import#{game.pk}")
         self.dropout_button = Button(style=ButtonStyle.red, label='Drop out', custom_id=f"unseen-servant-muster-dropout#{game.pk}")
         self.msc_button.callback = self.msc
         self.dropout_button.callback = self.dropout

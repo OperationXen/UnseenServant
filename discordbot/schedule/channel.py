@@ -99,11 +99,11 @@ class ChannelManager:
         except Exception as e:
             log.error(e)
 
-    @tasks.loop(seconds=60)
+    @tasks.loop(seconds=6)
     async def channel_event_loop(self):
         if not self.initialised:
             log.debug('Starting up the channel watcher')
-            self.parent_category = get(self.guild.categories, name="Upcoming Games")
+            self.parent_category = get(self.guild.categories, name="Your Upcoming Games")
             self.initialised = True
 
         await self.check_and_create_channels()
