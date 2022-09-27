@@ -3,6 +3,7 @@ from discord.utils import get
 
 from discordbot.logs import logger as log
 from discordbot.utils.time import get_hammertime
+from discordbot.utils.channel import create_channel_hidden, game_channel_add_player
 from core.utils.games import get_dm, get_player_list
 from core.utils.channels import get_game_channels_pending_creation, set_game_channel_created
 from core.utils.channels import get_game_channels_pending_destruction, destroy_game_channel
@@ -14,31 +15,40 @@ from discordbot.components.channels import MusteringBanner, MusteringView
 
 class ChannelManager:
     """Manager class for performing channel based functions"""
+
     initialised = False
     guild = None
     parent_category = None
 
     def __init__(self, guild):
-        """ initialisation function """
+        """initialisation function"""
         self.guild = guild
         self.channel_event_loop.start()
 
     async def get_topic_text(self, game):
-        """ build the game channel topic header """
+        """build the game channel topic header"""
         dm = await get_dm(game)
         topic_text = "This thread is for mustering for the following game: "
-        topic_text+= f"{game.module} ({game.name}) | DMed by {dm.name} | "
-        topic_text+= f"Game is scheduled for {get_hammertime(game.datetime)}"
+        topic_text += f"{game.module} ({game.name}) | DMed by {dm.name} | "
+        topic_text += f"Game is scheduled for {get_hammertime(game.datetime)}"
         return topic_text
 
     async def get_ping_text(self, game):
         players = await get_player_list(game)
         dm = await get_dm(game)
         ping_text = f"DM: <@{dm.discord_id}>\n"
-        ping_text+= 'Players: '
-        ping_text+= ','.join(f"<@{p.discord_id}>" for p in players if not p.standby)
-        
+        ping_text += "Players: "
+        ping_text += ",".join(f"<@{p.discord_id}>" for p in players if not p.standby)
+
         return ping_text
+
+    async def add_channel_users(self, channel, game):
+        """Add the DM and players to the newly created channel"""
+        dm = await get_dm(game)
+        await game_channel_add_player(channel, dm)
+        players = await get_player_list(game)
+        for player in players:
+            await game_channel_add_player(channel, player)
 
     async def send_banner_message(self, channel, game):
         """send the welcome banner"""
@@ -51,19 +61,20 @@ class ChannelManager:
         control_view.message = message
 
     async def check_and_create_channels(self):
-        """ Get outstanding channels needed and create them where missing """
+        """Get outstanding channels needed and create them where missing"""
         pending_games = await get_game_channels_pending_creation()
         for upcoming_game in pending_games:
             log.info(f"Creating channel for game: {upcoming_game.name}")
-            channel_name = upcoming_game.datetime.strftime("%Y%m%d-") + upcoming_game.module            
+            channel_name = upcoming_game.datetime.strftime("%Y%m%d-") + upcoming_game.module
             channel_topic = await self.get_topic_text(upcoming_game)
-            channel = await self.guild.create_text_channel(category=self.parent_category, name=channel_name, topic=channel_topic)
+            channel = await create_channel_hidden(self.guild, self.parent_category, channel_name, channel_topic)
             if channel:
                 game_channel = await set_game_channel_created(upcoming_game, channel.id, channel.jump_url, channel.name)
+                await self.add_channel_users(channel, upcoming_game)
                 await self.send_banner_message(channel, upcoming_game)
 
     async def check_and_delete_channels(self):
-        """ Go through any outstanding channels and delete anything older than 3 days """
+        """Go through any outstanding channels and delete anything older than 3 days"""
         try:
             expired_game_channels = await get_game_channels_pending_destruction()
             for game_channel in expired_game_channels:
@@ -75,7 +86,7 @@ class ChannelManager:
             log.error(e)
 
     async def check_and_remind_channels(self):
-        """ Remind players 24 hours before their game """
+        """Remind players 24 hours before their game"""
         try:
             upcoming_games = await get_game_channels_pending_reminder()
             for game in upcoming_games:
@@ -89,7 +100,7 @@ class ChannelManager:
             log.error(e)
 
     async def check_and_warn_channels(self):
-        """ Remind players 1 hour before their game """
+        """Remind players 1 hour before their game"""
         try:
             upcoming_games = await get_game_channels_pending_warning()
             for game in upcoming_games:
@@ -105,7 +116,7 @@ class ChannelManager:
     @tasks.loop(seconds=6)
     async def channel_event_loop(self):
         if not self.initialised:
-            log.debug('Starting up the channel watcher')
+            log.debug("Starting up the channel watcher")
             self.parent_category = get(self.guild.categories, name="Your Upcoming Games")
             self.initialised = True
 
