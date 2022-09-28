@@ -4,7 +4,7 @@ from discordbot.utils.messaging import send_dm
 from discordbot.utils.time import discord_countdown
 
 from discordbot.utils.channel import game_channel_tag_promoted_player, game_channel_tag_removed_player
-from discordbot.utils.channel import channel_add_player, game_channel_remove_player
+from discordbot.utils.channel import channel_add_player, channel_remove_player, get_channel_for_game
 from core.utils.players import populate_game_from_waitlist
 from core.utils.games import drop_from_game
 
@@ -14,7 +14,7 @@ async def do_waitlist_updates(game):
     promoted = await populate_game_from_waitlist(game)
     for player in promoted:
         log.info(f"Player {player.discord_name} promoted from waitlist for game {game.name}")
-        channel = get_game_channel(game)
+        channel = get_channel_for_game(game)
         channel_add_player(channel, player)
         game_channel_tag_promoted_player(game, player)
         await send_dm(
@@ -30,6 +30,6 @@ async def remove_player_from_game(game, player):
         message = f"You have been removed from {game.name}"
     else:
         message = f"You aren't queued for this game..."
-    channel = get_game_channel(game)
-    channel_remove_player(game, player)
+    channel = get_channel_for_game(game)
+    channel_remove_player(channel, player)
     game_channel_tag_removed_player(game, player)
