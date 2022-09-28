@@ -3,7 +3,7 @@ from discord.utils import get
 
 from discordbot.logs import logger as log
 from discordbot.utils.time import get_hammertime
-from discordbot.utils.channel import create_channel_hidden, game_channel_add_player
+from discordbot.utils.channel import create_channel_hidden, channel_add_player
 from core.utils.games import get_dm, get_player_list
 from core.utils.channels import get_game_channels_pending_creation, set_game_channel_created
 from core.utils.channels import get_game_channels_pending_destruction, destroy_game_channel
@@ -45,10 +45,10 @@ class ChannelManager:
     async def add_channel_users(self, channel, game):
         """Add the DM and players to the newly created channel"""
         dm = await get_dm(game)
-        await game_channel_add_player(channel, dm)
+        await channel_add_player(channel, dm)
         players = await get_player_list(game)
         for player in players:
-            await game_channel_add_player(channel, player)
+            await channel_add_player(channel, player)
 
     async def send_banner_message(self, channel, game):
         """send the welcome banner"""

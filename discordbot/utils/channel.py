@@ -3,11 +3,21 @@ from discordbot import bot
 from core.utils.channels import get_game_channel_for_game
 
 
+async def get_channel_for_game(game):
+    """Get a discord object for a given game"""
+    try:
+        game_channel = get_game_channel_for_game(game)
+        channel = await bot.get_channel(game_channel.discord_id)
+        return channel
+    except:
+        pass
+    return None
+
+
 async def notify_game_channel(game, message):
     """Send a notification to a game channel"""
-    game_channel = get_game_channel_for_game(game)
-    discord_channel = await bot.get_channel(game_channel.discord_id)
-    status = await discord_channel.send(message)
+    channel = get_channel_for_game(game, message)
+    status = await channel.send(message)
     return status
 
 
@@ -23,18 +33,16 @@ async def game_channel_tag_removed_player(game, player):
     message = await notify_game_channel(game, message)
 
 
-async def game_channel_add_player(discord_channel, player):
+async def channel_add_player(discord_channel, player):
     """Give a specific player permission to view and post in the channel for an upcoming game"""
     discord_user = await bot.get_user(player.discord_id)
     discord_channel.set_permissions(discord_user, read_messages=True, send_messages=True)
 
 
-async def game_channel_remove_player(game, player):
+async def channel_remove_player(channel, player):
     """Remove a specific player from a game channel"""
-    game_channel = get_game_channel_for_game(game)
-    discord_channel = await bot.get_channel(game_channel.discord_id)
     discord_user = await bot.get_user(player.discord_id)
-    discord_channel.set_permissions(discord_user, read_messages=False, send_messages=False)
+    channel.set_permissions(discord_user, read_messages=False, send_messages=False)
 
 
 async def create_channel_hidden(guild, parent, name, topic):
