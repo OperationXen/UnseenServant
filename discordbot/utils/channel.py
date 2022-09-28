@@ -11,7 +11,7 @@ async def get_channel_for_game(game):
         game_channel = await get_game_channel_for_game(game)
         channel = await bot.get_channel(game_channel.discord_id)
         return channel
-    except:
+    except Exception as e:
         log.debug(f"Unable to get an active channel for {game.name}")
     return None
 
@@ -19,9 +19,13 @@ async def get_channel_for_game(game):
 async def notify_game_channel(game, message):
     """Send a notification to a game channel"""
     channel = get_channel_for_game(game, message)
-    log.debug(f"Sending channel message to {channel.name}. Message: {message}")
-    status = await channel.send(message)
-    return status
+    if channel:
+        log.debug(f"Sending channel message to {channel.name}. Message: {message}")
+        status = await channel.send(message)
+        return status
+    else:
+        log.debug(f"Cannot send message to non-existant channel")
+    return False
 
 
 async def game_channel_tag_promoted_player(game, player):
@@ -32,7 +36,7 @@ async def game_channel_tag_promoted_player(game, player):
 
 async def game_channel_tag_removed_player(game, player):
     """Send a message to the game channel notifying the DM that a player has dropped"""
-    message = f"{player.discord_name} dropped out"
+    message = f"{player.name} dropped out"
     message = await notify_game_channel(game, message)
 
 
