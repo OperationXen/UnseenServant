@@ -5,10 +5,10 @@ import discordbot.core
 from discordbot.logs import logger as log
 from discordbot.utils.format import generate_calendar_message
 from core.utils.games import get_player_list, get_wait_list, get_dm, get_game_by_id
-from core.utils.games import add_player_to_game, drop_from_game, is_patreon_exclusive
+from core.utils.games import add_player_to_game, db_remove_player_from_game, is_patreon_exclusive
 from core.utils.players import get_player_credit_text
 from discordbot.utils.time import discord_time, discord_countdown
-from discordbot.utils.players import do_waitlist_updates
+from discordbot.utils.players import do_waitlist_updates, remove_player_from_game
 
 
 class BaseGameEmbed(Embed):
@@ -217,7 +217,9 @@ class GameControlView(View):
 
     async def dropout(self, interaction):
         """Callback for dropout button pressed"""
-        status, message = await drop_from_game(self.game, interaction.user)
+        await remove_player_from_game(self.game, interaction.user)
+
+        #status, message = await db_remove_player_from_game(self.game, interaction.user)
         games_remaining_text = await get_player_credit_text(interaction.user)
         message = f"{message}\n{games_remaining_text}"
         await interaction.response.send_message(message, ephemeral=True, delete_after=30)

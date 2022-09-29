@@ -153,10 +153,19 @@ def add_player_to_game(game, user):
 
 
 @sync_to_async
-def drop_from_game(game, user):
+def db_remove_player_from_game(game, user):
     """Remove an existing player from a game"""
     queryset = game.players.filter(standby=False)
     player = queryset.filter(discord_id=user.id).first()
+    if player:
+        player.delete()
+        return True
+    return False
+
+@sync_to_async
+def db_remove_discord_user_from_game(game, user):
+    """ Remove a player from a game by their discord ID """
+    player = game.players.filter(discord_id=user.id).first()
     if player:
         player.delete()
         return True

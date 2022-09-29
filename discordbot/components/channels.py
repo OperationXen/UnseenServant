@@ -79,8 +79,8 @@ class MusteringView(View):
         self.dropout_button = Button(
             style=ButtonStyle.red, label="Drop out", custom_id=f"unseen-servant-muster-dropout#{game.pk}"
         )
-        self.msc_button.callback = self.msc
-        self.dropout_button.callback = self.dropout
+        self.msc_button.callback = self.muster_view_msc
+        self.dropout_button.callback = self.muster_view_dropout
         self.add_item(self.msc_button)
         self.add_item(self.dropout_button)
 
@@ -102,7 +102,7 @@ class MusteringView(View):
         else:
             await self.message.edit(embeds=embeds)
 
-    async def dropout(self, interaction):
+    async def muster_view_dropout(self, interaction):
         """Callback for dropout button pressed"""
         message = await remove_player_from_game(self.game, interaction.user)
         games_remaining_text = await get_player_credit_text(interaction.user)
@@ -112,7 +112,7 @@ class MusteringView(View):
         await do_waitlist_updates(self.game)
         await self.update_message(followup_hook=interaction.followup)
 
-    async def msc(self, interaction):
+    async def muster_view_msc(self, interaction):
         """Force refresh button callback"""
         # await interaction.response.send_message(f"Refreshing game view...", ephemeral=True, delete_after=5)
         await interaction.response.defer(ephemeral=True)

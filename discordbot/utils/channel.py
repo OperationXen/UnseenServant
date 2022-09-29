@@ -1,6 +1,6 @@
 from discord import PermissionOverwrite
 
-from discordbot import bot
+from discordbot.bot import bot
 from discordbot.logs import logger as log
 from core.utils.channels import get_game_channel_for_game
 
@@ -9,7 +9,7 @@ async def get_channel_for_game(game):
     """Get a discord object for a given game"""
     try:
         game_channel = await get_game_channel_for_game(game)
-        channel = await bot.get_channel(game_channel.discord_id)
+        channel = bot.get_channel(int(game_channel.discord_id))
         return channel
     except Exception as e:
         log.debug(f"Unable to get an active channel for {game.name}")
@@ -18,7 +18,7 @@ async def get_channel_for_game(game):
 
 async def notify_game_channel(game, message):
     """Send a notification to a game channel"""
-    channel = get_channel_for_game(game, message)
+    channel = await get_channel_for_game(game)
     if channel:
         log.debug(f"Sending channel message to {channel.name}. Message: {message}")
         status = await channel.send(message)
@@ -28,15 +28,15 @@ async def notify_game_channel(game, message):
     return False
 
 
-async def game_channel_tag_promoted_player(game, player):
+async def game_channel_tag_promoted_user(game, user):
     """Send a message to the game channel notifying the player that they've been promoted"""
-    message = f"<@{player.discord_id}> promoted from waitlist"
+    message = f"<@{user.mention}> promoted from waitlist"
     message = await notify_game_channel(game, message)
 
 
-async def game_channel_tag_removed_player(game, player):
+async def game_channel_tag_removed_user(game, user):
     """Send a message to the game channel notifying the DM that a player has dropped"""
-    message = f"{player.name} dropped out"
+    message = f"{user.display_name} dropped out"
     message = await notify_game_channel(game, message)
 
 
@@ -44,23 +44,22 @@ async def channel_add_player(channel, player):
     """Give a specific player permission to view and post in the channel for an upcoming game"""
     try:
         log.info(f"Adding player [{player.discord_name}] to channel [{channel.name}]")
-        discord_user = await bot.get_user(player.discord_id)
-        channel.set_permissions(discord_user, read_messages=True, send_messages=True)
+        discord_user = await bot.fetch_user(player.discord_id)
+        await channel.set_permissions(discord_user, read_messages=True, send_messages=True)
         return True
-    except:
-        pass
+    except Exception as e:
+        log.debug(f"Exception occured adding player to channel")
     return False
 
 
-async def channel_remove_player(channel, player):
+async def channel_remove_user(channel, user):
     """Remove a specific player from a game channel"""
     try:
-        log.info(f"Removing player [{player.discord_name}] from channel [{channel.name}]")
-        discord_user = await bot.get_user(player.discord_id)
-        channel.set_permissions(discord_user, read_messages=False, send_messages=False)
+        log.info(f"Removing player [{user.display_name}] from channel [{channel.name}]")
+        await channel.set_permissions(user, read_messages=False, send_messages=False)
         return True
-    except:
-        pass
+    except Exception as e:
+        log.debug(f"Exception occured removing player from channel")
     return False
 
 
