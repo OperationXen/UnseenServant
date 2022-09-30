@@ -116,14 +116,11 @@ class MusteringView(View):
         """Force refresh button callback"""
         # await interaction.response.send_message(f"Refreshing game view...", ephemeral=True, delete_after=5)
         await interaction.response.defer(ephemeral=True)
-        discord_id = str(interaction.user)
-        characters = get_msc_characters(discord_id=discord_id)
+        discord_name = str(interaction.user)
+        characters = get_msc_characters(discord_id=discord_name)
         if characters:
             view = MSCCharacterList(interaction.user, characters)
-            view.message = await interaction.followup.send(
-                f"Characters for {interaction.user} from the Moonsea Codex:", view=view, ephemeral=True
-            )
+            view.message = await interaction.followup.send(f"Characters for {discord_name} from the Moonsea Codex:", view=view, ephemeral=True)
         else:
-            message = await interaction.followup.send(
-                f"Cannot find any characters for you on Moonsea Codex, have you set your discord profile ID?"
-            )
+            error_text = f"Cannot find any characters for you on Moonsea Codex, have you set your discord profile ID?"
+            message = await interaction.followup.send(error_text, ephemeral=True)
