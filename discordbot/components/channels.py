@@ -86,11 +86,10 @@ class MusteringView(View):
 
     async def update_message(self, followup_hook=None, response_hook=None):
         """Update the message this view is attached to"""
-        embeds = self.message.embeds
-        # self.game = await get_game_by_id(self.game.id)
         muster_banner = MusteringBanner(self.game)
         await muster_banner.build()
         # Find and replace the game detail embed within the message by comparing titles
+        embeds = self.message.embeds
         for embed in embeds:
             if embed.title == muster_banner.title:
                 index = embeds.index(embed)
@@ -104,7 +103,7 @@ class MusteringView(View):
 
     async def muster_view_dropout(self, interaction):
         """Callback for dropout button pressed"""
-        await interaction.response.defer(ephemeral=True)
+        await interaction.response.defer(ephemeral=True, invisible=False)
         removed = await remove_player_from_game(self.game, interaction.user)
         if removed:
             log.info(f"Player {interaction.user.name} dropped from game {self.game.name}")
@@ -115,7 +114,7 @@ class MusteringView(View):
             await do_waitlist_updates(self.game)
             await self.update_message(followup_hook=interaction.followup)
             return True
-        await interaction.followup.send('Unable to remove you from this game, please consult the fates. It would appear to be your destiny.')
+        await interaction.followup.send('Unable to remove you from this game, please consult the fates. It would appear to be your destiny.', ephemeral=True)
         return False
 
     async def muster_view_msc(self, interaction):
