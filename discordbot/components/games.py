@@ -229,6 +229,5 @@ class GameControlView(View):
 
     async def refresh(self, interaction):
         """Force refresh button callback"""
-        # await interaction.response.send_message(f"Refreshing game view...", ephemeral=True, delete_after=5)
         await do_waitlist_updates(self.game)
         await self.update_message(response_hook=interaction.response)

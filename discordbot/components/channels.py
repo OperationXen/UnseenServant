@@ -104,18 +104,23 @@ class MusteringView(View):
 
     async def muster_view_dropout(self, interaction):
         """Callback for dropout button pressed"""
-        message = await remove_player_from_game(self.game, interaction.user)
-        games_remaining_text = await get_player_credit_text(interaction.user)
-        message = f"{message}\n{games_remaining_text}"
-        await interaction.response.send_message(message, ephemeral=True, delete_after=30)
-        log.info(f"Player {interaction.user.name} dropped from game {self.game.name}")
-        await do_waitlist_updates(self.game)
-        await self.update_message(followup_hook=interaction.followup)
+        await interaction.response.defer(ephemeral=True)
+        removed = await remove_player_from_game(self.game, interaction.user)
+        if removed:
+            log.info(f"Player {interaction.user.name} dropped from game {self.game.name}")
+            games_remaining_text = await get_player_credit_text(interaction.user)
+            message = f"Removed you from {self.game.name}"
+            message+= f"\n{games_remaining_text}"
+            await interaction.user.send(message)
+            await do_waitlist_updates(self.game)
+            await self.update_message(followup_hook=interaction.followup)
+            return True
+        await interaction.followup.send('Unable to remove you from this game, please consult the fates. It would appear to be your destiny.')
+        return False
 
     async def muster_view_msc(self, interaction):
         """Force refresh button callback"""
-        # await interaction.response.send_message(f"Refreshing game view...", ephemeral=True, delete_after=5)
-        await interaction.response.defer(ephemeral=True)
+        await interaction.response.defer(ephemeral=True, invisible=False)
         discord_name = str(interaction.user)
         characters = get_msc_characters(discord_id=discord_name)
         if characters:
