@@ -1,5 +1,4 @@
 import re
-from discordbot.bot import bot
 from discord.ui import Button
 
 
@@ -28,8 +27,3 @@ def get_game_id_from_message(message):
         return None
     except Exception as e:
         print(e)
-
-
-def add_persistent_view(view):
-    """Register a persistent view with the bot"""
-    bot.add_view(view)

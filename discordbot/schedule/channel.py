@@ -3,6 +3,7 @@ from discord.utils import get
 
 from discordbot.logs import logger as log
 from discordbot.utils.time import get_hammertime
+from discordbot.utils.views import add_persistent_view
 from discordbot.utils.channel import create_channel_hidden, channel_add_player
 from core.utils.games import get_dm, get_player_list
 from core.utils.channels import get_game_channels_pending_creation, set_game_channel_created
@@ -36,7 +37,7 @@ class ChannelManager:
     async def get_ping_text(self, game):
         players = await get_player_list(game)
         dm = await get_dm(game)
-        ping_text = f"DM: <@{dm.discord_id}>\n"
+        ping_text = f"DM: {dm.discord_name}\n"
         ping_text += "Players: "
         ping_text += ",".join(f"<@{p.discord_id}>" for p in players if not p.standby)
 
@@ -59,6 +60,7 @@ class ChannelManager:
         ping_text = await self.get_ping_text(game)
         message = await channel.send(ping_text, embed=banner, view=control_view)
         control_view.message = message
+        add_persistent_view(control_view)
 
     async def check_and_create_channels(self):
         """Get outstanding channels needed and create them where missing"""
@@ -113,11 +115,32 @@ class ChannelManager:
         except Exception as e:
             log.error(e)
 
+    async def recover_channel_state(self):
+        """ Pull game postings from posting history and reconstruct a game/message status from it """
+        pass
+#        log.info("Rebuilding internal message state")
+#        for channel in [self.channel_priority, self.channel_general]:
+#            messages = await get_bot_game_postings(channel)
+#            for message in messages:
+#                game_id = get_game_id_from_message(message)
+#                game = await get_game_by_id(game_id)
+#                if not game:
+#                    log.info(f"Removing orphaned message (no game to match) for game ID: {game_id}")
+#                    await message.delete()
+#                    continue
+
+                # Rebuild view handlers
+#                control_view = GameControlView(game)
+#                control_view.message = message
+#                self.current_games[game.pk] = {'game': game, 'message': message, 'view': control_view, 'channel': channel, 'jump_url': message.jump_url}
+#                add_persistent_view(control_view)
+
     @tasks.loop(seconds=6)
     async def channel_event_loop(self):
         if not self.initialised:
             log.debug("Starting up the channel watcher")
             self.parent_category = get(self.guild.categories, name="Your Upcoming Games")
+            await self.recover_channel_state()
             self.initialised = True
 
         await self.check_and_create_channels()
