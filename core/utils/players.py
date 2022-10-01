@@ -127,27 +127,19 @@ def get_player_max_games(discord_user):
         max_games = max_games + rank.max_games
     return max_games + bonuses
 
-
-def get_player_available_games(discord_user):
-    """Get the games available for a given user"""
+def get_user_signups_remaining(user):
+    """Get the total number of signups the user has availble to them"""
     now = timezone.now()
-    max_games = get_player_max_games(discord_user)
-    queryset = Player.objects.filter(discord_id=discord_user.id)
+    max_games = get_player_max_games(user)
+    queryset = Player.objects.filter(discord_id=user.id)
     queryset = queryset.filter(game__datetime__gte=now)
     pending_games = queryset.count()
     return max_games - pending_games
 
-
-@sync_to_async
-def get_player_signups_remaining(user):
-    """Get the total number of signups the user has availble to them"""
-    return get_player_available_games(user)
-
-
 @sync_to_async
 def get_player_credit_text(user):
     """Get a text string explaining to the user how many game credits they have"""
-    credits = get_player_available_games(user)
+    credits = get_user_signups_remaining(user)
     max_games = get_player_max_games(user)
     if credits:
         return f"You have [{credits}] game credits available out of [{max_games}]"
