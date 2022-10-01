@@ -1,3 +1,4 @@
+import random
 from discord import PermissionOverwrite
 
 from discordbot.bot import bot
@@ -46,7 +47,16 @@ async def notify_game_channel(game, message):
 
 async def game_channel_tag_promoted_user(game, user):
     """Send a message to the game channel notifying the player that they've been promoted"""
-    message = f"<@{user.mention}> promoted from waitlist"
+    choices = [
+        f"{user.mention} joins the party", 
+        f"Welcome to the party {user.mention}", 
+        f"A wild {user.mention} appears!", 
+        f"{user.mention} emerges from the mists",
+        f"A rogue portal appears and deposits {user.mention}", 
+        f"Is that 3 kobolds in an overcoat? No! its {user.mention}"
+        ]
+
+    message = random.choice(choices)
     message = await notify_game_channel(game, message)
 
 async def game_channel_tag_removed_user(game, user):

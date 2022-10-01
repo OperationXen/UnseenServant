@@ -2,7 +2,7 @@ from discordbot.logs import logger as log
 from discordbot.utils.messaging import send_dm
 from discordbot.utils.time import discord_countdown
 
-from discordbot.utils.channel import game_channel_tag_promoted_user, game_channel_tag_removed_user
+from discordbot.utils.channel import game_channel_tag_promoted_user, game_channel_tag_removed_user, game_channel_tag_promoted_user
 from discordbot.utils.channel import channel_add_user, channel_remove_user, get_channel_for_game
 from core.utils.players import populate_game_from_waitlist
 from core.utils.games import db_add_player_to_game, db_remove_discord_user_from_game
@@ -41,5 +41,5 @@ async def add_player_to_game(game, discord_user):
         channel = await get_channel_for_game(game)
         if channel:
             await channel_add_user(channel, discord_user)
-            await game_channel_tag_removed_user(game, discord_user)
+            await game_channel_tag_promoted_user(game, discord_user)
         return True

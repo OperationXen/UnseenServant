@@ -39,7 +39,7 @@ class ChannelManager:
     async def get_ping_text(self, game):
         players = await get_player_list(game)
         dm = await get_dm(game)
-        ping_text = f"DM: {dm.discord_name}\n"
+        ping_text = f"DM: <@{dm.discord_id}>\n"
         ping_text += "Players: "
         ping_text += ",".join(f"<@{p.discord_id}>" for p in players if not p.standby)
 
