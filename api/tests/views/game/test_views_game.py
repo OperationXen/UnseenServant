@@ -23,7 +23,6 @@ class TestGameViews(TestCase):
         'level_min': 1,
         'level_max': 4,
         'warnings': 'Beware of the Leopard',
-        'channel': 'Game channel',
         'streaming': False,
 
         'datetime_release': datetime.now(),

@@ -18,7 +18,7 @@ class GameSerialiser(ModelSerializer):
 
     class Meta:
         model = Game
-        fields = ['id', 'dm_name', 'name', 'module', 'realm', 'variant', 'description', 'players', 'max_players', 'level_min', 'level_max', 'warnings', 'channel', 'streaming', 'datetime_release', 'datetime_open_release', 'datetime', 'length']
+        fields = ['id', 'dm_name', 'name', 'module', 'realm', 'variant', 'description', 'players', 'max_players', 'level_min', 'level_max', 'warnings', 'streaming', 'datetime_release', 'datetime_open_release', 'datetime', 'length']
 
 
 class GameCreationSerialiser(ModelSerializer):
