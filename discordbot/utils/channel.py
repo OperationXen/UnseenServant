@@ -44,18 +44,15 @@ async def notify_game_channel(game, message):
         log.debug(f"Cannot send message to non-existant channel")
     return False
 
-
 async def game_channel_tag_promoted_user(game, user):
     """Send a message to the game channel notifying the player that they've been promoted"""
     message = f"<@{user.mention}> promoted from waitlist"
     message = await notify_game_channel(game, message)
 
-
 async def game_channel_tag_removed_user(game, user):
     """Send a message to the game channel notifying the DM that a player has dropped"""
     message = f"{user.display_name} dropped out"
     message = await notify_game_channel(game, message)
-
 
 async def channel_add_player(channel, player):
     """Give a specific player permission to view and post in the channel for an upcoming game"""
@@ -68,7 +65,6 @@ async def channel_add_player(channel, player):
         log.debug(f"Exception occured adding player to channel")
     return False
 
-
 async def channel_remove_user(channel, user):
     """Remove a specific player from a game channel"""
     try:
@@ -79,7 +75,6 @@ async def channel_remove_user(channel, user):
         log.debug(f"Exception occured removing player from channel")
     return False
 
-
 async def create_channel_hidden(guild, parent, name, topic):
     """creates a channel which can only be seen and used by the bot"""
     log.info(f"Creating new game mustering channel: {name} ")
@@ -89,3 +84,16 @@ async def create_channel_hidden(guild, parent, name, topic):
     }
     channel = await guild.create_text_channel(category=parent, name=name, topic=topic, overwrites=overwrites)
     return channel
+
+async def get_all_game_channels_for_guild(guild):
+    """ List all existing game channels """
+    all_channels = guild.by_category()
+    for channel_group in all_channels:
+        if channel_group[0].name == 'Your Upcoming Games':
+            return channel_group[1]
+    return []
+
+async def get_channel_first_message(channel):
+    """ Get the first message in a specified channel """
+    message = await channel.history(limit=1, oldest_first=True).flatten()
+    return message[0]

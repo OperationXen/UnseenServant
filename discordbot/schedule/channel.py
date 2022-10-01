@@ -4,14 +4,16 @@ from discord.utils import get
 from discordbot.logs import logger as log
 from discordbot.utils.time import get_hammertime
 from discordbot.utils.views import add_persistent_view
+from discordbot.utils.games import get_game_id_from_message
 from discordbot.utils.channel import create_channel_hidden, channel_add_player
-from core.utils.games import get_dm, get_player_list
+from discordbot.utils.channel import get_all_game_channels_for_guild, get_channel_first_message
+from discordbot.components.channels import MusteringBanner, MusteringView
+from core.utils.games import get_dm, get_player_list, get_game_by_id
 from core.utils.channels import get_game_channels_pending_creation, set_game_channel_created
 from core.utils.channels import get_game_channels_pending_destruction, destroy_game_channel
 from core.utils.channels import get_game_channels_pending_reminder, set_game_channel_reminded
 from core.utils.channels import get_game_channels_pending_warning, set_game_channel_warned
 from core.utils.channels import get_game_channel_for_game
-from discordbot.components.channels import MusteringBanner, MusteringView
 
 
 class ChannelManager:
@@ -117,23 +119,21 @@ class ChannelManager:
 
     async def recover_channel_state(self):
         """ Pull game postings from posting history and reconstruct a game/message status from it """
-        pass
-#        log.info("Rebuilding internal message state")
-#        for channel in [self.channel_priority, self.channel_general]:
-#            messages = await get_bot_game_postings(channel)
-#            for message in messages:
-#                game_id = get_game_id_from_message(message)
-#                game = await get_game_by_id(game_id)
-#                if not game:
-#                    log.info(f"Removing orphaned message (no game to match) for game ID: {game_id}")
-#                    await message.delete()
-#                    continue
-
-                # Rebuild view handlers
-#                control_view = GameControlView(game)
-#                control_view.message = message
-#                self.current_games[game.pk] = {'game': game, 'message': message, 'view': control_view, 'channel': channel, 'jump_url': message.jump_url}
-#                add_persistent_view(control_view)
+        log.info("Reconnecting to existing mustering views")
+        for channel in await get_all_game_channels_for_guild(self.guild):
+            message = await get_channel_first_message(channel)
+            game_id = get_game_id_from_message(message)
+            game = await get_game_by_id(game_id)
+            # Rebuild view handlers
+            if game:
+                control_view = MusteringView(game)
+                control_view.message = message
+                add_persistent_view(control_view)
+                log.info(f"Reconnected mustering view for {game.name}")
+            else:
+                log.info(f"Identified potentially ophaned mustering channel (no game to match) for game ID: {game_id}")
+                continue
+            
 
     @tasks.loop(seconds=6)
     async def channel_event_loop(self):
