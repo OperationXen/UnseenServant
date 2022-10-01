@@ -59,6 +59,11 @@ async def game_channel_tag_promoted_user(game, user):
     message = random.choice(choices)
     message = await notify_game_channel(game, message)
 
+async def game_channel_tag_promoted_player(game, player):
+    """ Tag a user in a channel from a player object"""
+    discord_user = await bot.fetch_user(player.discord_id)
+    return await game_channel_tag_promoted_user(game, discord_user)
+
 async def game_channel_tag_removed_user(game, user):
     """Send a message to the game channel notifying the DM that a player has dropped"""
     message = f"{user.display_name} dropped out"

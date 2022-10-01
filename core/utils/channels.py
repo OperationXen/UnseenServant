@@ -74,7 +74,7 @@ def get_game_channels_pending_reminder():
 @sync_to_async
 def get_game_channels_pending_warning():
     """Get those games which need a 1 hour warning sending"""
-    queryset = get_games_pending(hours=CHANNEL_WARN_MINUTES)
+    queryset = get_games_pending(minutes=CHANNEL_WARN_MINUTES)
     queryset = queryset.exclude(text_channel=None)  # not interested in anything without a channel
     queryset = queryset.exclude(text_channel__status=GameChannel.ChannelStatuses.WARNED)
     return list(queryset)  # force evaluation before leaving this sync context
