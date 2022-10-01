@@ -5,9 +5,10 @@ from asgiref.sync import sync_to_async
 
 from core.models.game import Game
 from core.models.players import Player
+from discordbot.logs import logger as log
 from core.utils.players import get_player_max_games, get_player_game_count
 from core.utils.players import get_current_user_bans, get_user_rank
-from core.utils.players import get_waitlist_rank, get_last_waitlist_position
+from core.utils.players import get_last_waitlist_position
 
 
 @sync_to_async
@@ -104,52 +105,37 @@ def get_game_by_id(game_id):
 
 
 @sync_to_async
-def add_player_to_game(game, user):
+def db_add_player_to_game(game, user):
     """Add a new player to an existing game"""
-    max_players = game.max_players
-    players = game.players.filter(standby=False)
-    waitlist = game.players.filter(standby=True)
+    try:
+        players = game.players.filter(standby=False)
+        waitlist = game.players.filter(standby=True)
 
-    if user.id == game.dm.discord_id:
-        return True, "You are DMing this game and therefore cannot play in it. Sorry."
-    if players.filter(discord_id=user.id):
-        return False, "You are already in this game"
-    waitlisted = waitlist.filter(discord_id=user.id).first()
-    if waitlisted:
-        return False, f"You're already in the waitlist for this game in position: {get_waitlist_rank(waitlisted)}"
+        # If you're the DM, already playing or waitlisted you can't join
+        if user.id == game.dm.discord_id:
+            return False
+        if players.filter(discord_id=user.id).first():
+            return False
+        if waitlist.filter(discord_id=user.id).first():
+            return False
 
-    outstanding_bans = get_current_user_bans(user)
-    if outstanding_bans:
-        message = "Sorry, you are currently banned from using this bot to register for games."
-        if outstanding_bans[0].variant != "PM":
-            message = message + f"\nYour ban expires {outstanding_bans[0].datetime_end.strftime('%Y-%m-%d %H:%M')}"
-        return False, message
+        # If user is banned or doesn't have enough signup credits
+        if get_current_user_bans(user):
+            return False
+        if not get_user_rank(user) or get_player_game_count(user) >= get_player_max_games(user):
+            return False
 
-    max_games = get_player_max_games(user)
-    player_games = get_player_game_count(user)
-    player_rank = get_user_rank(user)
-    if not player_rank:
-        return False, "You cannot sign up to any games as you do not have a rank"
-    if player_games >= max_games:
-        return (
-            False,
-            f"You are already signed up for {player_games} games, the most your rank of {player_rank.name} permits",
-        )
-
-    name = f"{user.name}"
-    if players.count() >= max_players:
-        player = Player.objects.create(
-            game=game,
-            discord_id=user.id,
-            discord_name=name,
-            character=None,
-            standby=True,
-            waitlist=get_last_waitlist_position(game) + 1,
-        )
-        return True, f"Added you to the waitlist for {game.name}, you are in position: {get_waitlist_rank(player)}"
-    else:
-        player = Player.objects.create(game=game, discord_id=user.id, discord_name=name, character=None, standby=False)
-        return True, f"Added you to {game.name}, enjoy!"
+        # Add player to game, either on waitlist or party
+        if players.count() >= game.max_players:
+            waitlist_position = get_last_waitlist_position(game) + 1
+            Player.objects.create(game=game, discord_id=user.id, discord_name=user.name, standby=True, waitlist=waitlist_position)
+            return True
+        else:
+            Player.objects.create(game=game, discord_id=user.id, discord_name=user.name, standby=False)
+            return True
+    except Exception as e:
+        log.debug(f"Exception occured adding {user.name} to {game.name}")
+        return False
 
 
 @sync_to_async

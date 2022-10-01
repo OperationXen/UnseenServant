@@ -8,6 +8,7 @@ from core.utils.players import get_player_credit_text
 from discordbot.components.games import BaseGameEmbed
 
 from discordbot.utils.players import remove_player_from_game
+from discordbot.utils.games import update_game_listing_embed
 from discordbot.logs import logger as log
 
 
@@ -103,16 +104,17 @@ class MusteringView(View):
 
     async def muster_view_dropout(self, interaction):
         """Callback for dropout button pressed"""
-        await interaction.response.defer(ephemeral=True, invisible=False)
+        await interaction.response.defer(ephemeral=True)
         removed = await remove_player_from_game(self.game, interaction.user)
         if removed:
             log.info(f"Player {interaction.user.name} dropped from game {self.game.name}")
             games_remaining_text = await get_player_credit_text(interaction.user)
             message = f"Removed you from {self.game.name}"
             message+= f"\n{games_remaining_text}"
-            await interaction.user.send(message)
             await do_waitlist_updates(self.game)
             await self.update_message(followup_hook=interaction.followup)
+            await update_game_listing_embed(self.game)
+            await interaction.user.send(message)
             return True
         await interaction.followup.send('Unable to remove you from this game, please consult the fates. It would appear to be your destiny.', ephemeral=True)
         return False

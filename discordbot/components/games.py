@@ -3,12 +3,11 @@ from discord.ui import View, Button
 
 import discordbot.core
 from discordbot.logs import logger as log
-from discordbot.utils.players import do_waitlist_updates, remove_player_from_game
+from discordbot.utils.players import do_waitlist_updates, remove_player_from_game, add_player_to_game
 from discordbot.utils.time import discord_time, discord_countdown
 from discordbot.utils.channel import update_mustering_embed
 from discordbot.utils.format import generate_calendar_message
-from core.utils.games import get_player_list, get_wait_list, get_dm, get_game_by_id
-from core.utils.games import add_player_to_game, is_patreon_exclusive
+from core.utils.games import get_player_list, get_wait_list, get_dm, is_patreon_exclusive
 from core.utils.players import get_player_credit_text
 
 
@@ -169,10 +168,10 @@ class GameControlView(View):
         self.dropout_button = Button(
             style=ButtonStyle.red, label="Drop out", custom_id=f"unseen-servant-dropout#{game.pk}"
         )
-        self.signup_button.callback = self.signup
+        self.signup_button.callback = self.game_listing_view_signup
         self.calendar_button.callback = self.calendar
-        self.refresh_button.callback = self.refresh
-        self.dropout_button.callback = self.game_view_dropout
+        self.refresh_button.callback = self.game_listing_view_refresh
+        self.dropout_button.callback = self.game_listing_view_dropout
         self.add_item(self.signup_button)
         self.add_item(self.calendar_button)
         self.add_item(self.refresh_button)
@@ -201,23 +200,29 @@ class GameControlView(View):
         else:
             return await self.message.edit(embeds=embeds)
 
-    async def signup(self, interaction):
+    async def game_listing_view_signup(self, interaction):
         """Callback for signup button pressed"""
+        await interaction.response.defer(ephemeral=True)
         log.info(f"Player {interaction.user.name} signed up for game {self.game.name}")
-        status, message = await add_player_to_game(self.game, interaction.user)
-        games_remaining_text = await get_player_credit_text(interaction.user)
-        message = f"{message}\n{games_remaining_text}"
-        await interaction.response.send_message(message, ephemeral=True, delete_after=30)
-        await do_waitlist_updates(self.game)
-        await self.update_message(followup_hook=interaction.followup)
-        await update_mustering_embed(self.game)
+        added = await add_player_to_game(self.game, interaction.user)
+        if added:
+            games_remaining_text = await get_player_credit_text(interaction.user)
+            message = f"Added you to {self.game.name}\n{games_remaining_text}"
+            await do_waitlist_updates(self.game)
+            await self.update_message(followup_hook=interaction.followup)
+            await update_mustering_embed(self.game)
+            await interaction.user.send(message)
+            return True
+        else:
+            await interaction.followup.send('Unable to add you to this game', ephemeral=True)
+            return False
 
     async def calendar(self, interaction):
         """Calendar button callback"""
         message = generate_calendar_message(self.game)
         await interaction.response.send_message(message, ephemeral=True, embeds=[])
 
-    async def game_view_dropout(self, interaction):
+    async def game_listing_view_dropout(self, interaction):
         """Callback for dropout button pressed"""
         await interaction.response.defer(ephemeral=True)
         removed = await remove_player_from_game(self.game, interaction.user)
@@ -225,17 +230,16 @@ class GameControlView(View):
         if removed:
             log.info(f"Player {interaction.user.name} dropped from game {self.game.name}")
             games_remaining_text = await get_player_credit_text(interaction.user)
-            message = f"Removed you from {self.game.name}"
-            message+= f"\n{games_remaining_text}"
-            await interaction.user.send(message)            
+            message = f"Removed you from {self.game.name}\n{games_remaining_text}"    
             await do_waitlist_updates(self.game)
             await self.update_message(followup_hook=interaction.followup)
             await update_mustering_embed(self.game)
+            await interaction.user.send(message)
             return True
         await interaction.followup.send('Unable to remove you from this game', ephemeral=True)
         return False
 
-    async def refresh(self, interaction):
+    async def game_listing_view_refresh(self, interaction):
         """Force refresh button callback"""
         await do_waitlist_updates(self.game)
         await self.update_message(response_hook=interaction.response)

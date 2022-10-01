@@ -54,17 +54,21 @@ async def game_channel_tag_removed_user(game, user):
     message = f"{user.display_name} dropped out"
     message = await notify_game_channel(game, message)
 
-async def channel_add_player(channel, player):
-    """Give a specific player permission to view and post in the channel for an upcoming game"""
+async def channel_add_user(channel, user):
+    """Give a specific user permission to view and post in the channel for an upcoming game"""
     try:
-        log.info(f"Adding player [{player.discord_name}] to channel [{channel.name}]")
-        discord_user = await bot.fetch_user(player.discord_id)
-        await channel.set_permissions(discord_user, read_messages=True, send_messages=True)
+        await channel.set_permissions(user, read_messages=True, send_messages=True)
         return True
     except Exception as e:
-        log.debug(f"Exception occured adding player to channel")
+        log.debug(f"Exception occured adding discord user {user.name} to channel")
     return False
 
+async def channel_add_player(channel, player):
+    """ Add a user to channel by reference from a player object"""
+    log.info(f"Adding player [{player.discord_name}] to channel [{channel.name}]")
+    discord_user = await bot.fetch_user(player.discord_id)
+    return await channel_add_user(channel, discord_user)
+    
 async def channel_remove_user(channel, user):
     """Remove a specific player from a game channel"""
     try:
@@ -72,7 +76,7 @@ async def channel_remove_user(channel, user):
         await channel.set_permissions(user, read_messages=False, send_messages=False)
         return True
     except Exception as e:
-        log.debug(f"Exception occured removing player from channel")
+        log.debug(f"Exception occured removing discord user {user.discord_name} from channel")
     return False
 
 async def create_channel_hidden(guild, parent, name, topic):
