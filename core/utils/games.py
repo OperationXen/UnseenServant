@@ -58,7 +58,6 @@ def get_upcoming_games_for_player(player_id, waitlisted=False):
     # force evaluation before leaving this sync context
     return list(queryset)
 
-
 @sync_to_async
 def get_upcoming_games_for_dm(dm_id):
     now = timezone.now()
@@ -129,10 +128,10 @@ def db_add_player_to_game(game, user):
         if players.count() >= game.max_players:
             waitlist_position = get_last_waitlist_position(game) + 1
             Player.objects.create(game=game, discord_id=user.id, discord_name=user.name, standby=True, waitlist=waitlist_position)
-            return True
+            return "waitlist"
         else:
             Player.objects.create(game=game, discord_id=user.id, discord_name=user.name, standby=False)
-            return True
+            return "party"
     except Exception as e:
         log.debug(f"Exception occured adding {user.name} to {game.name}")
         return False

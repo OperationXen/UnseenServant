@@ -4,8 +4,6 @@ from django.utils import timezone
 from datetime import timedelta
 from asgiref.sync import sync_to_async
 
-from discordbot.utils.messaging import send_dm
-from discordbot.utils.time import discord_countdown
 from discordbot.logs import logger as log
 from core.models.players import Player, Ban, Rank, BonusCredit
 
@@ -142,7 +140,7 @@ def get_player_credit_text(user):
     credits = get_user_signups_remaining(user)
     max_games = get_player_max_games(user)
     if credits:
-        return f"You have [{credits}] game credits available out of [{max_games}]"
+        return f"{credits} / {max_games} game credits available"
     else:
         return f"You have no game credits available from your [{max_games}] total"
 

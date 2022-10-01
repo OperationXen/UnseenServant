@@ -205,17 +205,19 @@ class GameControlView(View):
         await interaction.response.defer(ephemeral=True)
         log.info(f"Player {interaction.user.name} signed up for game {self.game.name}")
         added = await add_player_to_game(self.game, interaction.user)
-        if added:
-            games_remaining_text = await get_player_credit_text(interaction.user)
-            message = f"Added you to {self.game.name}\n{games_remaining_text}"
-            await do_waitlist_updates(self.game)
-            await self.update_message(followup_hook=interaction.followup)
-            await update_mustering_embed(self.game)
-            await interaction.user.send(message)
-            return True
-        else:
+        if not added:
             await interaction.followup.send('Unable to add you to this game', ephemeral=True)
             return False
+        games_remaining_text = await get_player_credit_text(interaction.user)
+        if added == 'party':
+            message = f"```You're playing in {self.game.name} ({games_remaining_text})```"
+        else:
+            message = f"```Added you to to the waitlist for {self.game.name} ({games_remaining_text})```"
+        await do_waitlist_updates(self.game)
+        await self.update_message(followup_hook=interaction.followup)
+        await update_mustering_embed(self.game)
+        await interaction.user.send(message)
+        return True
 
     async def calendar(self, interaction):
         """Calendar button callback"""
@@ -230,7 +232,7 @@ class GameControlView(View):
         if removed:
             log.info(f"Player {interaction.user.name} dropped from game {self.game.name}")
             games_remaining_text = await get_player_credit_text(interaction.user)
-            message = f"Removed you from {self.game.name}\n{games_remaining_text}"    
+            message = f"```Removed you from {self.game.name} ({games_remaining_text})```"
             await do_waitlist_updates(self.game)
             await self.update_message(followup_hook=interaction.followup)
             await update_mustering_embed(self.game)
