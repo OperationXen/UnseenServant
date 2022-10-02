@@ -1,7 +1,7 @@
-import discord
 from discord import Embed, Colour, SelectOption
 from discord.ui import View, Select
 
+from discordbot.logs import logger as log
 from discordbot.utils.moonseacodex import get_character_string, get_classes_string, get_stats_string, get_items_string
 
 
@@ -37,26 +37,29 @@ class MSCCharacterEmbed(Embed):
         return raw
 
     def __init__(self, character):
-        super().__init__(title=get_character_string(character))
-        level = character.get('level')
-        sheet = character.get('sheet')
-        tier = self.get_tier(level)
-        self.multiclass = len(character.get('classes')) > 1
-        equipped_items = self.get_equipped(character.get('items'))
+        try:
+            super().__init__(title=get_character_string(character))
+            level = character.get('level')
+            sheet = character.get('sheet')
+            tier = self.get_tier(level)
+            self.multiclass = len(character.get('classes')) > 1
+            equipped_items = self.get_equipped(character.get('items'))
 
-        self.colour = self.tier_colours[tier]
-        self.add_field(name='Classes' if self.multiclass else 'Class', value=get_classes_string(character), inline=False)
-        self.add_field(name='Important Stats', value=get_stats_string(character), inline=True)
-        self.add_field(name='Vision', value=f"{character.get('vision') or 'No special vision'}", inline=True)
-        self.add_field(name=f"Equipped items ({len(equipped_items)})", value=get_items_string(equipped_items), inline=False)
-        self.add_field(name='DM information', value=self.get_dm_text(character), inline=False)
-        self.add_field(name='Moonsea Codex', value=f"[Link to entry on Moonsea Codex](https://digitaldemiplane.com/moonseacodex/character/{character.get('uuid')}/)", inline=True)
-        if sheet:
-            self.add_field(name='Character sheet', value=f"[Link to character sheet]({sheet})", inline=True)
-        if character.get('artwork'):
-            self.set_thumbnail(url=f"https://digitaldemiplane.com{character.get('artwork')}")
-        elif character.get('token'):
-            self.set_thumbnail(url=f"https://digitaldemiplane.com{character.get('token')}")
+            self.colour = self.tier_colours[tier]
+            self.add_field(name='Classes' if self.multiclass else 'Class', value=get_classes_string(character), inline=False)
+            self.add_field(name='Important Stats', value=get_stats_string(character), inline=True)
+            self.add_field(name='Vision', value=f"{character.get('vision') or 'No special vision'}", inline=True)
+            self.add_field(name=f"Equipped items ({len(equipped_items)})", value=get_items_string(equipped_items), inline=False)
+            self.add_field(name='DM information', value=self.get_dm_text(character), inline=False)
+            self.add_field(name='Moonsea Codex', value=f"[Link to entry on Moonsea Codex](https://digitaldemiplane.com/moonseacodex/character/{character.get('uuid')}/)", inline=True)
+            if sheet:
+                self.add_field(name='Character sheet', value=f"[Link to character sheet]({sheet})", inline=True)
+            if character.get('artwork'):
+                self.set_thumbnail(url=f"https://digitaldemiplane.com{character.get('artwork')}")
+            elif character.get('token'):
+                self.set_thumbnail(url=f"https://digitaldemiplane.com{character.get('token')}")
+        except Exception as e:
+            log.error(f"Exception {str(e)} occured creating MSC embed for {character.get('name')}")
 
 
 class MSCCharacterList(View):
