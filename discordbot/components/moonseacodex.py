@@ -1,3 +1,4 @@
+import discord
 from discord import Embed, Colour, SelectOption
 from discord.ui import View, Select
 
@@ -48,7 +49,7 @@ class MSCCharacterEmbed(Embed):
         self.add_field(name='Important Stats', value=get_stats_string(character), inline=True)
         self.add_field(name='Vision', value=f"{character.get('vision') or 'No special vision'}", inline=True)
         self.add_field(name=f"Equipped items ({len(equipped_items)})", value=get_items_string(equipped_items), inline=False)
-        self.add_field(name='DM information', value=f"{self.get_dm_text(character)}", inline=False)
+        self.add_field(name='DM information', value=self.get_dm_text(character), inline=False)
         self.add_field(name='Moonsea Codex', value=f"[Link to entry on Moonsea Codex](https://digitaldemiplane.com/moonseacodex/character/{character.get('uuid')}/)", inline=True)
         if sheet:
             self.add_field(name='Character sheet', value=f"[Link to character sheet]({sheet})", inline=True)
