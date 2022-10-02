@@ -53,7 +53,19 @@ async def game_channel_tag_promoted_user(game, user):
         f"A wild {user.mention} appears!", 
         f"{user.mention} emerges from the mists",
         f"A rogue portal appears and deposits {user.mention}", 
-        f"Is that 3 kobolds in an overcoat? No! its {user.mention}"
+        f"Is that 3 kobolds in an overcoat? No! its {user.mention}",
+        f"The ritual is complete, {user.mention} walks amongst us",
+        f"{user.mention} planeshifts in",
+        f"Congratulations {user.mention}, you have been selected, please do not resist.",
+        f"{user.mention} broods in the corner of the tavern",
+        f"Neither snow nor rain nor heat nor gloom of night could stop {user.mention} from joining this party",
+        f"Neither snow nor rain nor heat nor glom of nit could stop {user.mention} from joining this party",
+        f"It's not a doppelganger, it's {user.mention}",
+        f"{user.mention} teleports in with a shower of confetti",
+        f"I would like to cast Player Ally and summon {user.mention}"
+        f"Everyone knows something is afoot when {user.mention} arrives...",
+        f"{user.mention} has been successfully planar bound to this session!",
+        f"BAM! A three point landing like that can only be {user.mention}."
         ]
 
     message = random.choice(choices)
