@@ -1,8 +1,9 @@
 from discordbot.bot import bot
 
+
 async def send_dm(discord_id, message):
-    user = await bot.get_or_fetch_user(discord_id)
-    print("User")
+    discord_user = await bot.get_or_fetch_user(discord_id)
+    return await discord_user.send(message)
 
 def get_channel_by_name(channel_name):
     """ Attempt to retieve a channel by a name """

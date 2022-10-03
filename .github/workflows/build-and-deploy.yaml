@@ -76,6 +76,7 @@ jobs:
               -e DB_USER=${{ secrets.DB_USER }} -e DB_PASS=${{ secrets.DB_PASS }} -e SERVER=${{ secrets.SERVER }} \
               -e DISCORD_TOKEN=${{ secrets.DISCORD_TOKEN }} -e DISCORD_GUILDS=${{ secrets.DISCORD_GUILDS }} \
               -e MOONSEACODEX_APIKEY=${{ secrets.MOONSEACODEX_APIKEY }} \
+              -e CHANNEL_SEND_PINGS=${{ secrets.CHANNEL_SEND_PINGS }} \
               -v /var/opt/unseen_servant:/unseen_servant/database \
               --restart always \
               operationxen/unseen_servant:main

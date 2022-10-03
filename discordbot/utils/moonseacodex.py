@@ -61,9 +61,13 @@ def get_msc_characters(discord_id: str) -> list:
     """ Retrieve all characters for a given discord user """
     data={'apikey': MOONSEACODEX_APIKEY, 'discord_id': discord_id}
     response = requests.post('https://digitaldemiplane.com/moonseacodex/api/discord_lookup/character/', data=data)
-    return json.loads(response.text)
+    if response.status_code == 200:
+        return json.loads(response.text)
+    return None
 
 def get_msc_trade_search(search_term):
     """ Get MSC trading post search results for a given query """
     response = requests.get('https://digitaldemiplane.com/moonseacodex/api/magicitem/advert', params={'search': search_term})
-    return json.loads(response.text)
+    if response.status_code == 200:
+        return json.loads(response.text)
+    return None
