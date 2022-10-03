@@ -151,8 +151,8 @@ def db_remove_player_from_game(game, user):
 def db_remove_discord_user_from_game(game, user):
     """ Remove a player from a game by their discord ID """
     player = game.players.filter(discord_id=user.id).first()
-    removed_from_party = not player.waitlist
     if player:
+        removed_from_party = not player.waitlist
         player.delete()
         return removed_from_party
     return None
