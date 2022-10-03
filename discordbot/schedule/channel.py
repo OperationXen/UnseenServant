@@ -148,7 +148,7 @@ class ChannelManager:
                 log.info(f"Identified potentially ophaned mustering channel (no game to match) for game ID: {game_id}")
                 continue
 
-    @tasks.loop(seconds=6)
+    @tasks.loop(seconds=42)
     async def channel_event_loop(self):
         if not self.initialised:
             log.debug("Starting up the channel watcher")
