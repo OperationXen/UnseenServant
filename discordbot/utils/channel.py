@@ -68,7 +68,7 @@ async def game_channel_tag_promoted_user(game, user):
         f"Neither snow nor rain nor heat nor glom of nit could stop {user_text} from joining this party",
         f"It's not a doppelganger, it's {user_text}",
         f"{user_text} teleports in with a shower of confetti",
-        f"I would like to cast Player Ally and summon {user_text}"
+        f"I would like to cast Player Ally and summon {user_text}",
         f"Everyone knows something is afoot when {user_text} arrives...",
         f"{user_text} has been successfully planar bound to this session!",
         f"BAM! A three point landing like that can only be {user_text}.",
@@ -91,7 +91,7 @@ async def game_channel_tag_removed_user(game, user):
 async def channel_add_user(channel, user):
     """Give a specific user permission to view and post in the channel for an upcoming game"""
     try:
-        await channel.set_permissions(user, read_messages=True, send_messages=True)
+        await channel.set_permissions(user, read_messages=True, read_message_history=True, send_messages=True)
         return True
     except Exception as e:
         log.debug(f"Exception occured adding discord user {user.name} to channel")
@@ -107,7 +107,7 @@ async def channel_remove_user(channel, user):
     """Remove a specific player from a game channel"""
     try:
         log.info(f"Removing player [{user.display_name}] from channel [{channel.name}]")
-        await channel.set_permissions(user, read_messages=False, send_messages=False)
+        await channel.set_permissions(user, read_messages=False, read_message_history=False, send_messages=False)
         return True
     except Exception as e:
         log.debug(f"Exception occured removing discord user {user.discord_name} from channel")
