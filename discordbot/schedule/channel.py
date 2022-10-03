@@ -1,6 +1,7 @@
 from discord.ext import tasks
 from discord.utils import get
 
+from config.settings import CHANNEL_SEND_PINGS
 from discordbot.logs import logger as log
 from discordbot.utils.time import get_hammertime
 from discordbot.utils.views import add_persistent_view
@@ -37,13 +38,22 @@ class ChannelManager:
         return topic_text
 
     async def get_ping_text(self, game):
+        """ Get text that will ping each of the users mentioned """
         players = await get_player_list(game)
         dm = await get_dm(game)
         ping_text = f"DM: <@{dm.discord_id}>\n"
         ping_text += "Players: "
         ping_text += ",".join(f"<@{p.discord_id}>" for p in players if not p.standby)
-
         return ping_text
+
+    async def get_flat_message_list(self, game):
+        """ Get a list of involved users, but in such a was as to not ping them """
+        players = await get_player_list(game)
+        dm = await get_dm(game)
+        text = f"DM: {dm.discord_name}\n"
+        text += "Players: "
+        text += ",".join(f"{p.discord_name}" for p in players if not p.standby)
+        return text
 
     async def add_channel_users(self, channel, game):
         """Add the DM and players to the newly created channel"""
@@ -59,8 +69,12 @@ class ChannelManager:
         banner = MusteringBanner(game)
         await banner.build()
 
-        ping_text = await self.get_ping_text(game)
-        message = await channel.send(ping_text, embed=banner, view=control_view)
+        if CHANNEL_SEND_PINGS:
+            ping_text = await self.get_ping_text(game)
+            message = await channel.send(ping_text, embed=banner, view=control_view)
+        else:
+            flat_text = await self.get_flat_message_list(game)
+            message = await channel.send(flat_text, embed=banner, view=control_view)
         control_view.message = message
         add_persistent_view(control_view)
 

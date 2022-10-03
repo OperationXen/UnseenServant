@@ -3,6 +3,7 @@ from discord import PermissionOverwrite
 
 from discordbot.bot import bot
 from discordbot.logs import logger as log
+from config.settings import CHANNEL_SEND_PINGS
 from core.utils.channels import get_game_channel_for_game
 
 
@@ -47,25 +48,31 @@ async def notify_game_channel(game, message):
 
 async def game_channel_tag_promoted_user(game, user):
     """Send a message to the game channel notifying the player that they've been promoted"""
+    if CHANNEL_SEND_PINGS:
+        user_text = user.mention
+    else:
+        user_text = user.display_name
+
     choices = [
-        f"{user.mention} joins the party", 
-        f"Welcome to the party {user.mention}", 
-        f"A wild {user.mention} appears!", 
-        f"{user.mention} emerges from the mists",
-        f"A rogue portal appears and deposits {user.mention}", 
-        f"Is that 3 kobolds in an overcoat? No! its {user.mention}",
-        f"The ritual is complete, {user.mention} walks amongst us",
-        f"{user.mention} planeshifts in",
-        f"Congratulations {user.mention}, you have been selected, please do not resist.",
-        f"{user.mention} broods in the corner of the tavern",
-        f"Neither snow nor rain nor heat nor gloom of night could stop {user.mention} from joining this party",
-        f"Neither snow nor rain nor heat nor glom of nit could stop {user.mention} from joining this party",
-        f"It's not a doppelganger, it's {user.mention}",
-        f"{user.mention} teleports in with a shower of confetti",
-        f"I would like to cast Player Ally and summon {user.mention}"
-        f"Everyone knows something is afoot when {user.mention} arrives...",
-        f"{user.mention} has been successfully planar bound to this session!",
-        f"BAM! A three point landing like that can only be {user.mention}."
+        f"{user_text} joins the party", 
+        f"Welcome to the party {user_text}", 
+        f"A wild {user_text} appears!", 
+        f"{user_text} emerges from the mists",
+        f"A rogue portal appears and deposits {user_text}", 
+        f"Is that 3 kobolds in an overcoat? No! its {user_text}",
+        f"The ritual is complete, {user_text} walks amongst us",
+        f"{user_text} planeshifts in",
+        f"Congratulations {user_text}, you have been selected, please do not resist.",
+        f"{user_text} broods in the corner of the tavern",
+        f"Neither snow nor rain nor heat nor gloom of night could stop {user_text} from joining this party",
+        f"Neither snow nor rain nor heat nor glom of nit could stop {user_text} from joining this party",
+        f"It's not a doppelganger, it's {user_text}",
+        f"{user_text} teleports in with a shower of confetti",
+        f"I would like to cast Player Ally and summon {user_text}"
+        f"Everyone knows something is afoot when {user_text} arrives...",
+        f"{user_text} has been successfully planar bound to this session!",
+        f"BAM! A three point landing like that can only be {user_text}.",
+        f"After succeeding on a perception check, you find {user_text} has snuck into the game. "
         ]
 
     message = random.choice(choices)

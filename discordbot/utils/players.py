@@ -22,7 +22,6 @@ async def do_waitlist_updates(game):
             f"```You have been promoted from the waitlist for {game.name} in {discord_countdown(game.datetime)}!```",
         )
 
-
 async def remove_player_from_game(game, discord_user):
     """Remove a player from a given game"""
     removed = await db_remove_discord_user_from_game(game, discord_user)
