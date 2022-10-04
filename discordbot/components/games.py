@@ -210,9 +210,9 @@ class GameControlView(View):
             return False
         games_remaining_text = await get_player_credit_text(interaction.user)
         if added == 'party':
-            message = f"```You're playing in {self.game.name} ({games_remaining_text})```"
+            message = f"You're playing in {self.game.name} ({games_remaining_text})"
         else:
-            message = f"```Added you to to the waitlist for {self.game.name} ({games_remaining_text})```"
+            message = f"Added you to to the waitlist for {self.game.name} ({games_remaining_text})"
         await do_waitlist_updates(self.game)
         await self.update_message(followup_hook=interaction.followup)
         await update_mustering_embed(self.game)
@@ -232,7 +232,7 @@ class GameControlView(View):
         if removed:
             log.info(f"Player {interaction.user.name} dropped from game {self.game.name}")
             games_remaining_text = await get_player_credit_text(interaction.user)
-            message = f"```Removed you from {self.game.name} ({games_remaining_text})```"
+            message = f"Removed you from {self.game.name} ({games_remaining_text})"
             await do_waitlist_updates(self.game)
             await self.update_message(followup_hook=interaction.followup)
             await update_mustering_embed(self.game)

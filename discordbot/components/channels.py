@@ -109,7 +109,7 @@ class MusteringView(View):
         if removed:
             log.info(f"Player {interaction.user.name} dropped from game {self.game.name}")
             games_remaining_text = await get_player_credit_text(interaction.user)
-            message = f"```Removed you from {self.game.name} ({games_remaining_text})```"
+            message = f"Removed you from {self.game.name} ({games_remaining_text})"
             await do_waitlist_updates(self.game)
             await self.update_message(followup_hook=interaction.followup)
             await update_game_listing_embed(self.game)
