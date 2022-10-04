@@ -9,7 +9,7 @@ def create_google_calendar_link(game):
     params['action'] = 'TEMPLATE'
     params['text'] = game.name
     params['details'] = f"Triden%20games%20DMed%20by%20{game.dm.name}"
-    params['location'] = f"Discord channel: {game.channel}"
+    params['location'] = f"Triden Games"
     params['dates'] = f"{game.datetime.strftime('%Y%m%dT%H%M')}Z/{game.datetime.strftime('%Y%m%dT%H%M')}Z"
     params['sf'] = 'true'
 

@@ -22,7 +22,7 @@ class MusteringBanner(BaseGameEmbed):
 
     def player_details_list(self):
         """get list of all players with a spot in the game"""
-        player_list = "\n".join(f"<@{p.discord_id}>" for p in self.players if not p.standby)
+        player_list = "\n".join(f"{p.discord_name}" for p in self.players if not p.standby)
         return player_list or "None"
 
     def get_muster_text(self):
@@ -55,6 +55,7 @@ class MusteringBanner(BaseGameEmbed):
             value=self.player_details_list(),
             inline=True,
         )
+        self.add_field(name=f"Waitlisted", value=self.waitlist_count(), inline=True)
         if self.game.streaming:
             self.add_field(name="Streaming", value=f"Reminder, this game may be streamed")
         if self.dm.rules_text:
@@ -109,7 +110,7 @@ class MusteringView(View):
         if removed:
             log.info(f"Player {interaction.user.name} dropped from game {self.game.name}")
             games_remaining_text = await get_player_credit_text(interaction.user)
-            message = f"```Removed you from {self.game.name} ({games_remaining_text})```"
+            message = f"Removed you from {self.game.name} `({games_remaining_text})`"
             await do_waitlist_updates(self.game)
             await self.update_message(followup_hook=interaction.followup)
             await update_game_listing_embed(self.game)
