@@ -221,8 +221,9 @@ class GameControlView(View):
 
     async def calendar(self, interaction):
         """Calendar button callback"""
+        await interaction.response.defer(ephemeral=True, invisible=False)
         message = generate_calendar_message(self.game)
-        await interaction.response.send_message(message, ephemeral=True, embeds=[])
+        await interaction.followup.send(message, ephemeral=True, embeds=[])
 
     async def game_listing_view_dropout(self, interaction):
         """Callback for dropout button pressed"""
