@@ -22,6 +22,7 @@ async def do_waitlist_updates(game):
         channel = await get_channel_for_game(game)
 
         await channel_add_player(channel, player)
+        # Only ping players if they're being promoted into a game that hasn't started
         if game_outstanding:
             await game_channel_tag_promoted_player(game, player)
             await send_dm(
