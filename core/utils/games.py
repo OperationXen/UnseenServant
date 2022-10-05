@@ -58,6 +58,7 @@ def get_upcoming_games_for_player(player_id, waitlisted=False):
     # force evaluation before leaving this sync context
     return list(queryset)
 
+
 @sync_to_async
 def get_upcoming_games_for_dm(dm_id):
     now = timezone.now()
@@ -127,7 +128,9 @@ def db_add_player_to_game(game, user):
         # Add player to game, either on waitlist or party
         if players.count() >= game.max_players:
             waitlist_position = get_last_waitlist_position(game) + 1
-            Player.objects.create(game=game, discord_id=user.id, discord_name=user.name, standby=True, waitlist=waitlist_position)
+            Player.objects.create(
+                game=game, discord_id=user.id, discord_name=user.name, standby=True, waitlist=waitlist_position
+            )
             return "waitlist"
         else:
             Player.objects.create(game=game, discord_id=user.id, discord_name=user.name, standby=False)
@@ -147,9 +150,10 @@ def db_remove_player_from_game(game, user):
         return True
     return False
 
+
 @sync_to_async
 def db_remove_discord_user_from_game(game, user):
-    """ Remove a player from a game by their discord ID """
+    """Remove a player from a game by their discord ID"""
     player = game.players.filter(discord_id=user.id).first()
     if player:
         removed_from_party = not player.waitlist
@@ -168,6 +172,14 @@ def check_game_expired(game):
     if game.datetime < expiry:
         return True
     if not game.ready:
+        return True
+    return False
+
+
+def check_game_pending(game):
+    """See if a game is in the future or not"""
+    now = timezone.now()
+    if game.datetime > now:
         return True
     return False
 
