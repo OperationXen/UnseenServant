@@ -184,7 +184,6 @@ class GameControlView(View):
 
     async def update_message(self, followup_hook=None, response_hook=None):
         """Update the message this view is attached to"""
-        #self.game = await get_game_by_id(self.game.id)
         detail_embed = GameDetailEmbed(self.game)
         await detail_embed.build()
         # Find and replace the game detail embed within the message by comparing titles
@@ -206,10 +205,10 @@ class GameControlView(View):
         log.info(f"Player {interaction.user.name} signed up for game {self.game.name}")
         added = await add_player_to_game(self.game, interaction.user)
         if not added:
-            await interaction.followup.send('Unable to add you to this game', ephemeral=True)
+            await interaction.followup.send("Unable to add you to this game", ephemeral=True)
             return False
         games_remaining_text = await get_player_credit_text(interaction.user)
-        if added == 'party':
+        if added == "party":
             message = f"You're playing in {self.game.name} `({games_remaining_text})`"
         else:
             message = f"Added you to to the waitlist for {self.game.name} `({games_remaining_text})`"
@@ -239,7 +238,7 @@ class GameControlView(View):
             await update_mustering_embed(self.game)
             await interaction.user.send(message)
             return True
-        await interaction.followup.send('Unable to remove you from this game', ephemeral=True)
+        await interaction.followup.send("Unable to remove you from this game", ephemeral=True)
         return False
 
     async def game_listing_view_refresh(self, interaction):
