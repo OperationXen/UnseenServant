@@ -25,10 +25,22 @@ class MusteringBanner(BaseGameEmbed):
         player_list = "\n".join(f"{p.discord_name}" for p in self.players if not p.standby)
         return player_list or "None"
 
+    def waitlist_details_list(self, max):
+        """get list of all players in waitlist"""
+        if not max:
+            max = 8
+        if max < 3:
+            max = 3
+
+        player_list = "\n".join(f"{p.discord_name}" for p in self.waitlist[:max])
+        if len(self.waitlist) > max:
+            player_list = player_list + f"\nand {len(self.waitlist) - max} more brave souls"
+        return player_list or "None"
+
     def get_muster_text(self):
         """mustering instructions"""
         if self.dm.muster_text:
-            return self.dm.muster_text
+            return self.dm.muster_text[:1024]
         else:
             return (
                 f"Greetings! Please submit the character you are bringing to this adventure at the earliest opportunity"
@@ -55,11 +67,15 @@ class MusteringBanner(BaseGameEmbed):
             value=self.player_details_list(),
             inline=True,
         )
-        self.add_field(name=f"Waitlisted", value=self.waitlist_count(), inline=True)
+        self.add_field(
+            name=f"Waitlist ({self.waitlist_count()})",
+            value=self.waitlist_details_list(self.game.max_players),
+            inline=True,
+        )
         if self.game.streaming:
             self.add_field(name="Streaming", value=f"Reminder, this game may be streamed")
         if self.dm.rules_text:
-            self.add_field(name="DM Rules", value=self.dm.rules_text, inline=False)
+            self.add_field(name="DM Rules", value=self.dm.rules_text[:1024], inline=False)
         self.add_field(name="Instructions for players", value=self.get_muster_text(), inline=False)
 
 
