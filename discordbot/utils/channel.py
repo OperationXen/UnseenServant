@@ -91,7 +91,7 @@ async def game_channel_tag_removed_user(game, user):
 async def channel_add_user(channel, user):
     """Give a specific user permission to view and post in the channel for an upcoming game"""
     try:
-        await channel.set_permissions(user, read_messages=True)
+        await channel.set_permissions(user, read_messages=True, send_messages=True, read_message_history=True, use_slash_commands=True)
         return True
     except Exception as e:
         log.debug(f"Exception occured adding discord user {user.name} to channel")
@@ -111,7 +111,7 @@ async def channel_remove_user(channel, user):
     """Remove a specific player from a game channel"""
     try:
         log.info(f"Removing player [{user.display_name}] from channel [{channel.name}]")
-        await channel.set_permissions(user, read_messages=False)
+        await channel.set_permissions(user, read_messages=False, send_messages=False)
         return True
     except Exception as e:
         log.debug(f"Exception occured removing discord user {user.discord_name} from channel")
@@ -122,7 +122,7 @@ async def create_channel_hidden(guild, parent, name, topic):
     log.info(f"Creating new game mustering channel: {name} ")
     overwrites = {
         guild.default_role: PermissionOverwrite(read_messages=False),
-        guild.me: PermissionOverwrite(read_messages=True),
+        guild.me: PermissionOverwrite(read_messages=True, send_messages=True, read_message_history=True),
     }
     channel = await guild.create_text_channel(category=parent, name=name, topic=topic, overwrites=overwrites)
     return channel

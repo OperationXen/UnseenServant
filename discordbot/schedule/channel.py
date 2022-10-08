@@ -3,7 +3,7 @@ from discord.utils import get
 
 from config.settings import CHANNEL_SEND_PINGS
 from discordbot.logs import logger as log
-from discordbot.utils.time import get_hammertime
+from discordbot.utils.time import get_hammertime, discord_countdown
 from discordbot.utils.views import add_persistent_view
 from discordbot.utils.games import get_game_id_from_message
 from discordbot.utils.channel import create_channel_hidden, channel_add_player
@@ -15,7 +15,6 @@ from core.utils.channels import get_game_channels_pending_destruction, destroy_g
 from core.utils.channels import get_game_channels_pending_reminder, set_game_channel_reminded
 from core.utils.channels import get_game_channels_pending_warning, set_game_channel_warned
 from core.utils.channels import get_game_channel_for_game
-
 
 class ChannelManager:
     """Manager class for performing channel based functions"""
@@ -112,7 +111,7 @@ class ChannelManager:
                 log.info(f"Sending game reminder to channel: {game_channel.name}")
                 channel = self.guild.get_channel(int(game_channel.discord_id))
                 ping_text = await self.get_ping_text(game)
-                await channel.send(f"Reminder: this game starts in 24 hours\n{ping_text}")
+                await channel.send(f"Reminder: this game is coming up {discord_countdown(game.datetime)}!\n{ping_text}")
                 await set_game_channel_reminded(game_channel)
         except Exception as e:
             log.error(e)
@@ -126,7 +125,7 @@ class ChannelManager:
                 log.info(f"Sending 1 hour start warning to channel: {game_channel.name}")
                 channel = self.guild.get_channel(int(game_channel.discord_id))
                 ping_text = await self.get_ping_text(game)
-                await channel.send(f"Game starts in 1 hour, please ensure that you are ready\n{ping_text}")
+                await channel.send(f"Game starting {discord_countdown(game.datetime)}, please ensure that you are ready\n{ping_text}")
                 await set_game_channel_warned(game_channel)
         except Exception as e:
             log.error(e)
