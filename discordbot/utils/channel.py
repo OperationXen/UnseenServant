@@ -100,8 +100,12 @@ async def channel_add_user(channel, user):
 async def channel_add_player(channel, player):
     """ Add a user to channel by reference from a player object"""
     log.info(f"Adding player [{player.discord_name}] to channel [{channel.name}]")
-    discord_user = await bot.fetch_user(player.discord_id)
-    return await channel_add_user(channel, discord_user)
+    try:
+        discord_user = await bot.fetch_user(player.discord_id)
+        return await channel_add_user(channel, discord_user)
+    except:
+        log.error(f"Unable to add this player to the channel")
+    return None
     
 async def channel_remove_user(channel, user):
     """Remove a specific player from a game channel"""
