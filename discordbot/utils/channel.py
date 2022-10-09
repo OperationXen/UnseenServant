@@ -111,7 +111,7 @@ async def channel_remove_user(channel, user):
     """Remove a specific player from a game channel"""
     try:
         log.info(f"Removing player [{user.display_name}] from channel [{channel.name}]")
-        await channel.set_permissions(user, read_messages=False, send_messages=False)
+        await channel.set_permissions(user, read_messages=False, send_messages=False, read_message_history=False, use_slash_commands=False)
         return True
     except Exception as e:
         log.debug(f"Exception occured removing discord user {user.discord_name} from channel")
