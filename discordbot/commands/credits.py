@@ -55,6 +55,5 @@ async def issue_credit(
 async def check_credits(ctx, user: Option(Member, "Member to check", required=True)):
     """check current game credit balance"""
     await ctx.defer(ephemeral=True)
-    credits = await get_player_signups_remaining(user)
-    message = f"{user.name} has [{credits}] credits available"
+    message = await get_player_credit_text(user)
     await ctx.respond(message, ephemeral=True)
