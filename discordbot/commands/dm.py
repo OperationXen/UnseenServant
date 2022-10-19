@@ -5,7 +5,8 @@ from discord import Member
 from discordbot.bot import bot
 from config.settings import DISCORD_GUILDS, DISCORD_DM_ROLES, DISCORD_ADMIN_ROLES
 from discordbot.logs import logger as log
-from discordbot.utils.channel import get_game_for_channel
+from discordbot.utils.games import update_game_listing_embed
+from discordbot.utils.channel import get_game_for_channel, update_mustering_embed
 from discordbot.utils.players import remove_player_from_game, do_waitlist_updates
 from core.utils.games import get_dm
 
@@ -38,6 +39,8 @@ async def remove_player(ctx, user: Option(Member, "Member to issue strike agains
     removed = await remove_player_from_game(game, user)
     if removed:
         await do_waitlist_updates(game)
+        await update_mustering_embed(game)
+        await update_game_listing_embed(game)
         log.info(f"Removed player {user.name} from game {game.name}")
         return await ctx.followup.send("Player removed OK", ephemeral=True)
     log.info(f"Unable to remove player {user.name} from game {game.name}")
