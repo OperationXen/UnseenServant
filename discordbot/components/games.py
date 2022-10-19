@@ -245,3 +245,4 @@ class GameControlView(View):
         """Force refresh button callback"""
         await do_waitlist_updates(self.game)
         await self.update_message(response_hook=interaction.response)
+        await update_mustering_embed(self.game)
