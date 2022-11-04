@@ -97,7 +97,10 @@ class ChannelManager:
             for game_channel in expired_game_channels:
                 log.info(f"Removing game channel: {game_channel.name}")
                 channel = self.guild.get_channel(int(game_channel.discord_id))
-                await channel.delete()
+                if channel:
+                    await channel.delete()
+                else:
+                    log.info('Cannot retrieve the expected discord channel, assuming its been deleted manually...')
                 await destroy_game_channel(game_channel)
         except Exception as e:
             log.error(e)
