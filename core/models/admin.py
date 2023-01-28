@@ -16,7 +16,7 @@ class DM(models.Model):
     """Representation of a DM"""
 
     name = models.CharField(max_length=64, help_text="DM's chosen alias or handle")
-    discord_id = models.IntegerField(null=True, blank=True, help_text="Discord ID of the DM")
+    discord_id = models.CharField(null=True, blank=True, max_length=32, help_text='Discord ID of DM')
     discord_name = models.CharField(blank=True, max_length=32, help_text="Discord username")
     description = models.TextField(blank=True, null=True, help_text="Flavour text / details to show")
     rules_text = models.TextField(blank=True, null=True, max_length=1024, help_text="Any banned items / spells, etc")

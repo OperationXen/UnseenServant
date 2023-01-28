@@ -1,0 +1,22 @@
+[
+  {
+    "model": "core.rank",
+    "pk": 1,
+    "fields": {
+      "name": "Admin",
+      "priority": 10,
+      "max_games": 10,
+      "patreon": false
+    }
+  },
+  {
+    "model": "core.rank",
+    "pk": 2,
+    "fields": {
+      "name": "Dungeon Master",
+      "priority": 5,
+      "max_games": 1,
+      "patreon": false
+    }
+  }
+]

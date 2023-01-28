@@ -1,11 +1,11 @@
-from operator import not_
+from datetime import timedelta
+
+from asgiref.sync import sync_to_async
 from django.db.models import Q, Sum
 from django.utils import timezone
-from datetime import timedelta
-from asgiref.sync import sync_to_async
 
+from core.models.players import Ban, BonusCredit, Player, Rank
 from discordbot.logs import logger as log
-from core.models.players import Player, Ban, Rank, BonusCredit
 
 
 def get_current_user_bans(user):
@@ -96,43 +96,48 @@ def get_player_game_count(discord_user):
     return queryset.count()
 
 
-def get_user_rank(discord_user):
+def get_user_highest_rank(discord_user_roles: list) -> Rank | None:
     """go through user roles and identify their best rank"""
-    roles = [role.name.lower() for role in discord_user.roles]
+    roles = [role.name.lower() for role in discord_user_roles]
     ranks = Rank.objects.all().order_by("-priority")
     for rank in ranks:
         if rank.name.lower() in roles:
             return rank
     return None
 
-
-def get_bonus_credits(discord_user):
+def get_bonus_credits(discord_id: str) -> int:
     """Get the total number of bonus games awarded to the user and currently valid"""
     now = timezone.now()
-    queryset = BonusCredit.objects.filter(discord_id=discord_user.id)
+    queryset = BonusCredit.objects.filter(discord_id=discord_id)
     not_expired = Q(expires__gte=now) | Q(expires=None)
     queryset = queryset.filter(not_expired)
     total = queryset.aggregate(Sum("credits"))
     return total["credits__sum"] or 0
 
-
-def get_player_max_games(discord_user):
+def get_player_max_games(discord_user) -> int:
     """get the total number of games a user can sign up for"""
     max_games = 0
-    rank = get_user_rank(discord_user)
-    bonuses = get_bonus_credits(discord_user)
+    rank = get_user_highest_rank(discord_user.roles)
     if rank:
         max_games = max_games + rank.max_games
+    bonuses = get_bonus_credits(str(discord_user.id))
     return max_games + bonuses
+
+def get_user_pending_games_count(discord_id: str) -> int:
+    now = timezone.now()
+
+    queryset = Player.objects.filter(discord_id=discord_id)
+    queryset = queryset.filter(game__datetime__gte=now)
+    pending_games = queryset.count()
+    return pending_games
 
 def get_user_signups_remaining(user):
     """Get the total number of signups the user has availble to them"""
-    now = timezone.now()
     max_games = get_player_max_games(user)
-    queryset = Player.objects.filter(discord_id=user.id)
-    queryset = queryset.filter(game__datetime__gte=now)
-    pending_games = queryset.count()
-    return max_games - pending_games
+    game_count = get_user_pending_games_count(str(user.id))
+    
+    log.info(f"{user} is signed up for {game_count}")
+    return max_games - game_count
 
 @sync_to_async
 def get_player_credit_text(user):
@@ -143,7 +148,6 @@ def get_player_credit_text(user):
         return f"{credits} / {max_games} game credits available"
     else:
         return f"You have no game credits available from your [{max_games}] total"
-
 
 @sync_to_async
 def populate_game_from_waitlist(game):

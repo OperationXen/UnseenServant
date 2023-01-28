@@ -7,7 +7,7 @@ from core.models.game import Game
 from core.models.players import Player
 from discordbot.logs import logger as log
 from core.utils.players import get_player_max_games, get_player_game_count
-from core.utils.players import get_current_user_bans, get_user_rank
+from core.utils.players import get_current_user_bans, get_user_highest_rank
 from core.utils.players import get_last_waitlist_position
 
 
@@ -122,7 +122,7 @@ def db_add_player_to_game(game, user):
         # If user is banned or doesn't have enough signup credits
         if get_current_user_bans(user):
             return False
-        if not get_user_rank(user) or get_player_game_count(user) >= get_player_max_games(user):
+        if not get_user_highest_rank(user) or get_player_game_count(user) >= get_player_max_games(user):
             return False
 
         # Add player to game, either on waitlist or party
