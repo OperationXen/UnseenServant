@@ -33,7 +33,7 @@ async def do_waitlist_updates(game):
 
 async def remove_player_from_game(game, discord_user):
     """Remove a player from a given game"""
-    removed_from_party = await db_remove_discord_user_from_game(game, discord_user)
+    removed_from_party = await db_remove_discord_user_from_game(game, str(discord_user.id))
     if removed_from_party is None:
         return False
     elif removed_from_party:
@@ -46,7 +46,7 @@ async def remove_player_from_game(game, discord_user):
 
 async def add_player_to_game(game, discord_user):
     """Add a discord user to a game"""
-    added = await db_add_player_to_game(game, discord_user)
+    added = await db_add_player_to_game(game, str(discord_user.id))
     if added == "party":
         channel = await get_channel_for_game(game)
         if channel:

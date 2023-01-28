@@ -8,12 +8,12 @@ from core.models.players import Ban, BonusCredit, Player, Rank
 from discordbot.logs import logger as log
 
 
-def get_current_user_bans(user):
+def get_current_user_bans(discord_id: str):
     """Check a given discord user is in good standing - Needs to be syncronous"""
     now = timezone.now()
     not_expired = Q(datetime_end__gte=now) | Q(datetime_end=None)
 
-    queryset = Ban.objects.filter(discord_id=user.id).filter(datetime_start__lte=now)
+    queryset = Ban.objects.filter(discord_id=discord_id).filter(datetime_start__lte=now)
     queryset = queryset.filter(not_expired)
     return queryset.order_by("datetime_end")
 
@@ -38,13 +38,13 @@ def add_new_ban(user, variant, reason, admin, ban_length):
         end = now + timedelta(days=ban_length)
     # Remove player from games on hard ban
     if variant == "HD" or variant == "PM":
-        queryset = Player.objects.filter(discord_id=user.id).filter(game__datetime__gte=now)
+        queryset = Player.objects.filter(discord_id=str(user.id)).filter(game__datetime__gte=now)
         queryset.delete()
 
     Ban.objects.create(
-        discord_id=user.id,
+        discord_id=str(user.id),
         discord_name=f"{user.name}#{user.discriminator}",
-        issuer_id=admin.id,
+        issuer_id=str(admin.id),
         issuer_name=f"{admin.name}#{admin.discriminator}",
         reason=reason,
         variant=variant,
@@ -55,7 +55,7 @@ def add_new_ban(user, variant, reason, admin, ban_length):
 @sync_to_async
 def get_outstanding_bans(user=None):
     if user:
-        bans = get_current_user_bans(user)
+        bans = get_current_user_bans(str(user.id))
     else:
         bans = get_all_current_bans()
     # force queryset evaluation before returning to async
@@ -77,9 +77,9 @@ def issue_player_bonus_credit(user, number, issuer, reason="Not supplied", valid
     else:
         end_date = None
     obj = BonusCredit.objects.create(
-        discord_id=user.id,
+        discord_id=str(user.id),
         discord_name=f"{user.name}#{user.discriminator}",
-        issuer_id=issuer.id,
+        issuer_id=str(issuer.id),
         issuer_name=f"{issuer.name}#{issuer.discriminator}",
         credits=number,
         reason=reason,
@@ -88,10 +88,10 @@ def issue_player_bonus_credit(user, number, issuer, reason="Not supplied", valid
     return obj
 
 
-def get_player_game_count(discord_user):
+def get_player_game_count(discord_id:str):
     """get the total number of games a player is in"""
     now = timezone.now()
-    queryset = Player.objects.filter(discord_id=discord_user.id)
+    queryset = Player.objects.filter(discord_id=discord_id)
     queryset = queryset.filter(game__datetime__gte=now)
     return queryset.count()
 
@@ -135,7 +135,7 @@ def get_user_signups_remaining(user):
     """Get the total number of signups the user has availble to them"""
     max_games = get_player_max_games(user)
     game_count = get_user_pending_games_count(str(user.id))
-    
+
     log.info(f"{user} is signed up for {game_count}")
     return max_games - game_count
 

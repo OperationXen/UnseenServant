@@ -18,7 +18,7 @@ def create_new_dm_from_discord_user(discord_user, name=None, description=None):
 
     new_dm_details = {
         'name': new_dm_name, 
-        'discord_id': discord_user.id, 
+        'discord_id': str(discord_user.id), 
         'discord_name': f"{discord_user.name}#{discord_user.discriminator}",
         'description': description
     }
