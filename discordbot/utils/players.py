@@ -46,7 +46,7 @@ async def remove_player_from_game(game, discord_user):
 
 async def add_player_to_game(game, discord_user):
     """Add a discord user to a game"""
-    added = await db_add_player_to_game(game, str(discord_user.id))
+    added = await db_add_player_to_game(game, discord_user)
     if added == "party":
         channel = await get_channel_for_game(game)
         if channel:
