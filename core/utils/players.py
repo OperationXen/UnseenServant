@@ -1,11 +1,11 @@
-from operator import not_
+from datetime import timedelta
+
+from asgiref.sync import sync_to_async
 from django.db.models import Q, Sum
 from django.utils import timezone
-from datetime import timedelta
-from asgiref.sync import sync_to_async
 
+from core.models.players import Ban, BonusCredit, Player, Rank
 from discordbot.logs import logger as log
-from core.models.players import Player, Ban, Rank, BonusCredit
 
 
 def get_current_user_bans(user):
