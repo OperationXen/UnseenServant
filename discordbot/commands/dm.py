@@ -1,6 +1,6 @@
 from discord.ext.commands import has_any_role
 from discord.commands import Option
-from discord import Member
+from discord import Member, HTTPException, Forbidden
 
 from discordbot.bot import bot
 from config.settings import DISCORD_GUILDS, DISCORD_DM_ROLES, DISCORD_ADMIN_ROLES
@@ -42,6 +42,12 @@ async def remove_player(ctx, user: Option(Member, "Member to issue strike agains
         await update_mustering_embed(game)
         await update_game_listing_embed(game)
         log.info(f"Removed player {user.name} from game {game.name}")
+        try:
+            await user.send(f"You were removed from {game.name} on {game.datetime}. Please contact {game.dm.discord_name} if you require more information.")
+            log.info(f"{user.name} notified of removal")
+        except (HTTPException, Forbidden):
+            log.info(f"Exception occured whilst attempting to notify user")
+
         return await ctx.followup.send("Player removed OK", ephemeral=True)
     log.info(f"Unable to remove player {user.name} from game {game.name}")
     return await ctx.followup.send(f"Unable to remove {user.name} from {game.name}")
