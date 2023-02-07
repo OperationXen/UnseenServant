@@ -17,7 +17,6 @@ def get_current_user_bans(discord_id: str):
     queryset = queryset.filter(not_expired)
     return queryset.order_by("datetime_end")
 
-
 def get_all_current_bans():
     """Retrieve all currently outstanding bans"""
     now = timezone.now()
@@ -26,7 +25,6 @@ def get_all_current_bans():
     queryset = Ban.objects.filter(datetime_start__lte=now)
     queryset = queryset.filter(not_expired)
     return queryset.order_by("datetime_end")
-
 
 def add_new_ban(user, variant, reason, admin, ban_length):
     """Add a new ban"""
@@ -51,7 +49,6 @@ def add_new_ban(user, variant, reason, admin, ban_length):
         datetime_end=end,
     )
 
-
 @sync_to_async
 def get_outstanding_bans(user=None):
     if user:
@@ -61,12 +58,10 @@ def get_outstanding_bans(user=None):
     # force queryset evaluation before returning to async
     return list(bans)
 
-
 @sync_to_async
 def issue_player_ban(user, variant, reason, admin, ban_length):
     """Ban a player from using the signup bot"""
     add_new_ban(user, variant, reason, admin, ban_length)
-
 
 @sync_to_async
 def issue_player_bonus_credit(user, number, issuer, reason="Not supplied", valid_for=None):
@@ -87,14 +82,13 @@ def issue_player_bonus_credit(user, number, issuer, reason="Not supplied", valid
     )
     return obj
 
-
 def get_player_game_count(discord_id:str):
     """get the total number of games a player is in"""
     now = timezone.now()
     queryset = Player.objects.filter(discord_id=discord_id)
     queryset = queryset.filter(game__datetime__gte=now)
+    queryset = queryset.filter(game__ready=True)
     return queryset.count()
-
 
 def get_user_highest_rank(discord_user_roles: list) -> Rank | None:
     """go through user roles and identify their best rank"""
@@ -167,13 +161,11 @@ def populate_game_from_waitlist(game):
             break
     return promoted
 
-
 def get_waitlist_rank(player):
     """get the rank of the player in the waitlist"""
     queryset = Player.objects.filter(game=player.game).filter(standby=True)
     waitlist = list(queryset.order_by("waitlist"))
     return waitlist.index(player) + 1
-
 
 def get_last_waitlist_position(game):
     """get the position at the end of the waitlist"""
