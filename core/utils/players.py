@@ -90,7 +90,7 @@ def get_player_game_count(discord_id:str):
     queryset = queryset.filter(game__ready=True)
     return queryset.count()
 
-def get_user_highest_rank(discord_user_roles: list) -> Rank | None:
+def get_user_highest_rank(discord_user_roles: list):
     """go through user roles and identify their best rank"""
     roles = [role.name.lower() for role in discord_user_roles]
     ranks = Rank.objects.all().order_by("-priority")
