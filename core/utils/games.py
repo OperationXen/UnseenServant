@@ -7,7 +7,7 @@ from core.models.game import Game
 from core.models.players import Player
 from discordbot.logs import logger as log
 from core.utils.players import get_player_max_games, get_player_game_count
-from core.utils.players import get_current_user_bans, get_user_rank
+from core.utils.players import get_current_user_bans, get_user_highest_rank
 from core.utils.players import get_last_waitlist_position
 
 
@@ -46,10 +46,10 @@ def get_upcoming_games(days=30, released=False):
 
 
 @sync_to_async
-def get_upcoming_games_for_player(player_id, waitlisted=False):
+def get_upcoming_games_for_player(discord_id: str, waitlisted=False):
     """Get all of the upcoming games"""
     now = timezone.now()
-    players = Player.objects.filter(discord_id=player_id)
+    players = Player.objects.filter(discord_id=discord_id)
     players = players.filter(standby=waitlisted)
 
     queryset = Game.objects.filter(players__in=players)
@@ -60,7 +60,7 @@ def get_upcoming_games_for_player(player_id, waitlisted=False):
 
 
 @sync_to_async
-def get_upcoming_games_for_dm(dm_id):
+def get_upcoming_games_for_dm(dm_id: str):
     now = timezone.now()
     queryset = Game.objects.filter(ready=True).filter(datetime__gte=now)
     queryset = queryset.filter(dm__discord_id=dm_id)
@@ -107,60 +107,48 @@ def get_game_by_id(game_id):
 @sync_to_async
 def db_add_player_to_game(game, user):
     """Add a new player to an existing game"""
+    discord_id = str(user.id)
     try:
         players = game.players.filter(standby=False)
         waitlist = game.players.filter(standby=True)
 
         # If you're the DM, already playing or waitlisted you can't join
-        if user.id == game.dm.discord_id:
+        if discord_id == game.dm.discord_id:
             return False
-        if players.filter(discord_id=user.id).first():
+        if players.filter(discord_id=discord_id).first():
             return False
-        if waitlist.filter(discord_id=user.id).first():
+        if waitlist.filter(discord_id=discord_id).first():
             return False
 
         # If user is banned or doesn't have enough signup credits
-        if get_current_user_bans(user):
+        if get_current_user_bans(discord_id):
             return False
-        if not get_user_rank(user) or get_player_game_count(user) >= get_player_max_games(user):
+        if not get_user_highest_rank(user.roles) or get_player_game_count(discord_id) >= get_player_max_games(user):
             return False
 
         # Add player to game, either on waitlist or party
         if players.count() >= game.max_players:
             waitlist_position = get_last_waitlist_position(game) + 1
             Player.objects.create(
-                game=game, discord_id=user.id, discord_name=user.name, standby=True, waitlist=waitlist_position
+                game=game, discord_id=discord_id, discord_name=user.name, standby=True, waitlist=waitlist_position
             )
             return "waitlist"
         else:
-            Player.objects.create(game=game, discord_id=user.id, discord_name=user.name, standby=False)
+            Player.objects.create(game=game, discord_id=discord_id, discord_name=user.name, standby=False)
             return "party"
     except Exception as e:
         log.debug(f"Exception occured adding {user.name} to {game.name}")
         return False
 
-
 @sync_to_async
-def db_remove_player_from_game(game, user):
-    """Remove an existing player from a game"""
-    queryset = game.players.filter(standby=False)
-    player = queryset.filter(discord_id=user.id).first()
-    if player:
-        player.delete()
-        return True
-    return False
-
-
-@sync_to_async
-def db_remove_discord_user_from_game(game, user):
+def db_remove_discord_user_from_game(game, discord_id: str):
     """Remove a player from a game by their discord ID"""
-    player = game.players.filter(discord_id=user.id).first()
+    player = game.players.filter(discord_id=discord_id).first()
     if player:
         removed_from_party = not player.waitlist
         player.delete()
         return removed_from_party
     return None
-
 
 @sync_to_async
 def check_game_expired(game):

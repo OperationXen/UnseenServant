@@ -33,7 +33,7 @@ async def do_waitlist_updates(game):
 
 async def remove_player_from_game(game, discord_user):
     """Remove a player from a given game"""
-    removed_from_party = await db_remove_discord_user_from_game(game, discord_user)
+    removed_from_party = await db_remove_discord_user_from_game(game, str(discord_user.id))
     if removed_from_party is None:
         return False
     elif removed_from_party:

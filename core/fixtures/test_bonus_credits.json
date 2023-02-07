@@ -1,0 +1,15 @@
+[
+  {
+    "model": "core.bonuscredit",
+    "pk": 1,
+    "fields": {
+      "discord_id": "12345678900987654321",
+      "discord_name": "Discord Name",
+      "credits": 4,
+      "expires": "2023-01-28T16:59:39Z",
+      "issuer_id": "09876543211234567890",
+      "issuer_name": "An admin user",
+      "reason": "Some bonus credits for testing"
+    }
+  }
+]
