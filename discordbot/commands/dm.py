@@ -32,7 +32,7 @@ async def remove_player(ctx, user: Option(Member, "Member to issue strike agains
         log.error(f"Channel {ctx.channel.name} has no associated game, command failed")
         return await ctx.followup.send("This channel is not linked to a game", ephemeral=True)
     dm = await get_dm(game)
-    if dm.discord_id != ctx.author.id:
+    if dm.discord_id != str(ctx.author.id):
         log.error(f"{ctx.author.name} does not appear to be the DM for {game.name}, command failed")
         return await ctx.followup.send("You are not the DM for this game", ephemeral=True)
 
