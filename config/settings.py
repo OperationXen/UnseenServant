@@ -33,7 +33,7 @@ AUTHENTICATION_BACKENDS = ["api.utils.backends.CustomUserModelBackend"]
 
 DISCORD_TOKEN = getenv('DISCORD_TOKEN')
 DISCORD_GUILDS = [getenv('DISCORD_GUILDS')]
-DISCORD_ADMIN_ROLES = ['Admin', 'admin', 'CodeWiz', 'Moderator']
+DISCORD_ADMIN_ROLES = ['Admin', 'admin', 'Master Code Wizard', 'Moderator', 'council']
 DISCORD_SIGNUP_ROLES = ['Signup Master']
 DISCORD_DM_ROLES = ['Dungeon Master']
 
