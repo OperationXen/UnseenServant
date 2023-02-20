@@ -32,14 +32,21 @@ class GamesViewSet(ViewSet):
             return Response(serialiser.data, HTTP_201_CREATED)
         return Response({"message": "Failed to create game"}, HTTP_400_BAD_REQUEST)
 
-    def update(self, request):
+    def partial_update(self, request, pk=None):
         """Update an existing game"""
-        game = self.get_object()
-        if game.dm != request.user:
+        try:
+            game = Game.objects.get(pk=pk)
+        except Game.DoesNotExist:
+            return Response({"message": "Cannot find this game"}, HTTP_400_BAD_REQUEST)
+
+        if game.dm.user != request.user:
             return Response({"message": "You do not have permissions to change this game"}, HTTP_403_FORBIDDEN)
 
-        serialiser = GameCreationSerialiser(game, data=request.data, partial=True)
-        if serialiser.is_valid():
-            game = serialiser.save()
-            return Response(serialiser.data, HTTP_200_OK)
-        return Response({"message": "Failed to update game"}, HTTP_400_BAD_REQUEST)
+        try:
+            serialiser = GameCreationSerialiser(game, data=request.data, partial=True)
+            if serialiser.is_valid():
+                game = serialiser.save()
+                return Response(serialiser.data, HTTP_200_OK)
+            return Response({"message": "Failed to update game"}, HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return Response({"message": "Unable to change this game"}, HTTP_500_INTERNAL_SERVER_ERROR)

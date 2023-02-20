@@ -3,6 +3,7 @@
     "model": "core.dm",
     "pk": 1,
     "fields": {
+      "user": 3,
       "name": "OperationXen",
       "discord_id": 123123123123123,
       "discord_name": "OpXen",
@@ -13,6 +14,7 @@
     "model": "core.dm",
     "pk": 2,
     "fields": {
+      "user": 1,
       "name": "TestUser1",
       "discord_id": 456456456456,
       "discord_name": "TestUser",
