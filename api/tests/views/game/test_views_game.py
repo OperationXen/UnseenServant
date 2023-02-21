@@ -62,7 +62,7 @@ class TestGameViews(TestCase):
         self.assertEqual(num_initial, Game.objects.all().count())
 
     def test_user_can_create_game(self) -> None:
-        """A logged in user should be able to create a game"""
+        """A logged in DM user should be able to create a game"""
         self.client.login(username="testuser1", password="testpassword")
         test_data = copy(self.valid_data)
 
@@ -71,7 +71,7 @@ class TestGameViews(TestCase):
         self.assertIn("name", response.data)
         self.assertEqual(response.data.get("name"), test_data["name"])
 
-    def test_user_can_update_game(self) -> None:
+    def test_dm_can_update_game(self) -> None:
         """A logged in user can update their own games"""
         self.client.login(username="testuser1", password="testpassword")
         update_data = {"name": "Updated game"}
@@ -82,3 +82,12 @@ class TestGameViews(TestCase):
         self.assertEqual(response.status_code, HTTP_200_OK)
         self.assertIn("name", response.data)
         self.assertEqual(response.data.get("name"), update_data["name"])
+
+    def test_dm_can_delete_game(self) -> None:
+        """ A logged in DM should be able to delete their own games """
+        self.client.login(username="testuser1", password="testpassword")
+
+        response = self.client.delete(reverse("games-detail", kwargs={"pk": 2}))
+        self.assertEqual(response.status_code, HTTP_200_OK)
+        with self.assertRaises(Game.DoesNotExist):
+            game = Game.objects.get(pk=2)
