@@ -13,7 +13,7 @@ class PlayerViewSet(ViewSet):
     permission_classes = [IsAuthenticatedOrReadOnly]
 
     def get(self, request):
-        """ Retrieve information about a single game"""
+        """ Retrieve information about a single player in a single game """
         pass
 
     def list(self, request):
