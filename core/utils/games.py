@@ -140,41 +140,55 @@ def db_force_add_player_to_game(game, user):
         Player.objects.create(game=game, discord_id=discord_id, discord_name=user.name, standby=False)
     return "party"
 
+def sanity_check_new_game_player(game: Game, discord_id: str) -> bool:
+    """perform a go / no go check for adding a given player to a game (by discord ID)"""
+    # If use is DM, already playing or waitlisted they can't join
+    if discord_id == game.dm.discord_id:
+        return False
+    if game.players.filter(discord_id=discord_id).first():
+        return False
+
+    # If user is banned they can't join
+    if get_current_user_bans(discord_id):
+        return False
+    return True
+
+def check_user_available_credit(discord_id) -> int:
+    """ this should exist elsewhere """
+    if not get_user_highest_rank(user.roles):
+        return False
+    return get_player_game_count(discord_id) >= get_player_max_games(user):
+
+
+def handle_game_player_add(game: Game, discord_id: str, discord_name: str):
+    """Handle the process of verifying and adding a player to a game"""
+    try:
+        if not sanity_check_new_game_player(game, discord_id):
+            return False
+        if not check_user_available_credit(discord_id):
+            return False
+
+        # Add player to game, either on waitlist or party
+        if game.players.filter(standby=False).count() >= game.max_players:
+            waitlist_position = get_last_waitlist_position(game) + 1
+            Player.objects.create(
+                game=game, discord_id=discord_id, discord_name=discord_name, standby=True, waitlist=waitlist_position
+            )
+            return "waitlist"
+        else:
+            Player.objects.create(game=game, discord_id=discord_id, discord_name=discord_name, standby=False)
+            return "party"
+    except Exception as e:
+        log.debug(f"Exception occured adding {discord_name} to {game.name}")
+        return False
+
+
 @sync_to_async
 def db_add_player_to_game(game, user):
     """Add a new player to an existing game"""
     discord_id = str(user.id)
-    try:
-        players = game.players.filter(standby=False)
-        waitlist = game.players.filter(standby=True)
+    return handle_game_player_add(game, discord_id, user.name)
 
-        # If you're the DM, already playing or waitlisted you can't join
-        if discord_id == game.dm.discord_id:
-            return False
-        if players.filter(discord_id=discord_id).first():
-            return False
-        if waitlist.filter(discord_id=discord_id).first():
-            return False
-
-        # If user is banned or doesn't have enough signup credits
-        if get_current_user_bans(discord_id):
-            return False
-        if not get_user_highest_rank(user.roles) or get_player_game_count(discord_id) >= get_player_max_games(user):
-            return False
-
-        # Add player to game, either on waitlist or party
-        if players.count() >= game.max_players:
-            waitlist_position = get_last_waitlist_position(game) + 1
-            Player.objects.create(
-                game=game, discord_id=discord_id, discord_name=user.name, standby=True, waitlist=waitlist_position
-            )
-            return "waitlist"
-        else:
-            Player.objects.create(game=game, discord_id=discord_id, discord_name=user.name, standby=False)
-            return "party"
-    except Exception as e:
-        log.debug(f"Exception occured adding {user.name} to {game.name}")
-        return False
 
 @sync_to_async
 def db_remove_discord_user_from_game(game, discord_id: str):
@@ -185,6 +199,7 @@ def db_remove_discord_user_from_game(game, discord_id: str):
         player.delete()
         return removed_from_party
     return None
+
 
 @sync_to_async
 def check_game_expired(game):
