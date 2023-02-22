@@ -16,27 +16,52 @@ class TestGameActionViews(TestCase):
 
     def test_anonymous_user_cant_join_game(self) -> None:
         """ Users must be logged in """
-        pass
+        self.client.logout()
+
+        response = self.client.post(reverse('games-join', kwargs={"pk": 1}))
+        self.assertEqual(response.status_code, HTTP_401_UNAUTHORIZED)
 
     def test_dm_cant_join_own_game(self) -> None:
         """ DMs cannot play in their own games """
-        pass
+        self.client.login(username="OperationXen", password="testpassword")
+        
+        response = self.client.post(reverse('games-join', kwargs={"pk": 1}))
+        self.assertEqual(response.status_code, HTTP_400_BAD_REQUEST)
+        self.assertContains(response.data, "message")
+        self.assertContains(response.data['message'], "You cannot play in your own game")
 
     def test_credit_required_to_join_game(self) -> None:
         """ Players must have sufficient credit """
-        pass
+        self.client.login(username="testuser1", password="testpassword")
+
+        response = self.client.post(reverse('games-join', kwargs={"pk": 1}))
+        self.assertEqual(response.status_code, HTTP_403_FORBIDDEN)
+        self.assertContains(response.data, "message")
+        self.assertContains(response.data['message'], "Insufficient Credit")
 
     def test_banned_user_cant_join(self) -> None:
         """ A banned user cannot join any games """
-        pass
+        self.client.login(username="testuser1", password="testpassword")
+
+        response = self.client.post(reverse('games-join', kwargs={"pk": 1}))
+        self.assertEqual(response.status_code, HTTP_403_FORBIDDEN)
+        self.assertContains(response.data, "message")
+        self.assertContains(response.data['message'], "You are currently banned")
 
     def test_user_can_join_game(self) -> None:
         """ A user can join a game """
-        pass
+        self.client.login(username="testuser1", password="testpassword")
+        self.assertEqual(Player.objects.filter(game_id=1).count(), 0)
+
+        response = self.client.post(reverse('games-join', kwargs={"pk": 1}))
+        self.assertEqual(response.status_code, HTTP_200_OK)
+        self.assertGreaterEqual(Player.objects.filter(game_id=1).count(), 1)
 
     def test_user_waitlisting(self) -> None:
         """ Players placed on waitlist if the game is full """
-        pass
+        response = self.client.post(reverse('games-join', kwargs={"pk": 1}))
+        self.assertEqual(response.status_code, HTTP_200_OK)
+
 
     def test_user_can_leave_game(self) -> None:
         """ Players leaving games are refunded their signup credit """

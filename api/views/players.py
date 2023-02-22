@@ -27,7 +27,7 @@ class PlayerViewSet(ViewSet):
             players = players.filter(datetime__gte=now)
 
     def create(self, request):
-        """ join a player to a game """
+        """ force join a player to a game """
         game_id = request.POST.get("game_id")
         discord_id = request.POST.get("discord_id")
         waitlist = request.POST.get("waitlist", False)
@@ -43,12 +43,6 @@ class PlayerViewSet(ViewSet):
             # allow DM to add arbitrary people to their own game
             if request.user.has_perm('admin') or game.dm.user == request.user:
                 add_player_to_game(discord_id, game, waitlist=waitlist)
-        else:
-            if user_has_credit(request.user):
-                add_player_to_game(request.user, game)
-                return Response({"message": f"Added {request.user.username} to {game.name}"}, HTTP_200_OK)
-            else: 
-                return Response({"message": "You do not have sufficient credit to join this game"}, HTTP_401_UNAUTHORIZED)
       
     def partial_update(self, request):
         """ edit an existing signup """
