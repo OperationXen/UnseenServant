@@ -1,8 +1,9 @@
 from datetime import timedelta
 
 from django.utils import timezone
-from rest_framework.permissions import IsAuthenticatedOrReadOnly
+from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
+from rest_framework.decorators import action
 from rest_framework.status import *
 from rest_framework.viewsets import ViewSet
 
@@ -15,6 +16,17 @@ class GamesViewSet(ViewSet):
 
     permission_classes = [IsAuthenticatedOrReadOnly]
 
+    @action(detail=True, methods=["post"], permission_classes=[IsAuthenticated])
+    def join(self, request, pk):
+        """Request to join a specified game"""
+        try:
+            game = Game.objects.get(pk=pk)
+        except Game.DoesNotExist:
+            return Response({"message": "Invalid game ID"}, HTTP_400_BAD_REQUEST)
+
+        if game.dm.user == request.user:
+            return Response({"message": "You cannot play in your own game"}, HTTP_400_BAD_REQUEST)
+
     def list(self, request):
         """List games"""
         yesterday = timezone.now() - timedelta(days=1)
@@ -25,16 +37,16 @@ class GamesViewSet(ViewSet):
         return Response(serialised.data)
 
     def create(self, request):
-        """ Create a new game """
+        """Create a new game"""
         try:
-            dm = DM.objects.get(user = request.user)
-            serialiser = GameCreationSerialiser(data = request.data)
+            dm = DM.objects.get(user=request.user)
+            serialiser = GameCreationSerialiser(data=request.data)
             if serialiser.is_valid():
-                game = serialiser.save(dm = dm)
+                game = serialiser.save(dm=dm)
                 return Response(serialiser.data, HTTP_201_CREATED)
         except DM.DoesNotExist:
-            return Response({'message': 'You are not registered as a DM'}, HTTP_403_FORBIDDEN)
-        return Response({'message': 'Failed to create game'}, HTTP_400_BAD_REQUEST)
+            return Response({"message": "You are not registered as a DM"}, HTTP_403_FORBIDDEN)
+        return Response({"message": "Failed to create game"}, HTTP_400_BAD_REQUEST)
 
     def partial_update(self, request, pk=None):
         """Update an existing game"""
@@ -55,7 +67,7 @@ class GamesViewSet(ViewSet):
             return Response({"message": "Unable to change this game"}, HTTP_500_INTERNAL_SERVER_ERROR)
 
     def delete(self, request, pk=None):
-        """ Delete a game """
+        """Delete a game"""
         try:
             game = Game.objects.get(pk=pk)
         except Game.DoesNotExist:
