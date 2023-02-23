@@ -23,7 +23,7 @@ class TestGameActionViews(TestCase):
 
     def test_dm_cant_join_own_game(self) -> None:
         """DMs cannot play in their own games"""
-        self.client.login(username="OperationXen", password="testpassword")
+        self.client.login(username="Test DM", password="testpassword")
 
         response = self.client.post(reverse("games-join", kwargs={"pk": 1}))
         self.assertEqual(response.status_code, HTTP_400_BAD_REQUEST)
@@ -41,12 +41,12 @@ class TestGameActionViews(TestCase):
 
     def test_banned_user_cant_join(self) -> None:
         """A banned user cannot join any games"""
-        self.client.login(username="testuser1", password="testpassword")
+        self.client.login(username="banneduser", password="testpassword")
 
         response = self.client.post(reverse("games-join", kwargs={"pk": 1}))
         self.assertEqual(response.status_code, HTTP_403_FORBIDDEN)
-        self.assertContains(response.data, "message")
-        self.assertContains(response.data["message"], "You are currently banned")
+        self.assertIn("message", response.data)
+        self.assertIn(response.data["message"], "You are currently banned")
 
     def test_user_can_join_game(self) -> None:
         """A user can join a game"""

@@ -18,6 +18,13 @@ def get_current_user_bans(discord_id: str):
     queryset = queryset.filter(not_expired)
     return queryset.order_by("datetime_end")
 
+def check_discord_user_good_standing(discord_id: str) -> bool:
+    """ Checks if a given user is in good standing """
+    bans = get_current_user_bans(discord_id)
+    if bans.count():
+        return False
+    return True
+
 def get_all_current_bans():
     """Retrieve all currently outstanding bans"""
     now = timezone.now()

@@ -46,7 +46,7 @@
       "password": "pbkdf2_sha256$320000$ErnfaXZbxLBeRUmrqkCWjk$Nr88785PgBr4IbsZ7pX2qoliVlhSazNk6WUFuyWDJcc=",
       "last_login": null,
       "is_superuser": false,
-      "username": "OperationXen",
+      "username": "Test DM",
       "first_name": "Operation",
       "last_name": "Xen",
       "email": "operationxen@localhost",
@@ -55,6 +55,25 @@
       "date_joined": "2022-07-08T18:44:52Z",
       "discord_name": "OpXen#1337",
       "ranks": [1, 2],
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "core.customuser",
+    "pk": 4,
+    "fields": {
+      "password": "pbkdf2_sha256$320000$ErnfaXZbxLBeRUmrqkCWjk$Nr88785PgBr4IbsZ7pX2qoliVlhSazNk6WUFuyWDJcc=",
+      "last_login": null,
+      "is_superuser": false,
+      "username": "banneduser",
+      "first_name": "Naughty",
+      "last_name": "Person",
+      "email": "naughtyperson@localhost",
+      "is_staff": true,
+      "is_active": true,
+      "date_joined": "2022-07-08T18:44:52Z",
+      "discord_name": "Banned#1234",
       "groups": [],
       "user_permissions": []
     }
