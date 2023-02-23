@@ -12,7 +12,7 @@ from core.models import Player
 class TestGameActionViews(TestCase):
     """Check basic game CRUD functionality"""
 
-    fixtures = ["test_games", "test_users", "test_dms", "test_players"]
+    fixtures = ["test_games", "test_users", "test_dms", "test_players", "test_bans"]
 
     def test_anonymous_user_cant_join_game(self) -> None:
         """Users must be logged in"""
@@ -46,7 +46,7 @@ class TestGameActionViews(TestCase):
         response = self.client.post(reverse("games-join", kwargs={"pk": 1}))
         self.assertEqual(response.status_code, HTTP_403_FORBIDDEN)
         self.assertIn("message", response.data)
-        self.assertIn(response.data["message"], "You are currently banned")
+        self.assertIn("banned", response.data["message"])
 
     def test_user_can_join_game(self) -> None:
         """A user can join a game"""

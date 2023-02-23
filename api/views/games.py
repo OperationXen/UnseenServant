@@ -28,7 +28,8 @@ class GamesViewSet(ViewSet):
         if game.dm.user == request.user:
             return Response({"message": "You cannot play in your own game"}, HTTP_400_BAD_REQUEST)
         if not check_discord_user_good_standing(request.user.discord_id):
-            return Response({"message": "You are currently banned from using this system"})
+            return Response({"message": "You are currently banned from using this system"}, HTTP_403_FORBIDDEN)
+        return Response({"message": f"Joined game {game.name}"}, HTTP_200_OK)
 
     def list(self, request):
         """List games"""
