@@ -5,44 +5,18 @@ from asgiref.sync import sync_to_async
 
 from core.models.game import Game
 from core.models.players import Player
-from discord_bot.logs import logger as log
+from discordbot.logs import logger as log
 from core.utils.players import get_player_max_games, get_player_game_count
 from core.utils.players import get_current_user_bans, get_user_highest_rank
 from core.utils.players import get_last_waitlist_position
 
 
-def _refetch_game_data(game: Game) -> Game:
-    """ Refresh the game object from the database """
-    game.refresh_from_db()
-    return game
-
 @sync_to_async
-def refetch_game_data(game: Game) -> Game:
-    """ Refresh the game object from the database """
-    return _refetch_game_data(game)
-
-def _get_dm(game: Game):
-    """ Get the specified games DM (syncronous) """
+def get_dm(game):
+    """Get an object representing the games DM"""
     if game.dm:
         return game.dm
     return None
-
-def calc_game_tier(game: Game) -> int | None:
-    """ Calculates a game's tier """
-    if game.level_min >= 17:
-        return 4
-    if game.level_min >= 11:
-        return 3
-    if game.level_min >= 5:
-        return 2
-    if game.level_min:
-        return 1
-    return None
-
-@sync_to_async
-def get_dm(game):
-    """ Async wrapper function to get the specified games' DM """
-    return _get_dm(game)
 
 
 @sync_to_async
@@ -123,6 +97,7 @@ def _get_game_by_id(game_id):
             return game
     except Game.DoesNotExist:
         return None
+
 
 @sync_to_async
 def get_game_by_id(game_id):

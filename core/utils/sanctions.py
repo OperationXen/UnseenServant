@@ -1,8 +1,11 @@
-from asgiref.sync import sync_to_async
-from django.utils import timezone
 from datetime import timedelta
 
-from core.models.players import Strike, Ban
+from asgiref.sync import sync_to_async
+from django.db.models import Q
+from django.utils import timezone
+
+from core.models.players import Ban, Strike
+
 
 def get_current_user_strikes(discord_id: str):
     """ get the total number of outstanding strikes for a given user """
@@ -52,3 +55,72 @@ def get_outstanding_strikes(user):
     strikes = get_current_user_strikes(str(user.id))
     # force to list to evaluate before leaving async context
     return list(strikes)
+
+
+
+def get_current_user_bans(discord_id: str):
+    """Check a given discord user is in good standing - Needs to be syncronous"""
+    now = timezone.now()
+    not_expired = Q(datetime_end__gte=now) | Q(datetime_end=None)
+
+    queryset = Ban.objects.filter(discord_id=discord_id).filter(datetime_start__lte=now)
+    queryset = queryset.filter(not_expired)
+    return queryset.order_by("datetime_end")
+
+
+def check_discord_user_good_standing(discord_id: str) -> bool:
+    """Checks if a given user is in good standing"""
+    bans = get_current_user_bans(discord_id)
+    if bans.count():
+        return False
+    return True
+
+
+def get_all_current_bans():
+    """Retrieve all currently outstanding bans"""
+    now = timezone.now()
+    not_expired = Q(datetime_end__gte=now) | Q(datetime_end=None)
+
+    queryset = Ban.objects.filter(datetime_start__lte=now)
+    queryset = queryset.filter(not_expired)
+    return queryset.order_by("datetime_end")
+
+
+def add_new_ban(user, variant, reason, admin, ban_length):
+    """Add a new ban"""
+    now = timezone.now()
+    if ban_length == -1 or variant == "PM":
+        variant = "PM"
+        end = None
+    else:
+        end = now + timedelta(days=ban_length)
+    # Remove player from games on hard ban
+    if variant == "HD" or variant == "PM":
+        queryset = Player.objects.filter(discord_id=str(user.id)).filter(game__datetime__gte=now)
+        queryset.delete()
+
+    Ban.objects.create(
+        discord_id=str(user.id),
+        discord_name=f"{user.name}#{user.discriminator}",
+        issuer_id=str(admin.id),
+        issuer_name=f"{admin.name}#{admin.discriminator}",
+        reason=reason,
+        variant=variant,
+        datetime_end=end,
+    )
+
+
+@sync_to_async
+def get_outstanding_bans(user=None):
+    if user:
+        bans = get_current_user_bans(str(user.id))
+    else:
+        bans = get_all_current_bans()
+    # force queryset evaluation before returning to async
+    return list(bans)
+
+
+@sync_to_async
+def issue_player_ban(user, variant, reason, admin, ban_length):
+    """Ban a player from using the signup bot"""
+    add_new_ban(user, variant, reason, admin, ban_length)

@@ -9,74 +9,6 @@ from discord_bot.logs import logger as log
 from core.utils.ranks import get_user_highest_rank
 
 
-def get_current_user_bans(discord_id: str):
-    """Check a given discord user is in good standing - Needs to be syncronous"""
-    now = timezone.now()
-    not_expired = Q(datetime_end__gte=now) | Q(datetime_end=None)
-
-    queryset = Ban.objects.filter(discord_id=discord_id).filter(datetime_start__lte=now)
-    queryset = queryset.filter(not_expired)
-    return queryset.order_by("datetime_end")
-
-
-def check_discord_user_good_standing(discord_id: str) -> bool:
-    """Checks if a given user is in good standing"""
-    bans = get_current_user_bans(discord_id)
-    if bans.count():
-        return False
-    return True
-
-
-def get_all_current_bans():
-    """Retrieve all currently outstanding bans"""
-    now = timezone.now()
-    not_expired = Q(datetime_end__gte=now) | Q(datetime_end=None)
-
-    queryset = Ban.objects.filter(datetime_start__lte=now)
-    queryset = queryset.filter(not_expired)
-    return queryset.order_by("datetime_end")
-
-
-def add_new_ban(user, variant, reason, admin, ban_length):
-    """Add a new ban"""
-    now = timezone.now()
-    if ban_length == -1 or variant == "PM":
-        variant = "PM"
-        end = None
-    else:
-        end = now + timedelta(days=ban_length)
-    # Remove player from games on hard ban
-    if variant == "HD" or variant == "PM":
-        queryset = Player.objects.filter(discord_id=str(user.id)).filter(game__datetime__gte=now)
-        queryset.delete()
-
-    Ban.objects.create(
-        discord_id=str(user.id),
-        discord_name=f"{user.name}#{user.discriminator}",
-        issuer_id=str(admin.id),
-        issuer_name=f"{admin.name}#{admin.discriminator}",
-        reason=reason,
-        variant=variant,
-        datetime_end=end,
-    )
-
-
-@sync_to_async
-def get_outstanding_bans(user=None):
-    if user:
-        bans = get_current_user_bans(str(user.id))
-    else:
-        bans = get_all_current_bans()
-    # force queryset evaluation before returning to async
-    return list(bans)
-
-
-@sync_to_async
-def issue_player_ban(user, variant, reason, admin, ban_length):
-    """Ban a player from using the signup bot"""
-    add_new_ban(user, variant, reason, admin, ban_length)
-
-
 @sync_to_async
 def issue_player_bonus_credit(user, number, issuer, reason="Not supplied", valid_for=None):
     """Give a player some bonus credits"""
@@ -134,7 +66,7 @@ def get_user_pending_games_count(discord_id: str) -> int:
     return pending_games
 
 
-def get_user_signups_remaining(user):
+def get_user_signups_remaining(user) -> int:
     """Get the total number of signups the user has availble to them"""
     max_games = get_player_max_games(user)
     game_count = get_user_pending_games_count(str(user.id))

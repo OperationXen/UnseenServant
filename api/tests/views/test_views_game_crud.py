@@ -63,7 +63,7 @@ class TestGameViews(TestCase):
 
     def test_user_can_create_game(self) -> None:
         """A logged in DM user should be able to create a game"""
-        self.client.login(username="testuser1", password="testpassword")
+        self.client.login(username="Test DM", password="testpassword")
         test_data = copy(self.valid_data)
 
         response = self.client.post(reverse("games-list"), test_data)
@@ -73,7 +73,7 @@ class TestGameViews(TestCase):
 
     def test_dm_can_update_game(self) -> None:
         """A logged in user can update their own games"""
-        self.client.login(username="testuser1", password="testpassword")
+        self.client.login(username="Test DM", password="testpassword")
         update_data = {"name": "Updated game"}
 
         response = self.client.patch(

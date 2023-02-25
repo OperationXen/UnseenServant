@@ -1,8 +1,9 @@
 import re
 from discord.ui import Button
 
-from discord_bot.logs import logger as log
-from discord_bot.bot import bot
+from discordbot.logs import logger as log
+from discordbot.bot import bot
+from core.models import Game
 
 
 def is_button(element):
@@ -17,8 +18,8 @@ def get_game_number(input):
     return None
 
 
-def get_game_id_from_message(message):
-    """Given a generic message, attempt to determine the ID of the game it refers to [if any]"""
+def get_game_from_message(message) -> Game | None:
+    """Given a generic message, attempt to get the game instance it refers to [if any]"""
     try:
         for row in message.components:
             for button in filter(lambda x: is_button, row.children):
@@ -26,10 +27,11 @@ def get_game_id_from_message(message):
                     continue
                 game_id = get_game_number(button.custom_id)
                 if game_id:
-                    return game_id
-        return None
+                    game = Game.objects.get(pk=game_id)
+                    return game
     except Exception as e:
-        print(e)
+        log.error(e)
+    return None
 
 async def _get_game_control_view_for_game(game):
     """ Given a game object, check its mustering channel and retrieve the view attached to the mustering embed"""
