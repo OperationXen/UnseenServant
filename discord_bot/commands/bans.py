@@ -6,7 +6,7 @@ from discord_bot.bot import bot
 from config.settings import DISCORD_GUILDS, DISCORD_ADMIN_ROLES
 from discord_bot.components.user_management import PlayerBanEmbed, PlayerStrikeEmbed, BanPlayerView
 from core.utils.players import get_outstanding_bans
-from core.utils.strikes import issue_player_strike, get_outstanding_strikes
+from core.utils.sanctions import issue_player_strike, get_outstanding_strikes
 
 
 @bot.slash_command(guild_ids=DISCORD_GUILDS, description='Issue a bad conduct strike to a user')
