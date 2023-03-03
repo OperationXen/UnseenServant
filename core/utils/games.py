@@ -103,6 +103,17 @@ def _get_game_by_id(game_id):
 def get_game_by_id(game_id):
     return _get_game_by_id(game_id)
 
+@sync_to_async
+def db_force_add_player_to_game(game, user):
+    """ Force a player into a specified game, ignoring all conditions """
+    discord_id = str(user.id)
+    try:
+        player = game.players.get(discord_id=discord_id)
+        player.standby = False
+        player.save()
+    except Player.DoesNotExist:
+        Player.objects.create(game=game, discord_id=discord_id, discord_name=user.name, standby=False)
+    return "party"
 
 @sync_to_async
 def db_add_player_to_game(game, user):

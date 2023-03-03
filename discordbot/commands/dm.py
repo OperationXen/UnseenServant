@@ -7,7 +7,7 @@ from config.settings import DISCORD_GUILDS, DISCORD_DM_ROLES, DISCORD_ADMIN_ROLE
 from discordbot.logs import logger as log
 from discordbot.utils.games import update_game_listing_embed
 from discordbot.utils.channel import get_game_for_channel, update_mustering_embed
-from discordbot.utils.players import remove_player_from_game, do_waitlist_updates
+from discordbot.utils.players import remove_player_from_game, add_player_to_game, do_waitlist_updates
 from core.utils.games import get_dm
 
 
@@ -23,7 +23,7 @@ async def set_dm_bio(ctx, *text):
 
 @bot.slash_command(guild_ids=DISCORD_GUILDS, description="Force remove a player from a game")
 @has_any_role(*DISCORD_DM_ROLES, *DISCORD_ADMIN_ROLES)
-async def remove_player(ctx, user: Option(Member, "Member to issue strike against", required=True)):
+async def remove_player(ctx, user: Option(Member, "Player to remove from the game", required=True)):
     """remove a player from a game - should only be run in a game channel"""
     await ctx.response.defer(ephemeral=True)
     log.info(f"{ctx.author.name} used command /remove_player {user.name} in channel {ctx.channel.name}")
@@ -51,3 +51,30 @@ async def remove_player(ctx, user: Option(Member, "Member to issue strike agains
         return await ctx.followup.send("Player removed OK", ephemeral=True)
     log.info(f"Unable to remove player {user.name} from game {game.name}")
     return await ctx.followup.send(f"Unable to remove {user.name} from {game.name}")
+
+
+@bot.slash_command(guild_ids=DISCORD_GUILDS, description="Forcibly add a player to a game")
+@has_any_role(*DISCORD_DM_ROLES, *DISCORD_ADMIN_ROLES)
+async def add_player(ctx, user: Option(Member, "Player to add to the game", required=True)):
+    """add a player from a game - should only be run in a game channel"""
+    await ctx.response.defer(ephemeral=True)
+    log.info(f"{ctx.author.name} used command /add_player {user.name} in channel {ctx.channel.name}")
+    game = await get_game_for_channel(ctx.channel)
+    if not game:
+        log.error(f"Channel {ctx.channel.name} has no associated game, command failed")
+        return await ctx.followup.send("This channel is not linked to a game", ephemeral=True)
+    dm = await get_dm(game)
+    if dm.discord_id != str(ctx.author.id):
+        log.error(f"{ctx.author.name} does not appear to be the DM for {game.name}, command failed")
+        return await ctx.followup.send("You are not the DM for this game", ephemeral=True)
+
+    added = await add_player_to_game(game, user, force=True)
+    if added:
+        await do_waitlist_updates(game)
+        await update_mustering_embed(game)
+        await update_game_listing_embed(game)
+        log.info(f"Added player {user.name} to game {game.name}")
+        
+        return await ctx.followup.send("Player added to game", ephemeral=True)
+    log.info(f"Unable to add player {user.name} to game {game.name}")
+    return await ctx.followup.send(f"Unable to add {user.name} to {game.name}")

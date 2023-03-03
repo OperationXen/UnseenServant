@@ -10,7 +10,7 @@ from discordbot.utils.channel import (
 )
 from discordbot.utils.channel import channel_add_player, channel_add_user, channel_remove_user, get_channel_for_game
 from core.utils.players import populate_game_from_waitlist
-from core.utils.games import db_add_player_to_game, db_remove_discord_user_from_game
+from core.utils.games import db_add_player_to_game, db_force_add_player_to_game, db_remove_discord_user_from_game
 
 
 async def do_waitlist_updates(game):
@@ -44,9 +44,12 @@ async def remove_player_from_game(game, discord_user):
     return True
 
 
-async def add_player_to_game(game, discord_user):
+async def add_player_to_game(game, discord_user, force=False):
     """Add a discord user to a game"""
-    added = await db_add_player_to_game(game, discord_user)
+    if force:
+        added = await db_force_add_player_to_game(game, discord_user)
+    else:
+        added = await db_add_player_to_game(game, discord_user)
     if added == "party":
         channel = await get_channel_for_game(game)
         if channel:
