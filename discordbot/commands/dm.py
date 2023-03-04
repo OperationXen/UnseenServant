@@ -5,6 +5,7 @@ from discord import Member, HTTPException, Forbidden
 from discordbot.bot import bot
 from config.settings import DISCORD_GUILDS, DISCORD_DM_ROLES, DISCORD_ADMIN_ROLES
 from discordbot.logs import logger as log
+from discordbot.utils.roles import discord_user_is_admin
 from discordbot.utils.games import update_game_listing_embed
 from discordbot.utils.channel import get_game_for_channel, update_mustering_embed
 from discordbot.utils.players import remove_player_from_game, add_player_to_game, do_waitlist_updates
@@ -31,10 +32,14 @@ async def remove_player(ctx, user: Option(Member, "Player to remove from the gam
     if not game:
         log.error(f"Channel {ctx.channel.name} has no associated game, command failed")
         return await ctx.followup.send("This channel is not linked to a game", ephemeral=True)
-    dm = await get_dm(game)
-    if dm.discord_id != str(ctx.author.id):
-        log.error(f"{ctx.author.name} does not appear to be the DM for {game.name}, command failed")
-        return await ctx.followup.send("You are not the DM for this game", ephemeral=True)
+    
+    if discord_user_is_admin(ctx.author):
+        log.info(f"{ctx.author.name} is an admin, skipping DM game ownership check...")
+    else:
+        dm = await get_dm(game)
+        if dm.discord_id != str(ctx.author.id):
+            log.error(f"{ctx.author.name} does not appear to be the DM for {game.name}, command failed")
+            return await ctx.followup.send("You are not the DM for this game", ephemeral=True)
 
     removed = await remove_player_from_game(game, user)
     if removed:
@@ -63,10 +68,14 @@ async def add_player(ctx, user: Option(Member, "Player to add to the game", requ
     if not game:
         log.error(f"Channel {ctx.channel.name} has no associated game, command failed")
         return await ctx.followup.send("This channel is not linked to a game", ephemeral=True)
-    dm = await get_dm(game)
-    if dm.discord_id != str(ctx.author.id):
-        log.error(f"{ctx.author.name} does not appear to be the DM for {game.name}, command failed")
-        return await ctx.followup.send("You are not the DM for this game", ephemeral=True)
+    
+    if discord_user_is_admin(ctx.author):
+        log.info(f"{ctx.author.name} is an admin, skipping DM game ownership check...")
+    else:
+        dm = await get_dm(game)
+        if dm.discord_id != str(ctx.author.id):
+            log.error(f"{ctx.author.name} does not appear to be the DM for {game.name}, command failed")
+            return await ctx.followup.send("You are not the DM for this game", ephemeral=True)
 
     added = await add_player_to_game(game, user, force=True)
     if added:
