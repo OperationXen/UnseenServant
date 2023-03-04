@@ -25,7 +25,7 @@ async def set_user_dm_registered(user):
     result = await grant_role_to_user('bot-registered', user)
     return result
 
-def get_user_role_names(discord_user: User) -> list[str]:
+def get_user_role_names(discord_user: User):
     """ Fetch a list of the users role names (slight hack - could use actual roles) """
     user_role_names = [role.name for role in discord_user.roles]
     return user_role_names
