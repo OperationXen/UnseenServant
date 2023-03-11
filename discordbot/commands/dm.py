@@ -78,7 +78,7 @@ async def add_player(ctx, user: Option(Member, "Player to add to the game", requ
     return await ctx.followup.send(f"Unable to add {user.name} to {game.name}")
 
 
-@bot.slash_command(guild_ids=DISCORD_GUILDS, description="Forcibly add a player to a game")
+@bot.slash_command(guild_ids=DISCORD_GUILDS, description="Tags all players in the party")
 @has_any_role(*DISCORD_DM_ROLES, *DISCORD_ADMIN_ROLES)
 async def tag_players(ctx):
     """ Tags all players in this game channel """
