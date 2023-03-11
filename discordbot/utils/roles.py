@@ -1,8 +1,10 @@
 from discord import User
-
 from discord.errors import Forbidden
+
 from discordbot.logs import logger as log
 from config.settings import DISCORD_ADMIN_ROLES
+from core.models.game import Game
+from core.utils.games import _get_dm
 
 async def grant_role_to_user(role_name, user):
     """ Give an arbitrarily named permission to a user """
@@ -30,10 +32,21 @@ def get_user_role_names(discord_user: User):
     user_role_names = [role.name for role in discord_user.roles]
     return user_role_names
 
-def discord_user_is_admin(discord_user: User) -> bool:
+def _discord_user_is_admin(discord_user: User) -> bool:
     """ Check if user has any of the specified admin permissions """
     user_role_names = get_user_role_names(discord_user)
     matching_roles = list(set(user_role_names) & set(DISCORD_ADMIN_ROLES))
     if matching_roles:
         return True
     return False
+
+def do_dm_permissions_check(user: User, game: Game) -> bool:
+    """ Verify a user has Admin permissions, or is the specified game's DM """
+    if _discord_user_is_admin(user):
+        log.info(f"{user.name} is an admin, skipping DM game ownership check...")
+    else:
+        dm = _get_dm(game)
+        if dm.discord_id != str(user.id):
+            log.error(f"{user.name} does not appear to be the DM for {game.name}, command failed")
+            return False
+    return True

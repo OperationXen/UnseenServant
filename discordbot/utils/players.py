@@ -1,7 +1,7 @@
 from discordbot.logs import logger as log
 from discordbot.utils.messaging import send_dm
 from discordbot.utils.time import discord_countdown
-from core.utils.games import check_game_pending
+from core.utils.games import check_game_pending, get_player_list, get_wait_list
 
 from discordbot.utils.channel import (
     game_channel_tag_promoted_user,
@@ -56,3 +56,14 @@ async def add_player_to_game(game, discord_user, force=False):
             await channel_add_user(channel, discord_user)
             await game_channel_tag_promoted_user(game, discord_user)
     return added
+
+async def get_party_for_game(game, include_waitlist=False):
+    """ Get a list of all players who are part of the game's party """
+    party = await get_player_list(game)
+    if include_waitlist:
+        try:
+            waitlist = await get_wait_list(game)
+            party.append(waitlist[0])
+        except Exception as e:
+            pass
+    return party
