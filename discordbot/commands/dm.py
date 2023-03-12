@@ -5,11 +5,10 @@ from discord import Member, HTTPException, Forbidden
 from discordbot.bot import bot
 from config.settings import DISCORD_GUILDS, DISCORD_DM_ROLES, DISCORD_ADMIN_ROLES
 from discordbot.logs import logger as log
-from discordbot.utils.roles import discord_user_is_admin
 from discordbot.utils.games import update_game_listing_embed
-from discordbot.utils.channel import get_game_for_channel, update_mustering_embed
-from discordbot.utils.players import remove_player_from_game, add_player_to_game, do_waitlist_updates
-from core.utils.games import get_dm
+from discordbot.utils.channel import get_game_for_channel, update_mustering_embed, notify_game_channel
+from discordbot.utils.players import remove_player_from_game, add_player_to_game, do_waitlist_updates, get_party_for_game
+from discordbot.utils.roles import do_dm_permissions_check
 
 
 @bot.command(name="dm_set_name")
@@ -33,14 +32,9 @@ async def remove_player(ctx, user: Option(Member, "Player to remove from the gam
         log.error(f"Channel {ctx.channel.name} has no associated game, command failed")
         return await ctx.followup.send("This channel is not linked to a game", ephemeral=True)
     
-    if discord_user_is_admin(ctx.author):
-        log.info(f"{ctx.author.name} is an admin, skipping DM game ownership check...")
-    else:
-        dm = await get_dm(game)
-        if dm.discord_id != str(ctx.author.id):
-            log.error(f"{ctx.author.name} does not appear to be the DM for {game.name}, command failed")
-            return await ctx.followup.send("You are not the DM for this game", ephemeral=True)
-
+    if not do_dm_permissions_check(ctx.author, game):
+        return await ctx.followup.send("You are not the DM for this game", ephemeral=True)
+    
     removed = await remove_player_from_game(game, user)
     if removed:
         await do_waitlist_updates(game)
@@ -69,13 +63,8 @@ async def add_player(ctx, user: Option(Member, "Player to add to the game", requ
         log.error(f"Channel {ctx.channel.name} has no associated game, command failed")
         return await ctx.followup.send("This channel is not linked to a game", ephemeral=True)
     
-    if discord_user_is_admin(ctx.author):
-        log.info(f"{ctx.author.name} is an admin, skipping DM game ownership check...")
-    else:
-        dm = await get_dm(game)
-        if dm.discord_id != str(ctx.author.id):
-            log.error(f"{ctx.author.name} does not appear to be the DM for {game.name}, command failed")
-            return await ctx.followup.send("You are not the DM for this game", ephemeral=True)
+    if not do_dm_permissions_check(ctx.author, game):
+        return await ctx.followup.send("You are not the DM for this game", ephemeral=True)
 
     added = await add_player_to_game(game, user, force=True)
     if added:
@@ -87,3 +76,28 @@ async def add_player(ctx, user: Option(Member, "Player to add to the game", requ
         return await ctx.followup.send("Player added to game", ephemeral=True)
     log.info(f"Unable to add player {user.name} to game {game.name}")
     return await ctx.followup.send(f"Unable to add {user.name} to {game.name}")
+
+
+@bot.slash_command(guild_ids=DISCORD_GUILDS, description="Tags all players in the party")
+@has_any_role(*DISCORD_DM_ROLES, *DISCORD_ADMIN_ROLES)
+async def tag_players(ctx):
+    """ Tags all players in this game channel """
+    await ctx.response.defer(ephemeral=True)
+    log.info(f"{ctx.author.name} used command /tag_players in channel {ctx.channel.name}")
+    game = await get_game_for_channel(ctx.channel)
+    if not game:
+        log.error(f"Channel {ctx.channel.name} has no associated game, command failed")
+        return await ctx.followup.send("This channel is not linked to a game", ephemeral=True)
+    
+    if not do_dm_permissions_check(ctx.author, game):
+        return await ctx.followup.send("You are not the DM for this game", ephemeral=True)
+    
+    party = await get_party_for_game(game)
+    message = ""
+    for party_member in party:
+        discord_user = await bot.fetch_user(party_member.discord_id)
+        message += f"{discord_user.mention} "
+    await notify_game_channel(game, message)
+
+    log.info(f"Tagged {len(party)} players in channel for game {game.name}")
+    return await ctx.followup.send("Party have been individually tagged", ephemeral=True)

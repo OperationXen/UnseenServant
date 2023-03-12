@@ -92,6 +92,9 @@ async def game_channel_tag_promoted_user(game, user):
         f"{user_text} has been successfully planar bound to this session!",
         f"BAM! A three point landing like that can only be {user_text}.",
         f"After succeeding on a perception check, you find {user_text} has snuck into the game. ",
+        f"Yip yip, {user_text}",
+        f"{user_text} ponders their orb",
+        f"It's your round {user_text}!",
     ]
 
     message = random.choice(choices)

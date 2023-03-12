@@ -11,12 +11,17 @@ from core.utils.players import get_current_user_bans, get_user_highest_rank
 from core.utils.players import get_last_waitlist_position
 
 
-@sync_to_async
-def get_dm(game):
-    """Get an object representing the games DM"""
+def _get_dm(game: Game):
+    """ Get the specified games DM (syncronous) """
     if game.dm:
         return game.dm
     return None
+
+
+@sync_to_async
+def get_dm(game):
+    """ Async wrapper function to get the specified games' DM """
+    return _get_dm(game)
 
 
 @sync_to_async
