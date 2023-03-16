@@ -5,7 +5,7 @@ from django.db.models import Q, Sum
 from django.utils import timezone
 
 from core.models.players import Ban, BonusCredit, Player, Rank
-from discordbot.logs import logger as log
+from discord_bot.logs import logger as log
 
 
 def get_current_user_bans(discord_id: str):

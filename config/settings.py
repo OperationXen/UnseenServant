@@ -57,7 +57,8 @@ INSTALLED_APPS = [
     'corsheaders',
     'core',
     'api',
-    'discordbot'
+    'discord_bot',
+    'discord_login'
 ]
 
 MIDDLEWARE = [

@@ -5,7 +5,7 @@ from asgiref.sync import sync_to_async
 
 from core.models.game import Game
 from core.models.players import Player
-from discordbot.logs import logger as log
+from discord_bot.logs import logger as log
 from core.utils.players import get_player_max_games, get_player_game_count
 from core.utils.players import get_current_user_bans, get_user_highest_rank
 from core.utils.players import get_last_waitlist_position
