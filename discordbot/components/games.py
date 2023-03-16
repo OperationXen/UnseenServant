@@ -7,7 +7,8 @@ from discordbot.utils.players import do_waitlist_updates, remove_player_from_gam
 from discordbot.utils.time import discord_time, discord_countdown
 from discordbot.utils.channel import update_mustering_embed
 from discordbot.utils.format import generate_calendar_message
-from core.utils.games import get_player_list, get_wait_list, get_dm, is_patreon_exclusive
+from core.models.game import Game
+from core.utils.games import get_player_list, get_wait_list, get_dm, is_patreon_exclusive, refetch_game_data
 from core.utils.players import get_player_credit_text
 
 
@@ -30,6 +31,10 @@ class BaseGameEmbed(Embed):
         "Non-AL One Shot": Colour.orange(),
         "Campaign": Colour.dark_gold(),
     }
+
+    async def refresh_game_data(self) -> Game:
+        """ Refresh the game object from the database """
+        self.game = await refetch_game_data(self.game)
 
     async def get_data(self):
         """Asyncronous wrapper to retrieve data from Django elements"""
@@ -185,6 +190,7 @@ class GameControlView(View):
     async def update_message(self, followup_hook=None, response_hook=None):
         """Update the message this view is attached to"""
         detail_embed = GameDetailEmbed(self.game)
+        await detail_embed.refresh_game_data()
         await detail_embed.build()
         # Find and replace the game detail embed within the message by comparing titles
         embeds = self.message.embeds

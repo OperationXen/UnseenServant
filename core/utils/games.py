@@ -11,12 +11,21 @@ from core.utils.players import get_current_user_bans, get_user_highest_rank
 from core.utils.players import get_last_waitlist_position
 
 
+def _refetch_game_data(game: Game) -> Game:
+    """ Refresh the game object from the database """
+    game.refresh_from_db()
+    return game
+
+@sync_to_async
+def refetch_game_data(game: Game) -> Game:
+    """ Refresh the game object from the database """
+    return _refetch_game_data(game)
+
 def _get_dm(game: Game):
     """ Get the specified games DM (syncronous) """
     if game.dm:
         return game.dm
     return None
-
 
 @sync_to_async
 def get_dm(game):
