@@ -29,8 +29,8 @@ CSRF_TRUSTED_ORIGINS = [f"https://{SERVER}"] if SERVER else []
 
 AUTH_USER_MODEL = 'core.CustomUser'
 AUTHENTICATION_BACKENDS = [
-    'discord_login.auth.DiscordAuthenticationBackend',
-    #'api.utils.backends.CustomUserModelBackend'
+    'core.auth.CustomUserModelBackend',
+    'discord_login.auth.DiscordAuthenticationBackend'
 ]
 
 DISCORD_CLIENT_ID = getenv('DISCORD_CLIENT_ID')

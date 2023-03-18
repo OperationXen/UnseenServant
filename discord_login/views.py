@@ -7,6 +7,7 @@ from config.settings import DISCORD_CLIENT_ID, DISCORD_CLIENT_SECRET, DISCORD_GU
 from rest_framework.views import Response, Request
 from rest_framework.status import *
 
+
 auth_url_discord = 'https://discord.com/api/oauth2/authorize?client_id=930903782089437205&redirect_uri=http%3A%2F%2F127.0.0.1%3A8000%2Fdiscord_auth%2Fdone%2F&response_type=code&scope=identify%20guilds'
 
 def discord_login(request: Request) -> redirect:
@@ -27,20 +28,28 @@ def exchange_code(code: str):
         'Content-Type': 'application/x-www-form-urlencoded'
     }
 
-    response = requests.post("https://discord.com/api/v10/oauth2/token", data=data, headers=headers)
-    credentials = response.json()
-    access_token = credentials['access_token']
+    try:
+        response = requests.post("https://discord.com/api/v10/oauth2/token", data=data, headers=headers)
+        credentials = response.json()
+        access_token = credentials['access_token']
+    except Exception as e:
+        return None
 
-    response = requests.get(f"https://discord.com/api/v10/users/@me/guilds/{DISCORD_GUILDS[0]}/member", headers={'Authorization': f"Bearer {access_token}"})
-    user_data = response.json()
-    return user_data
+    try:
+        response = requests.get(f"https://discord.com/api/v10/users/@me/guilds/{DISCORD_GUILDS[0]}/member", headers={'Authorization': f"Bearer {access_token}"})
+        user_data = response.json()
+        return user_data
+    except Exception as e:
+        return None
 
 def discord_auth_done(request: Request) -> JsonResponse:
     """ view to handle the request made back to us after the user has authenticated against Discord """
     code = request.GET.get('code')
-    user_data = exchange_code(code)
-    discord_user = authenticate(request, user_data=user_data['user'], roles=user_data['roles'])
-    if discord_user:
-        login(request, discord_user)
-        return JsonResponse({'user': user_data})
-    return JsonResponse({'message': 'Failed to authenticate'}, status=HTTP_401_UNAUTHORIZED)
+    if code:
+        user_data = exchange_code(code)
+        discord_user = authenticate(request, user_data=user_data['user'], roles=user_data['roles'])
+        if discord_user:
+            login(request, discord_user)
+            return JsonResponse({'mesage': 'login successful', 'user': user_data})
+        return JsonResponse({'message': 'Invalid code'}, status=HTTP_403_FORBIDDEN)
+    return JsonResponse({'message': 'Failed to authenticate'}, status=HTTP_403_FORBIDDEN)
