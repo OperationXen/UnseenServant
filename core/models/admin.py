@@ -3,13 +3,15 @@ from django.db import models
 
 
 class CustomUser(AbstractUser):
-    """Custom user model includes things like discord username"""
-
-    discord_name = models.CharField(max_length=32, help_text="Discord username")
+    """ Custom user model for storing discord user information """
+    discord_name = models.CharField(null=True, blank=True, max_length=64, help_text='User name and discriminator')
+    discord_discriminator = models.CharField(null=True, blank=True, max_length=16, help_text='Discord discriminator number')
+    discord_id = models.PositiveBigIntegerField(null=True, blank=True, help_text='The discord ID number of the user')
+    avatar = models.URLField(null=True, blank=True, help_text='Path to the users avatar image')
 
     class Meta:
-        verbose_name = "Admin panel user"
-        verbose_name_plural = "Admin panel users"
+        verbose_name = "Discord User"
+        verbose_name_plural = "Discord Users"
 
 
 class DM(models.Model):

@@ -1,19 +1,20 @@
 from django.contrib.auth.backends import BaseBackend
 from rest_framework.views import Request
 
-from discord_login.models import DiscordUser
+from core.models.admin import CustomUser
 
 
 class DiscordAuthenticationBackend(BaseBackend):
-    def authenticate(self, request: Request, userdata) -> DiscordUser:
+    def authenticate(self, request: Request, user_data, roles) -> CustomUser:
         try:
-            existing_user = DiscordUser.objects.get(discord_id=userdata['discord_id'])
+            existing_user = CustomUser.objects.get(discord_id=user_data['id'])
             return existing_user
-        except DiscordUser.DoesNotExist:
-            print(f"User not found in database, creating a new entry for {userdata.discord_name}")
-            new_user = DiscordUser.objects.create_user(
-                discord_name=userdata['username'], 
-                discord_discriminator=userdata['discriminator'], 
-                discord_id=userdata['id'], 
-                avatar=userdata['avatar'])
+        except CustomUser.DoesNotExist:
+            print(f"User not found in database, creating a new entry for {user_data['username']}")
+            new_user = CustomUser.objects.create_user(
+                f"{user_data['username']}#{user_data['discriminator']}",
+                discord_name=user_data['username'],
+                discord_discriminator=user_data['discriminator'], 
+                discord_id=user_data['id'], 
+                avatar=user_data['avatar'])
             return new_user

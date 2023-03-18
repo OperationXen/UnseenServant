@@ -16,7 +16,6 @@ if DJANGO_SECRET:
     DEFAULT_CHANNEL_NAME = 'general-game-signups'
     PRIORITY_CHANNEL_NAME = 'patron-game-signups'
     CALENDAR_CHANNEL_NAME = 'new-bot-testing-calendar'
-
 else:
     DEBUG = True
 
@@ -29,7 +28,13 @@ ALLOWED_HOSTS = ["127.0.0.1"] if SERVER else []
 CSRF_TRUSTED_ORIGINS = [f"https://{SERVER}"] if SERVER else []
 
 AUTH_USER_MODEL = 'core.CustomUser'
-AUTHENTICATION_BACKENDS = ["api.utils.backends.CustomUserModelBackend"]
+AUTHENTICATION_BACKENDS = [
+    'discord_login.auth.DiscordAuthenticationBackend',
+    #'api.utils.backends.CustomUserModelBackend'
+]
+
+DISCORD_CLIENT_ID = getenv('DISCORD_CLIENT_ID')
+DISCORD_CLIENT_SECRET = getenv('DISCORD_CLIENT_SECRET')
 
 DISCORD_TOKEN = getenv('DISCORD_TOKEN')
 DISCORD_GUILDS = [getenv('DISCORD_GUILDS')]

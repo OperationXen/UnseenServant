@@ -1,10 +1,11 @@
 from rest_framework.serializers import ModelSerializer
 
-from core.models import CustomUser
+from django.contrib.auth import get_user_model
 
+UserModel = get_user_model()
 
 class UserSerialiser(ModelSerializer):
 
     class Meta:
-        model = CustomUser
+        model = UserModel
         fields = ['username', 'email', 'discord_name']

@@ -1,12 +1,12 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
-from .models.admin import CustomUser as User, DM
+
+from core.models.admin import DM, CustomUser
 from .models.game import Game
 from .models.channel import GameChannel
 from .models.players import BonusCredit, Rank, Player, Strike, Ban
 
-admin.site.register(User, UserAdmin)
-
+admin.site.register(CustomUser)
 admin.site.register(DM)
 admin.site.register(Game)
 admin.site.register(GameChannel)
