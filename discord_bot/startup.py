@@ -22,6 +22,9 @@ async def on_ready():
     try:
         guild_id = int(DISCORD_GUILDS[0])
         guild = bot.get_guild(guild_id)
+        roles = guild.roles
+        print('\n'.join(f"{r.id} - {r.name}" for r in roles))
+
         discord_bot.core.game_controller = GamesPoster()
         discord_bot.core.channel_controller = ChannelManager(guild)
     except IndexError:
