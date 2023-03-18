@@ -16,7 +16,6 @@ class CustomUser(AbstractUser):
 
 class DM(models.Model):
     """Representation of a DM"""
-
     name = models.CharField(max_length=64, help_text="DM's chosen alias or handle")
     discord_id = models.CharField(null=True, blank=True, max_length=32, help_text="Discord ID of DM")
     discord_name = models.CharField(blank=True, max_length=32, help_text="Discord username")

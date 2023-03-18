@@ -112,7 +112,6 @@ def _get_game_by_id(game_id):
     except Game.DoesNotExist:
         return None
 
-
 @sync_to_async
 def get_game_by_id(game_id):
     return _get_game_by_id(game_id)

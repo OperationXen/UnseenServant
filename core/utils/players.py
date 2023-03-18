@@ -6,6 +6,7 @@ from django.utils import timezone
 
 from core.models.players import Ban, BonusCredit, Player, Rank
 from discord_bot.logs import logger as log
+from core.utils.ranks import get_user_highest_rank
 
 
 def get_current_user_bans(discord_id: str):
@@ -89,15 +90,6 @@ def get_player_game_count(discord_id:str):
     queryset = queryset.filter(game__datetime__gte=now)
     queryset = queryset.filter(game__ready=True)
     return queryset.count()
-
-def get_user_highest_rank(discord_user_roles: list):
-    """go through user roles and identify their best rank"""
-    roles = [role.name.lower() for role in discord_user_roles]
-    ranks = Rank.objects.all().order_by("-priority")
-    for rank in ranks:
-        if rank.name.lower() in roles:
-            return rank
-    return None
 
 def get_bonus_credits(discord_id: str) -> int:
     """Get the total number of bonus games awarded to the user and currently valid"""
