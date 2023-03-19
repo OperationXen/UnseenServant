@@ -1,3 +1,4 @@
+from django.db.models import Q
 from discord.role import Role as DiscordRole
 
 from core.models import Rank
@@ -12,9 +13,7 @@ def get_user_ranks(discord_user_roles: list) -> list[Rank]:
             if type(role) is DiscordRole:
                 rank = Rank.objects.get(name__iexact=role.name)
             elif type(role) is str:
-                rank = Rank.objects.get(name__iexact=role)
-            elif type(role) is int:
-                rank = Rank.objects.get(discord_id=role)
+                rank = Rank.objects.get(Q(discord_id=role) | Q(name__iexact=role))
             user_ranks.append(rank)
         except Exception as e:
             pass

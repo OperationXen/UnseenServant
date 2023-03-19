@@ -5,7 +5,7 @@ from django.db import models
 class Rank(models.Model):
     """ User ranks """
     name = models.CharField(max_length=32, help_text='User friendly name for this rank')
-    discord_id = models.BigIntegerField(null=True, blank=True, help_text='Discord role ID number')
+    discord_id = models.CharField(null=True, blank=True, max_length=32, help_text='Discord role ID number')
     priority = models.IntegerField(help_text='The relative seniority of this rank compared to others (higher = more senior)')
     max_games = models.IntegerField(default=0, help_text='Upper limit for games members of this rank are allowed to join')
     patreon = models.BooleanField(default=False, help_text='this rank is reserved for paying members')
