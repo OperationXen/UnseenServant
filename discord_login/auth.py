@@ -7,6 +7,11 @@ from core.utils.ranks import get_user_ranks
 CustomUser = get_user_model()
 
 class DiscordAuthenticationBackend(BaseBackend):
+    def set_user_ranks(self, user, roles: list):
+        user_ranks = get_user_ranks(roles)
+        user.ranks.set(user_ranks)
+        user.save()
+
     def update_user(self, user, user_data: dict, roles: list) -> bool:
         """ Update an existing user object with latest data """
         try:
@@ -38,4 +43,5 @@ class DiscordAuthenticationBackend(BaseBackend):
             discord_discriminator=user_data['discriminator'], 
             discord_id=user_data['id'], 
             avatar=user_data['avatar'])
+        self.set_user_ranks(new_user, roles)
         return new_user
