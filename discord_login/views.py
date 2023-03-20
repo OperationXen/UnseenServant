@@ -5,9 +5,10 @@ from django.shortcuts import redirect
 from rest_framework.status import *
 from rest_framework.views import Request
 
+from discord_bot.logs import logger as log
 from config.settings import DISCORD_CLIENT_ID, DISCORD_CLIENT_SECRET, DISCORD_GUILDS, SERVER_URI
 
-auth_url_discord = f"https://discord.com/api/oauth2/authorize?client_id={DISCORD_CLIENT_ID}&redirect_uri={SERVER_URI}/discord_auth/done/&response_type=code&scope=identify%20guilds"
+auth_url_discord = f"https://discord.com/api/oauth2/authorize?client_id={DISCORD_CLIENT_ID}&redirect_uri={SERVER_URI}/discord_auth/done/&response_type=code&scope=identify%20guilds%20guilds.members.read"
 
 def discord_login(request: Request) -> redirect:
     """ Redirect user to discord login page """
@@ -32,6 +33,7 @@ def exchange_code(code: str):
         credentials = response.json()
         access_token = credentials['access_token']
     except Exception as e:
+        log.error("Unable to get OAUTH token")
         return None
 
     try:
