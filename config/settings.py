@@ -24,6 +24,10 @@ else:
     CALENDAR_CHANNEL_NAME = 'bot-test-calendar-channel'
 
 SERVER = getenv("SERVER")
+if SERVER:
+    SERVER_URI = f"https://{SERVER}"
+else:
+    SERVER_URI = 'http://127.0.0.1:8000'
 ALLOWED_HOSTS = ["127.0.0.1"] if SERVER else []
 CSRF_TRUSTED_ORIGINS = [f"https://{SERVER}"] if SERVER else []
 

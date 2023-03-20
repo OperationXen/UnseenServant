@@ -1,14 +1,13 @@
 import requests
-from django.shortcuts import redirect
 from django.contrib.auth import authenticate, login
 from django.http import JsonResponse
-
-from config.settings import DISCORD_CLIENT_ID, DISCORD_CLIENT_SECRET, DISCORD_GUILDS
-from rest_framework.views import Response, Request
+from django.shortcuts import redirect
 from rest_framework.status import *
+from rest_framework.views import Request
 
+from config.settings import DISCORD_CLIENT_ID, DISCORD_CLIENT_SECRET, DISCORD_GUILDS, SERVER_URI
 
-auth_url_discord = 'https://discord.com/api/oauth2/authorize?client_id=930903782089437205&redirect_uri=http%3A%2F%2F127.0.0.1%3A8000%2Fdiscord_auth%2Fdone%2F&response_type=code&scope=identify%20guilds'
+auth_url_discord = f"https://discord.com/api/oauth2/authorize?client_id={DISCORD_CLIENT_ID}&redirect_uri={SERVER_URI}/discord_auth/done/&response_type=code&scope=identify%20guilds"
 
 def discord_login(request: Request) -> redirect:
     """ Redirect user to discord login page """
@@ -21,7 +20,7 @@ def exchange_code(code: str):
         'client_secret': DISCORD_CLIENT_SECRET,
         'grant_type': 'authorization_code',
         'code': code,
-        'redirect_uri': 'http://127.0.0.1:8000/discord_auth/done/',
+        'redirect_uri': f"{SERVER_URI}/discord_auth/done/",
         'scope': 'identify'
     }
     headers = {
