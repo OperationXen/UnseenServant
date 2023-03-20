@@ -13,26 +13,22 @@ class MockUser():
         self.name = name
         self.roles = roles
 
-class MockRole():
-    """ A lightweight mocked up Role object for testing """
-    def __init__(self, name):
-        self.name = name
 
 class TestUtilitiesUser(TestCase):
     """ Tests for user specific utility functions """
     fixtures = ['test_ranks', 'test_users', 'test_bonus_credits']
-    mock_user = MockUser(id=1234567890, name='Mockuser', roles=[MockRole('Admin')])
+    mock_user = MockUser(id=1234567890, name='Mockuser', roles=['11111111', '22222222'])
 
     def test_get_user_rank_valid(self) -> None:
         """ Check we can get a user rank for a known-good role name """
-        discord_roles = [MockRole('Dungeon Master'),]
-        rank = get_user_highest_rank(discord_roles)
+        rank = get_user_highest_rank(["22222222",])
         self.assertIsInstance(rank, Rank)
+        self.assertEqual(rank.priority, 5)
+        self.assertEqual(rank.max_games, 1)
 
     def test_get_user_rank_invalid(self) -> None:
         """ Check we can get a user rank for a known-bad role name """
-        discord_roles = [MockRole('Kobold Sapper'),]
-        rank = get_user_highest_rank(discord_roles)
+        rank = get_user_highest_rank(["123123123",])
         self.assertIsNone(rank)
 
     def test_get_bonus_credits(self) -> None:
