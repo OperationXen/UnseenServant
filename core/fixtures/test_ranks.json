@@ -4,6 +4,7 @@
     "pk": 1,
     "fields": {
       "name": "Admin",
+      "discord_id": "11111111",
       "priority": 10,
       "max_games": 10,
       "patreon": false
@@ -14,6 +15,7 @@
     "pk": 2,
     "fields": {
       "name": "Dungeon Master",
+      "discord_id": "22222222",
       "priority": 5,
       "max_games": 1,
       "patreon": false

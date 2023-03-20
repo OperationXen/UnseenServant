@@ -1,11 +1,10 @@
 from django.contrib.auth.password_validation import validate_password
 from django.contrib.auth import authenticate, logout, login
 from django.core.exceptions import ValidationError
+from django.contrib.auth import get_user_model
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView, Response
 from rest_framework.status import *
-
-from django.contrib.auth import get_user_model
 
 from api.serialisers.auth import UserSerialiser
 

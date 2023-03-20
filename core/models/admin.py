@@ -1,20 +1,11 @@
-from django.contrib.auth.models import AbstractUser
+from django.contrib.auth import get_user_model
 from django.db import models
 
-
-class CustomUser(AbstractUser):
-    """Custom user model includes things like discord username"""
-
-    discord_name = models.CharField(max_length=32, help_text="Discord username")
-
-    class Meta:
-        verbose_name = "Admin panel user"
-        verbose_name_plural = "Admin panel users"
+CustomUser = get_user_model()
 
 
 class DM(models.Model):
     """Representation of a DM"""
-
     name = models.CharField(max_length=64, help_text="DM's chosen alias or handle")
     discord_id = models.CharField(null=True, blank=True, max_length=32, help_text="Discord ID of DM")
     discord_name = models.CharField(blank=True, max_length=32, help_text="Discord username")
