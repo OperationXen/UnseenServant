@@ -51,6 +51,6 @@ def discord_auth_done(request: Request) -> JsonResponse:
         discord_user = authenticate(request, user_data=user_data['user'], roles=user_data['roles'])
         if discord_user:
             login(request, discord_user)
-            return JsonResponse({'mesage': 'login successful', 'user': user_data})
+            return JsonResponse({'message': 'login successful', 'data': user_data})
         return JsonResponse({'message': 'Invalid code'}, status=HTTP_403_FORBIDDEN)
     return JsonResponse({'message': 'Failed to authenticate'}, status=HTTP_403_FORBIDDEN)
