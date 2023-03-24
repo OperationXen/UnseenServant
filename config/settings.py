@@ -28,6 +28,11 @@ if SERVER:
     SERVER_URI = f"https://{SERVER}"
 else:
     SERVER_URI = 'http://127.0.0.1:8000'
+
+WEBAPP_URL = getenv("WEBAPP_URL", "http://127.0.0.1:3000")
+AUTH_DONE_URL = WEBAPP_URL + "/members/discord_auth_done/"
+AUTH_FAIL_URL = WEBAPP_URL + "/members/discord_auth_failed/"
+
 ALLOWED_HOSTS = ["127.0.0.1"] if SERVER else []
 CSRF_TRUSTED_ORIGINS = [f"https://{SERVER}"] if SERVER else []
 

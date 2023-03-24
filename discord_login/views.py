@@ -7,6 +7,7 @@ from rest_framework.views import Request
 
 from discord_bot.logs import logger as log
 from config.settings import DISCORD_CLIENT_ID, DISCORD_CLIENT_SECRET, DISCORD_GUILDS, SERVER_URI
+from config.settings import AUTH_DONE_URL, AUTH_FAIL_URL
 
 auth_url_discord = f"https://discord.com/api/oauth2/authorize?client_id={DISCORD_CLIENT_ID}&redirect_uri={SERVER_URI}/discord_auth/done/&response_type=code&scope=identify%20guilds%20guilds.members.read"
 
@@ -51,6 +52,5 @@ def discord_auth_done(request: Request) -> JsonResponse:
         discord_user = authenticate(request, user_data=user_data['user'], roles=user_data['roles'])
         if discord_user:
             login(request, discord_user)
-            return JsonResponse({'message': 'login successful', 'data': user_data})
-        return JsonResponse({'message': 'Invalid code'}, status=HTTP_403_FORBIDDEN)
-    return JsonResponse({'message': 'Failed to authenticate'}, status=HTTP_403_FORBIDDEN)
+            return redirect(AUTH_DONE_URL)
+    return redirect(AUTH_FAIL_URL)

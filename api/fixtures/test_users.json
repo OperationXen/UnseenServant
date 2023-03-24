@@ -14,6 +14,7 @@
       "is_active": true,
       "date_joined": "2022-07-08T18:44:52Z",
       "discord_name": "testuser#1337",
+      "ranks": [1],
       "groups": [],
       "user_permissions": []
     }
@@ -33,6 +34,7 @@
       "is_active": true,
       "date_joined": "2022-07-08T18:45:07Z",
       "discord_name": "seconduser#4321",
+      "ranks": [2],
       "groups": [],
       "user_permissions": []
     }
@@ -52,6 +54,7 @@
       "is_active": true,
       "date_joined": "2022-07-08T18:44:52Z",
       "discord_name": "OpXen#1337",
+      "ranks": [1, 2],
       "groups": [],
       "user_permissions": []
     }
