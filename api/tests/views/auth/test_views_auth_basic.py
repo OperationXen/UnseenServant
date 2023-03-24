@@ -11,7 +11,7 @@ UserModel = get_user_model()
 class TestUserLogin(TestCase):
     """Check login functionality"""
 
-    fixtures = ["test_users"]
+    fixtures = ["test_users", "test_ranks"]
 
     valid_data = {
         "username": "testuser1",
@@ -89,7 +89,7 @@ class TestUserLogin(TestCase):
 class TestUserLogout(TestCase):
     """Check logout functionality"""
 
-    fixtures = ["test_users"]
+    fixtures = ["test_users", "test_ranks"]
 
     def test_can_logout_authed_user(self) -> None:
         """Ensure that a logged in user is properly logged out"""
@@ -114,7 +114,7 @@ class TestUserLogout(TestCase):
 class TestUserChangePassword(TestCase):
     """Check logged in password update functionality"""
 
-    fixtures = ["test_users"]
+    fixtures = ["test_users", "test_ranks"]
 
     valid_data = {
         "oldPass": "testpassword",
