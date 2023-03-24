@@ -80,3 +80,13 @@ class ChangeUserPassword(APIView):
             return Response({"message": "Password updated successfully"}, HTTP_200_OK)
         except ValidationError as ve:
             return Response({"message": ve.messages}, HTTP_400_BAD_REQUEST)
+
+
+class UserDetails(APIView):
+    """ View to allow a user to query their own auth status """
+    def get(self, request) -> Response:
+        if not request.user.is_authenticated:
+            return Response({"user_data": None})
+        else:
+            serialiser = UserSerialiser(request.user)
+            return Response({"user_data": serialiser.data})

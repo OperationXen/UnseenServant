@@ -12,7 +12,7 @@ from core.models import Game
 class TestGameViews(TestCase):
     """Check basic game CRUD functionality"""
 
-    fixtures = ["test_games", "test_users", "test_dms", "test_players"]
+    fixtures = ["test_games", "test_users", "test_dms", "test_players", "test_ranks"]
 
     valid_data = {
         "dm": 2,

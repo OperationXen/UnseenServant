@@ -6,7 +6,7 @@ from core.models.players import Player, Game
 class ModelTestPlayers(TestCase):
     """Test the players models"""
 
-    fixtures = ["test_dms", "test_games", "test_users"]
+    fixtures = ["test_dms", "test_games", "test_users", "test_ranks"]
 
     def test_discord_id_rounding(self) -> None:
         """As long numbers discord IDs in player objects can be rounded causing problems"""
