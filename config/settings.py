@@ -1,7 +1,7 @@
 from os import getenv
+from pathlib import Path
 from random import choices
 from string import ascii_letters, digits
-from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -16,6 +16,7 @@ if DJANGO_SECRET:
     DEFAULT_CHANNEL_NAME = 'general-game-signups'
     PRIORITY_CHANNEL_NAME = 'patron-game-signups'
     CALENDAR_CHANNEL_NAME = 'new-bot-testing-calendar'
+    SESSION_COOKIE_SECURE = True
 else:
     DEBUG = True
 
@@ -37,6 +38,8 @@ ALLOWED_HOSTS = ["127.0.0.1"] if SERVER else []
 CORS_ALLOWED_ORIGINS = [WEBAPP_URL]
 CSRF_TRUSTED_ORIGINS = [f"https://{SERVER}", WEBAPP_URL] if SERVER else []
 CORS_ALLOW_CREDENTIALS = True
+CORS_ORIGIN_ALLOW_ALL = True
+
 SESSION_COOKIE_SAMESITE = 'None'
 
 AUTH_USER_MODEL = 'core.CustomUser'
