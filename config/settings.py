@@ -12,13 +12,11 @@ SECRET_KEY = DJANGO_SECRET or RANDOM_KEY
 
 if DJANGO_SECRET:
     DEBUG = False
-
     DEFAULT_CHANNEL_NAME = 'general-game-signups'
     PRIORITY_CHANNEL_NAME = 'patron-game-signups'
     CALENDAR_CHANNEL_NAME = 'new-bot-testing-calendar'
 else:
     DEBUG = True
-
     DEFAULT_CHANNEL_NAME = 'bot-test-channel'
     PRIORITY_CHANNEL_NAME = 'bot-test-priority-channel'
     CALENDAR_CHANNEL_NAME = 'bot-test-calendar-channel'
@@ -34,6 +32,7 @@ AUTH_DONE_URL = WEBAPP_URL + "/discord_auth_done/"
 AUTH_FAIL_URL = WEBAPP_URL + "/discord_auth_failed/"
 
 ALLOWED_HOSTS = ["127.0.0.1"] if SERVER else []
+CORS_ALLOWED_ORIGINS = [WEBAPP_URL]
 CSRF_TRUSTED_ORIGINS = [f"https://{SERVER}"] if SERVER else []
 
 AUTH_USER_MODEL = 'core.CustomUser'
