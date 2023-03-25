@@ -90,4 +90,13 @@ jobs:
           key: ${{ secrets.SSH_KEY }}
           script: |
             docker exec ${{ secrets.CONTAINER_NAME }} python manage.py migrate
+
+      - name: Start services
+        uses: appleboy/ssh-action@v0.1.4
+        with:
+          host: ${{ secrets.SERVER }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.SSH_KEY }}
+          script: |
+            docker restart ${{ secrets.CONTAINER_NAME }} 
             sudo service unseen_servant start
