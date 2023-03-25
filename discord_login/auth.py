@@ -45,3 +45,9 @@ class DiscordAuthenticationBackend(BaseBackend):
             avatar=user_data['avatar'])
         self.set_user_ranks(new_user, roles)
         return new_user
+    
+    def get_user(self, user_id):
+        """ Get the user object for a given user ID """
+        user = CustomUser.objects.get(pk=user_id)
+        return user
+
