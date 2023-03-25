@@ -12,11 +12,13 @@ SECRET_KEY = DJANGO_SECRET or RANDOM_KEY
 
 if DJANGO_SECRET:
     DEBUG = False
+
     DEFAULT_CHANNEL_NAME = 'general-game-signups'
     PRIORITY_CHANNEL_NAME = 'patron-game-signups'
     CALENDAR_CHANNEL_NAME = 'new-bot-testing-calendar'
 else:
     DEBUG = True
+
     DEFAULT_CHANNEL_NAME = 'bot-test-channel'
     PRIORITY_CHANNEL_NAME = 'bot-test-priority-channel'
     CALENDAR_CHANNEL_NAME = 'bot-test-calendar-channel'
@@ -85,7 +87,6 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-CORS_ORIGIN_ALLOW_ALL = True
 ROOT_URLCONF = 'config.urls'
 
 TEMPLATES = [
