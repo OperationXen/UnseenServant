@@ -28,6 +28,7 @@ else:
 SERVER = getenv("SERVER")
 if SERVER:
     SERVER_URI = f"https://{SERVER}"
+    SESSION_COOKIE_DOMAIN = f".{SERVER}"
 else:
     SERVER_URI = 'http://127.0.0.1:8000'
 
