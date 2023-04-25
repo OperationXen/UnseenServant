@@ -8,7 +8,7 @@ from discord_bot.utils.time import discord_time, discord_countdown
 from discord_bot.utils.channel import update_mustering_embed
 from discord_bot.utils.format import generate_calendar_message
 from core.models.game import Game
-from core.utils.games import get_player_list, get_wait_list, get_dm, is_patreon_exclusive, refetch_game_data
+from core.utils.games import get_player_list, get_wait_list, get_dm, is_patreon_exclusive, refetch_game_data, calc_game_tier
 from core.utils.players import get_player_credit_text
 
 
@@ -62,7 +62,11 @@ class GameSummaryEmbed(BaseGameEmbed):
     """Custom embed for summary view of game"""
 
     def __init__(self, game, colour=None):
-        title = f"{game.variant} ({game.realm}) levels {game.level_min} - {game.level_max}"
+        tier = calc_game_tier(game)
+        if tier:
+            title = f"{game.name} (T{tier})"
+        else:
+            title = f"{game.name}"
         super().__init__(game, title=title, colour=colour)
 
     def get_player_info(self):
@@ -87,7 +91,7 @@ class GameSummaryEmbed(BaseGameEmbed):
         self.add_field(name="When", value=self.get_game_time(), inline=True)
         self.add_field(name="Players", value=self.get_player_info(), inline=True)
         description = f"{self.game.description[:76]} ..."
-        self.add_field(name=f"{self.game.module} | {self.game.name}", value=description, inline=False)
+        self.add_field(name=f"{self.game.module}", value=description, inline=False)
 
         if patreon_game:
             if self.game.datetime_open_release:
@@ -105,7 +109,11 @@ class GameDetailEmbed(BaseGameEmbed):
     """Embed for game detail view"""
 
     def __init__(self, game):
-        title = f"{game.variant} ({game.realm})"
+        tier = calc_game_tier(game)
+        if tier:
+            title = f"{game.datetime.strftime('%Y/%m/%d')} {game.name} (T{tier})"
+        else:
+            title = f"{game.datetime.strftime('%Y/%m/%d')} {game.name}"
         super().__init__(game, title)
         self.game = game
 
@@ -131,7 +139,7 @@ class GameDetailEmbed(BaseGameEmbed):
         await (self.get_data())
 
         self.add_field(
-            name=f"{self.game.module} | {self.game.name}",
+            name=f"{self.game.module}",
             value=f"{self.game.description[:1024] or 'None'}",
             inline=False,
         )
@@ -141,6 +149,7 @@ class GameDetailEmbed(BaseGameEmbed):
             value=f"Character levels {self.game.level_min} - {self.game.level_max}\n DMed by {self.dm.discord_name}",
             inline=True,
         )
+        self.add_field(name="Game Type", value=f"{self.game.variant}", inline=True)
         self.add_field(name="Content Warnings", value=f"{self.game.warnings or 'None'}", inline=False)
         self.add_field(
             name=f"Players ({self.player_count()} / {self.game.max_players})",
