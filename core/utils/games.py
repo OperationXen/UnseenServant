@@ -27,6 +27,18 @@ def _get_dm(game: Game):
         return game.dm
     return None
 
+def calc_game_tier(game: Game) -> int | None:
+    """ Calculates a game's tier """
+    if game.level_min >= 17:
+        return 4
+    if game.level_min >= 11:
+        return 3
+    if game.level_min >= 5:
+        return 2
+    if game.level_min:
+        return 1
+    return None
+
 @sync_to_async
 def get_dm(game):
     """ Async wrapper function to get the specified games' DM """

@@ -5,6 +5,7 @@ from discord_bot.components.moonseacodex import MSCCharacterList
 from discord_bot.utils.moonseacodex import get_msc_characters
 from discord_bot.utils.players import do_waitlist_updates
 from core.utils.players import get_player_credit_text
+from core.utils.games import calc_game_tier
 from discord_bot.components.games import BaseGameEmbed
 
 from discord_bot.utils.players import remove_player_from_game
@@ -16,7 +17,11 @@ class MusteringBanner(BaseGameEmbed):
     """Banner announcing the game for the channel"""
 
     def __init__(self, game):
-        title = f"Mustering for ({game.module}) {game.name}"
+        tier = calc_game_tier(game)
+        if tier:
+            title = f"Mustering for {game.name} (T{tier})"
+        else:
+            title = f"Mustering for {game.name}"
         super().__init__(game, title)
         self.game = game
 
@@ -51,7 +56,7 @@ class MusteringBanner(BaseGameEmbed):
         await (self.get_data())
 
         self.add_field(
-            name=f"{self.game.module} | {self.game.name}",
+            name=f"{self.game.module}",
             value=f"{self.game.description[:1024] or 'None'}",
             inline=False,
         )
