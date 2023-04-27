@@ -107,16 +107,25 @@ class MusteringView(View):
         self.add_item(self.msc_button)
         self.add_item(self.dropout_button)
 
+    def update_message_embeds(self, new_embed: MusteringBanner) -> list[MusteringBanner]:
+        """ Find and replace the mustering embed within the message """
+        embeds = self.message.embeds
+        if len(embeds) <= 1:                                # If there's only one (or none) embed, replace it
+            embeds[0] = new_embed
+        else:
+            for embed in embeds:                            # Otherwise we need to look for a match by comparing titles
+                if embed.title == new_embed.title:
+                    index = embeds.index(embed)
+                    embeds[index] = new_embed
+        return embeds
+
+
     async def update_message(self, followup_hook=None, response_hook=None):
         """Update the message this view is attached to"""
         muster_banner = MusteringBanner(self.game)
         await muster_banner.build()
-        # Find and replace the game detail embed within the message by comparing titles
-        embeds = self.message.embeds
-        for embed in embeds:
-            if embed.title == muster_banner.title:
-                index = embeds.index(embed)
-                embeds[index] = muster_banner
+        embeds = self.update_message_embeds(muster_banner)
+
         if followup_hook:
             await followup_hook.edit_message(message_id=self.message.id, embeds=embeds)
         elif response_hook:

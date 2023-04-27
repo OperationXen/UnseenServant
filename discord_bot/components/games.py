@@ -196,17 +196,25 @@ class GameControlView(View):
         self.players = await get_player_list(self.game)
         self.dm = await get_dm(self.game)
 
+    def update_message_embeds(self, new_embed: GameDetailEmbed) -> list[GameDetailEmbed]:
+        """ Find and replace the game detail embed within the message """
+        embeds = self.message.embeds
+        if len(embeds) <= 1:                                # If there's only one (or none) embed, replace it
+            embeds[0] = new_embed
+        else:
+            for embed in embeds:                            # Otherwise we need to look for a match by comparing titles
+                if embed.title == new_embed.title:
+                    index = embeds.index(embed)
+                    embeds[index] = new_embed
+        return embeds
+
     async def update_message(self, followup_hook=None, response_hook=None):
         """Update the message this view is attached to"""
         detail_embed = GameDetailEmbed(self.game)
         await detail_embed.refresh_game_data()
         await detail_embed.build()
-        # Find and replace the game detail embed within the message by comparing titles
-        embeds = self.message.embeds
-        for embed in embeds:
-            if embed.title == detail_embed.title:
-                index = embeds.index(embed)
-                embeds[index] = detail_embed
+        embeds = self.update_message_embeds(detail_embed)
+                    
         if followup_hook:
             return await followup_hook.edit_message(message_id=self.message.id, embeds=embeds)
         elif response_hook:
