@@ -113,12 +113,10 @@ async def game_channel_tag_removed_user(game, user):
     message = await notify_game_channel(game, message)
 
 
-async def channel_add_user(channel, user):
+async def channel_add_user(channel, user, admin=False):
     """Give a specific user permission to view and post in the channel for an upcoming game"""
     try:
-        await channel.set_permissions(
-            user, read_messages=True, send_messages=True, read_message_history=True, use_slash_commands=True
-        )
+        await channel.set_permissions(user, read_messages=True, send_messages=True, read_message_history=True, use_slash_commands=True, manage_messages=admin)
         return True
     except Exception as e:
         log.debug(f"Exception occured adding discord user {user.name} to channel")
@@ -133,6 +131,16 @@ async def channel_add_player(channel, player):
         return await channel_add_user(channel, discord_user)
     except:
         log.error(f"Unable to add this player to the channel")
+    return None
+
+async def channel_add_dm(channel, dm):
+    """Add a DM to channel by reference from a player object"""
+    log.info(f"Adding Dungeon Master [{dm.discord_name}] to channel [{channel.name}]")
+    try:
+        discord_user = await bot.fetch_user(dm.discord_id)
+        return await channel_add_user(channel, discord_user, admin=True)
+    except Exception as e:
+        log.error(f"Unable to add this DM to the channel")
     return None
 
 
