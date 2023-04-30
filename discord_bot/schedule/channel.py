@@ -6,7 +6,7 @@ from discord_bot.logs import logger as log
 from discord_bot.utils.time import get_hammertime, discord_countdown
 from discord_bot.utils.views import add_persistent_view
 from discord_bot.utils.games import get_game_id_from_message
-from discord_bot.utils.channel import create_channel_hidden, channel_add_player
+from discord_bot.utils.channel import create_channel_hidden, channel_add_player, channel_add_dm
 from discord_bot.utils.channel import get_all_game_channels_for_guild, get_channel_first_message
 from discord_bot.components.channels import MusteringBanner, MusteringView
 from core.utils.games import get_dm, get_player_list, get_game_by_id
@@ -46,7 +46,7 @@ class ChannelManager:
         return ping_text
 
     async def get_flat_message_list(self, game):
-        """ Get a list of involved users, but in such a was as to not ping them """
+        """ Get a list of involved users, but in such a way as to not ping them """
         players = await get_player_list(game)
         dm = await get_dm(game)
         text = f"DM: {dm.discord_name}\n"
@@ -57,7 +57,8 @@ class ChannelManager:
     async def add_channel_users(self, channel, game):
         """Add the DM and players to the newly created channel"""
         dm = await get_dm(game)
-        await channel_add_player(channel, dm)
+        await channel_add_dm(channel, dm)
+        
         players = await get_player_list(game)
         for player in players:
             await channel_add_player(channel, player)
