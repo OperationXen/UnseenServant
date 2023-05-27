@@ -12,7 +12,7 @@ def get_role_by_name(roles: list[Role], name: str) -> int:
     for role in roles:
         if role.name == name:
             return role.id
-    return None
+    raise ValueError(f"No role named {name} found in roles {roles}")
 
 
 async def grant_role_to_user(role_name, user):
