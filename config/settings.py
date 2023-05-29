@@ -1,7 +1,11 @@
 from os import getenv
+from dotenv import load_dotenv
+
 from pathlib import Path
 from random import choices
 from string import ascii_letters, digits
+
+load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -45,26 +49,29 @@ CORS_ORIGIN_ALLOW_ALL = True
 AUTH_USER_MODEL = "core.CustomUser"
 AUTHENTICATION_BACKENDS = ["core.auth.CustomUserModelBackend", "discord_login.auth.DiscordAuthenticationBackend"]
 
+# Discord OAUTH config
 DISCORD_CLIENT_ID = getenv("DISCORD_CLIENT_ID")
 DISCORD_CLIENT_SECRET = getenv("DISCORD_CLIENT_SECRET")
 
+# Discord API config
 DISCORD_TOKEN = getenv("DISCORD_TOKEN")
 DISCORD_GUILDS = [getenv("DISCORD_GUILDS")]
+
+# Unseen Servant Config
 DISCORD_ADMIN_ROLES = ["Admin", "admin", "Master Code Wizard", "Moderator", "council"]
 DISCORD_SIGNUP_ROLES = ["Signup Master"]
 DISCORD_DM_ROLES = ["Dungeon Master"]
+
+# Event role management configuration
+EVENT_PLAYER_ROLE_NAME = "Event Participant"
 
 CHANNEL_CREATION_DAYS = getenv("CHANNEL_CREATION_DAYS", 5)
 CHANNEL_REMIND_HOURS = getenv("CHANNEL_REMIND_HOURS", 24)
 CHANNEL_WARN_MINUTES = getenv("CHANNEL_WARN_MINUTES", 60)
 CHANNEL_DESTROY_HOURS = getenv("CHANNEL_DESTROY_HOURS", 72)
-
 CHANNEL_SEND_PINGS = getenv("CHANNEL_SEND_PINGS", False)
 
-# Event role management configuration
-
-EVENT_PLAYER_ROLE_NAME = "Event Participant"
-
+# Moonsea Codex Integrations
 MOONSEACODEX_APIKEY = getenv("MOONSEACODEX_APIKEY")
 
 INSTALLED_APPS = [
