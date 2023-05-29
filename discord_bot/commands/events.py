@@ -15,7 +15,7 @@ async def join_event(ctx):
 
     try:
         event_role = get_role_by_name(discord_bot.core.guild.roles, EVENT_PLAYER_ROLE_NAME)
-        await ctx.author.add_roles([event_role], reason="User signed up for event")
+        await ctx.author.add_roles(event_role, reason="User signed up for event")
     except ValueError:
         log.error(f"Could not find a role named '{EVENT_PLAYER_ROLE_NAME}'")
         await ctx.followup.send(f"Unable to find the appropriate role")
@@ -35,7 +35,7 @@ async def leave_event(ctx):
 
     try:
         event_role = get_role_by_name(discord_bot.core.guild.roles, EVENT_PLAYER_ROLE_NAME)
-        await ctx.author.remove_roles([event_role], reason="User dropped out of event")
+        await ctx.author.remove_roles(event_role, reason="User dropped out of event")
     except ValueError:
         log.error(f"Could not find a role named '{EVENT_PLAYER_ROLE_NAME}'")
         await ctx.followup.send(f"Unable to find the appropriate role")

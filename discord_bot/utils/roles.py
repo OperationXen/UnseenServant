@@ -11,7 +11,7 @@ def get_role_by_name(roles: list[Role], name: str) -> int:
     """fetch a specific role from a list by matching names"""
     for role in roles:
         if role.name == name:
-            return role.id
+            return role
     raise ValueError(f"No role named {name} found in roles {roles}")
 
 
