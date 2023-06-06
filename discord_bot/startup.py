@@ -9,7 +9,7 @@ from discord_bot.schedule.channel import ChannelManager
 
 
 def start_bot():
-    """ bot startup routine """
+    """bot startup routine"""
     bot.run(DISCORD_TOKEN)
 
 
@@ -20,11 +20,9 @@ async def on_ready():
 
     try:
         guild_id = int(DISCORD_GUILDS[0])
-        guild = bot.get_guild(guild_id)
-        roles = guild.roles
-        print('\n'.join(f"{r.id} - {r.name}" for r in roles))
+        discord_bot.core.guild = bot.get_guild(guild_id)
 
         discord_bot.core.game_controller = GamesPoster()
-        discord_bot.core.channel_controller = ChannelManager(guild)
+        discord_bot.core.channel_controller = ChannelManager(discord_bot.core.guild)
     except IndexError:
         log.info("Unable to find the specified guild")
