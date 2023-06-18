@@ -7,7 +7,7 @@ from core.models.game import Game
 from core.utils.games import _get_dm
 
 
-def get_role_by_name(roles: list[Role], name: str) -> int:
+def get_role_by_name(roles: list[Role], name: str) -> Role:
     """fetch a specific role from a list by matching names"""
     for role in roles:
         if role.name == name:
