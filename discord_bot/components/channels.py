@@ -53,7 +53,7 @@ class MusteringBanner(BaseGameEmbed):
 
     async def build(self):
         """Get data from database and populate the embed"""
-        await (self.get_data())
+        await self.get_data()
 
         self.add_field(
             name=f"{self.game.module}",
@@ -108,17 +108,16 @@ class MusteringView(View):
         self.add_item(self.dropout_button)
 
     def update_message_embeds(self, new_embed: MusteringBanner) -> list[MusteringBanner]:
-        """ Find and replace the mustering embed within the message """
+        """Find and replace the mustering embed within the message"""
         embeds = self.message.embeds
-        if len(embeds) <= 1:                                # If there's only one (or none) embed, replace it
+        if len(embeds) <= 1:  # If there's only one (or none) embed, replace it
             embeds[0] = new_embed
         else:
-            for embed in embeds:                            # Otherwise we need to look for a match by comparing titles
+            for embed in embeds:  # Otherwise we need to look for a match by comparing titles
                 if embed.title == new_embed.title:
                     index = embeds.index(embed)
                     embeds[index] = new_embed
         return embeds
-
 
     async def update_message(self, followup_hook=None, response_hook=None):
         """Update the message this view is attached to"""
@@ -146,17 +145,23 @@ class MusteringView(View):
             await update_game_listing_embed(self.game)
             await interaction.user.send(message)
             return True
-        await interaction.followup.send('Unable to remove you from this game, please consult the fates. It would appear to be your destiny.', ephemeral=True)
+        await interaction.followup.send(
+            "Unable to remove you from this game, please consult the fates. It would appear to be your destiny.",
+            ephemeral=True,
+        )
         return False
 
     async def muster_view_msc(self, interaction):
         """Force refresh button callback"""
         await interaction.response.defer(ephemeral=True, invisible=False)
-        discord_name = str(interaction.user)
+
+        discord_name = str(interaction.user).split("#")[0]
         characters = get_msc_characters(discord_id=discord_name)
         if characters:
             view = MSCCharacterList(interaction.user, characters)
-            view.message = await interaction.followup.send(f"Characters for {discord_name} from the Moonsea Codex:", view=view, ephemeral=True)
+            view.message = await interaction.followup.send(
+                f"Characters for {discord_name} from the Moonsea Codex:", view=view, ephemeral=True
+            )
         else:
             error_text = f"Cannot find any characters for you on Moonsea Codex, have you set your discord profile ID?"
             message = await interaction.followup.send(error_text, ephemeral=True)
