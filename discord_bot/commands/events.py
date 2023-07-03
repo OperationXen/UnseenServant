@@ -55,12 +55,14 @@ async def reset_event_roles(ctx):
     """Remove all event roles for users"""
     await ctx.response.defer(ephemeral=True)
     log.info(f"{ctx.author.name} used command /reset_event_roles")
+    affected_members: list[str] = []
 
     try:
         for role_name in DISCORD_EVENT_USER_ROLES:
             event_role = get_role_by_name(discord_bot.core.guild.roles, role_name)
             for member in event_role.members:
-                await member.remove_roles(DISCORD_EVENT_USER_ROLES, reason="All event roles removed")
+                await member.remove_roles(event_role, reason="All event roles removed")
+                affected_members.append(member.display_name)
 
     except ValueError:
         log.error(f"Could not find a role named '{role_name}'")
@@ -68,4 +70,4 @@ async def reset_event_roles(ctx):
         log.error(f"Could not remove role {event_role.name} from user {member.name}")
 
     log.info(f"User event roles removed from all users")
-    await ctx.followup.send(f"Role removal process finished")
+    await ctx.followup.send(f"Role removal process finished, affected members: {','.join(affected_members)}")
