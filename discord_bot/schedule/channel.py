@@ -6,7 +6,7 @@ from discord_bot.logs import logger as log
 from discord_bot.utils.time import get_hammertime, discord_countdown
 from discord_bot.utils.views import add_persistent_view
 from discord_bot.utils.games import get_game_from_message
-from discord_bot.utils.channel import create_channel_hidden, channel_add_player
+from discord_bot.utils.channel import create_channel_hidden, channel_add_player, channel_add_dm
 from discord_bot.utils.channel import get_all_game_channels_for_guild, get_channel_first_message
 from discord_bot.components.channels import MusteringBanner, MusteringView
 from core.utils.games import get_dm, get_player_list
