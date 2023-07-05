@@ -1,5 +1,4 @@
 from django.contrib import admin
-from django.contrib.auth.admin import UserAdmin
 
 from core.models import DM, CustomUser, Game, GameChannel
 from core.models import BonusCredit, Rank, Player, Strike, Ban

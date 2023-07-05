@@ -13,27 +13,30 @@ SECRET_KEY = DJANGO_SECRET or RANDOM_KEY
 if DJANGO_SECRET:
     DEBUG = False
 
-    DEFAULT_CHANNEL_NAME = 'general-game-signups'
-    PRIORITY_CHANNEL_NAME = 'patron-game-signups'
-    CALENDAR_CHANNEL_NAME = 'new-bot-testing-calendar'
+    DEFAULT_CHANNEL_NAME = "general-game-signups"
+    PRIORITY_CHANNEL_NAME = "patron-game-signups"
+    CALENDAR_CHANNEL_NAME = "new-bot-testing-calendar"
 
 else:
     DEBUG = True
 
-    DEFAULT_CHANNEL_NAME = 'bot-test-channel'
-    PRIORITY_CHANNEL_NAME = 'bot-test-priority-channel'
-    CALENDAR_CHANNEL_NAME = 'bot-test-calendar-channel'
+    DEFAULT_CHANNEL_NAME = "bot-test-channel"
+    PRIORITY_CHANNEL_NAME = "bot-test-priority-channel"
+    CALENDAR_CHANNEL_NAME = "bot-test-calendar-channel"
 
 SERVER = getenv("SERVER")
 ALLOWED_HOSTS = ["127.0.0.1"] if SERVER else []
 CSRF_TRUSTED_ORIGINS = [f"https://{SERVER}"] if SERVER else []
 
-AUTH_USER_MODEL = 'core.CustomUser'
-AUTHENTICATION_BACKENDS = ["api.utils.backends.CustomUserModelBackend"]
+AUTH_USER_MODEL = "core.CustomUser"
+AUTHENTICATION_BACKENDS = ["discord_login.auth.DiscordAuthenticationBackend"]
 
 # Discord OAUTH config
 DISCORD_CLIENT_ID = getenv("DISCORD_CLIENT_ID")
 DISCORD_CLIENT_SECRET = getenv("DISCORD_CLIENT_SECRET")
+SERVER_URI = getenv("OAUTH_SERVER_URI")
+AUTH_DONE_URL = getenv("OAUTH_DONE_URL")
+AUTH_FAIL_URL = getenv("OAUTH_FAIL_URL")
 
 # Discord API config
 DISCORD_TOKEN = getenv("DISCORD_TOKEN")
@@ -56,62 +59,62 @@ CHANNEL_DESTROY_HOURS = getenv("CHANNEL_DESTROY_HOURS", 72)
 
 CHANNEL_SEND_PINGS = getenv("CHANNEL_SEND_PINGS", False)
 
-MOONSEACODEX_APIKEY = getenv('MOONSEACODEX_APIKEY')
+MOONSEACODEX_APIKEY = getenv("MOONSEACODEX_APIKEY")
 
 INSTALLED_APPS = [
-    'django.contrib.admin',
-    'django.contrib.auth',
-    'django.contrib.contenttypes',
-    'django.contrib.sessions',
-    'django.contrib.messages',
-    'django.contrib.staticfiles',
-    'rest_framework',
-    'corsheaders',
-    'core',
-    'api',
-    'discordbot'
+    "django.contrib.admin",
+    "django.contrib.auth",
+    "django.contrib.contenttypes",
+    "django.contrib.sessions",
+    "django.contrib.messages",
+    "django.contrib.staticfiles",
+    "rest_framework",
+    "corsheaders",
+    "core",
+    "api",
+    "discordbot",
 ]
 
 MIDDLEWARE = [
-    'corsheaders.middleware.CorsMiddleware',
-    'django.middleware.security.SecurityMiddleware',
-    'django.contrib.sessions.middleware.SessionMiddleware',
-    'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
-    'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'django.contrib.messages.middleware.MessageMiddleware',
-    'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    "corsheaders.middleware.CorsMiddleware",
+    "django.middleware.security.SecurityMiddleware",
+    "django.contrib.sessions.middleware.SessionMiddleware",
+    "django.middleware.common.CommonMiddleware",
+    "django.middleware.csrf.CsrfViewMiddleware",
+    "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "django.contrib.messages.middleware.MessageMiddleware",
+    "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
 CORS_ORIGIN_ALLOW_ALL = True
-ROOT_URLCONF = 'config.urls'
+ROOT_URLCONF = "config.urls"
 
 TEMPLATES = [
     {
-        'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
-        'APP_DIRS': True,
-        'OPTIONS': {
-            'context_processors': [
-                'django.template.context_processors.debug',
-                'django.template.context_processors.request',
-                'django.contrib.auth.context_processors.auth',
-                'django.contrib.messages.context_processors.messages',
+        "BACKEND": "django.template.backends.django.DjangoTemplates",
+        "DIRS": [],
+        "APP_DIRS": True,
+        "OPTIONS": {
+            "context_processors": [
+                "django.template.context_processors.debug",
+                "django.template.context_processors.request",
+                "django.contrib.auth.context_processors.auth",
+                "django.contrib.messages.context_processors.messages",
             ],
         },
     },
 ]
 
-WSGI_APPLICATION = 'config.wsgi.application'
+WSGI_APPLICATION = "config.wsgi.application"
 
 
 # Database
 # https://docs.djangoproject.com/en/4.0/ref/settings/#databases
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'database' / 'db.sqlite3',
+    "default": {
+        "ENGINE": "django.db.backends.sqlite3",
+        "NAME": BASE_DIR / "database" / "db.sqlite3",
     }
 }
 
@@ -121,16 +124,16 @@ DATABASES = {
 
 AUTH_PASSWORD_VALIDATORS = [
     {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
+        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
+        "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
+        "NAME": "django.contrib.auth.password_validation.CommonPasswordValidator",
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
+        "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
     },
 ]
 
@@ -138,9 +141,9 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/4.0/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = "en-us"
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = "UTC"
 
 USE_I18N = True
 
@@ -156,4 +159,4 @@ STATIC_ROOT = BASE_DIR / "admin_static"
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.0/ref/settings/#default-auto-field
 
-DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
