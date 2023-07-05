@@ -5,18 +5,50 @@ from asgiref.sync import sync_to_async
 
 from core.models.game import Game
 from core.models.players import Player
-from discordbot.logs import logger as log
+from discord_bot.logs import logger as log
 from core.utils.players import get_player_max_games, get_player_game_count
-from core.utils.players import get_current_user_bans, get_user_highest_rank
+from core.utils.players import get_user_highest_rank
 from core.utils.players import get_last_waitlist_position
+from core.utils.user import get_user_by_discord_id
+from core.utils.sanctions import get_current_user_bans
+
+
+def _refetch_game_data(game: Game) -> Game:
+    """Refresh the game object from the database"""
+    game.refresh_from_db()
+    return game
+
+
+@sync_to_async
+def refetch_game_data(game: Game) -> Game:
+    """Refresh the game object from the database"""
+    return _refetch_game_data(game)
+
+
+def calc_game_tier(game: Game) -> int | None:
+    """Calculates a game's tier"""
+    if game.level_min >= 17:
+        return 4
+    if game.level_min >= 11:
+        return 3
+    if game.level_min >= 5:
+        return 2
+    if game.level_min:
+        return 1
+    return None
+
+
+def _get_dm(game: Game):
+    """Get the specified games DM (syncronous)"""
+    if game.dm:
+        return game.dm
+    return None
 
 
 @sync_to_async
 def get_dm(game):
-    """Get an object representing the games DM"""
-    if game.dm:
-        return game.dm
-    return None
+    """Async wrapper function to get the specified games' DM"""
+    return _get_dm(game)
 
 
 @sync_to_async
@@ -103,9 +135,10 @@ def _get_game_by_id(game_id):
 def get_game_by_id(game_id):
     return _get_game_by_id(game_id)
 
+
 @sync_to_async
 def db_force_add_player_to_game(game, user):
-    """ Force a player into a specified game, ignoring all conditions """
+    """Force a player into a specified game, ignoring all conditions"""
     discord_id = str(user.id)
     try:
         player = game.players.get(discord_id=discord_id)
@@ -114,6 +147,7 @@ def db_force_add_player_to_game(game, user):
     except Player.DoesNotExist:
         Player.objects.create(game=game, discord_id=discord_id, discord_name=user.name, standby=False)
     return "party"
+
 
 def sanity_check_new_game_player(game: Game, discord_id: str) -> bool:
     """perform a go / no go check for adding a given player to a game (by discord ID)"""
@@ -128,11 +162,13 @@ def sanity_check_new_game_player(game: Game, discord_id: str) -> bool:
         return False
     return True
 
+
 def check_user_available_credit(discord_id) -> int:
-    """ this should exist elsewhere """
+    """this should exist elsewhere"""
+    user = get_user_by_discord_id(discord_id)
     if not get_user_highest_rank(user.roles):
         return False
-    return get_player_game_count(discord_id) >= get_player_max_games(user):
+    return get_player_game_count(discord_id) >= get_player_max_games(user)
 
 
 def handle_game_player_add(game: Game, discord_id: str, discord_name: str):

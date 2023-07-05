@@ -1,8 +1,8 @@
 import re
 from discord.ui import Button
 
-from discordbot.logs import logger as log
-from discordbot.bot import bot
+from discord_bot.logs import logger as log
+from discord_bot.bot import bot
 from core.models import Game
 
 
@@ -33,16 +33,18 @@ def get_game_from_message(message) -> Game | None:
         log.error(e)
     return None
 
+
 async def _get_game_control_view_for_game(game):
-    """ Given a game object, check its mustering channel and retrieve the view attached to the mustering embed"""
+    """Given a game object, check its mustering channel and retrieve the view attached to the mustering embed"""
     for view in bot.persistent_views:
         view_name = str(type(view))
-        if 'GameControlView' in view_name and view.game == game:
+        if "GameControlView" in view_name and view.game == game:
             return view
     return None
 
+
 async def update_game_listing_embed(game):
-    """ Refresh a game listing embed for a specific game """
+    """Refresh a game listing embed for a specific game"""
     try:
         view = await _get_game_control_view_for_game(game)
         if view:

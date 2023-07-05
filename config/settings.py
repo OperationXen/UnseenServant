@@ -29,10 +29,7 @@ ALLOWED_HOSTS = ["127.0.0.1"] if SERVER else []
 CSRF_TRUSTED_ORIGINS = [f"https://{SERVER}"] if SERVER else []
 
 AUTH_USER_MODEL = "core.CustomUser"
-AUTHENTICATION_BACKENDS = [
-    "discord_login.auth.DiscordAuthenticationBackend",
-    "django.contrib.auth.backends.ModelBackend",
-]
+AUTHENTICATION_BACKENDS = ["discord_login.auth.DiscordAuthenticationBackend", "core.auth.CustomUserModelBackend"]
 
 # Discord OAUTH config
 DISCORD_CLIENT_ID = getenv("DISCORD_CLIENT_ID")
@@ -75,7 +72,7 @@ INSTALLED_APPS = [
     "corsheaders",
     "core",
     "api",
-    "discordbot",
+    "discord_bot",
 ]
 
 MIDDLEWARE = [

@@ -8,7 +8,7 @@ from core.models import Player
 class TestGameActionViews(TestCase):
     """Check basic game CRUD functionality"""
 
-    fixtures = ["test_games", "test_users", "test_dms", "test_players", "test_bans"]
+    fixtures = ["test_games", "test_users", "test_ranks", "test_dms", "test_players", "test_bans"]
 
     def test_anonymous_user_cant_join_game(self) -> None:
         """Users must be logged in"""
@@ -47,7 +47,7 @@ class TestGameActionViews(TestCase):
     def test_user_can_join_game(self) -> None:
         """A user can join a game"""
         self.client.login(username="testuser1", password="testpassword")
-        self.assertEqual(Player.objects.filter(discord_id = "11111111").count(), 0)
+        self.assertEqual(Player.objects.filter(discord_id="11111111").count(), 0)
 
         response = self.client.post(reverse("games-join", kwargs={"pk": 1}))
         self.assertEqual(response.status_code, HTTP_200_OK)

@@ -5,6 +5,7 @@ from discord import Member, Guild
 from discord_bot.bot import bot
 from config.settings import DISCORD_GUILDS
 from core.utils.players import get_user_highest_rank, get_bonus_credits, get_user_pending_games_count
+from core.models.auth import CustomUser
 
 
 def get_member_from_guild(guild: Guild, member_id: str) -> Member:
@@ -39,3 +40,10 @@ def get_user_available_credit(discord_id: str) -> int:
     total_credits = get_user_max_credit(discord_id)
     used_credits = get_user_pending_games_count(discord_id)
     return total_credits - used_credits
+
+
+def get_user_by_discord_id(discord_id: str) -> CustomUser:
+    try:
+        return CustomUser.objects.get(discord_id=discord_id)
+    except CustomUser.DoesNotExist:
+        return None
