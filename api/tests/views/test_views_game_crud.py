@@ -15,7 +15,6 @@ class TestGameViews(TestCase):
     fixtures = ["test_games", "test_users", "test_dms", "test_players", "test_ranks"]
 
     valid_data = {
-        "dm": 2,
         "name": "New Test Game",
         "module": "CCC-GHC-09",
         "realm": "Forgotten Realms",
@@ -84,10 +83,17 @@ class TestGameViews(TestCase):
         self.assertEqual(response.data.get("name"), update_data["name"])
 
     def test_dm_can_delete_game(self) -> None:
-        """ A logged in DM should be able to delete their own games """
-        self.client.login(username="testuser1", password="testpassword")
+        """A logged in DM should be able to delete their own games"""
+        self.client.login(username="Test DM", password="testpassword")
 
         response = self.client.delete(reverse("games-detail", kwargs={"pk": 2}))
         self.assertEqual(response.status_code, HTTP_200_OK)
         with self.assertRaises(Game.DoesNotExist):
             game = Game.objects.get(pk=2)
+
+    def test_user_cannot_delete_game(self) -> None:
+        """A logged in user should be able to delete arbitrary games"""
+        self.client.login(username="testuser1", password="testpassword")
+
+        response = self.client.delete(reverse("games-detail", kwargs={"pk": 2}))
+        self.assertEqual(response.status_code, HTTP_403_FORBIDDEN)

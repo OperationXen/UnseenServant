@@ -14,7 +14,7 @@
       "is_active": true,
       "date_joined": "2022-07-08T18:44:52Z",
       "discord_id": "11111111",
-      "discord_name": "testuser#1337",
+      "discord_name": "testuser",
       "ranks": [1],
       "groups": [],
       "user_permissions": []
@@ -35,7 +35,7 @@
       "is_active": true,
       "date_joined": "2022-07-08T18:45:07Z",
       "discord_id": "22222222",
-      "discord_name": "seconduser#4321",
+      "discord_name": "seconduser",
       "ranks": [2],
       "groups": [],
       "user_permissions": []
@@ -56,7 +56,7 @@
       "is_active": true,
       "date_joined": "2022-07-08T18:44:52Z",
       "discord_id": "33333333",
-      "discord_name": "OpXen#1337",
+      "discord_name": "OpXen",
       "ranks": [1, 2],
       "groups": [],
       "user_permissions": []
@@ -77,7 +77,7 @@
       "is_active": true,
       "date_joined": "2022-07-08T18:44:52Z",
       "discord_id": "44444444",
-      "discord_name": "Banned#1234",
+      "discord_name": "BannedUser",
       "groups": [],
       "user_permissions": []
     }
