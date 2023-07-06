@@ -26,7 +26,7 @@ class CustomUser(AbstractUser):
     """Custom user model includes things like discord username"""
 
     discord_id = models.CharField(null=True, blank=True, max_length=32, help_text="Discord ID of user")
-    discord_name = models.CharField(max_length=32, help_text="Discord username")
+    discord_name = models.CharField(max_length=32, help_text="Discord username", null=True, blank=True)
 
     avatar = models.URLField(null=True, blank=True, help_text="Path to the users avatar image")
     ranks = models.ManyToManyField(
