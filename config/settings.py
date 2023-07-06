@@ -1,8 +1,10 @@
 from os import getenv
+from dotenv import load_dotenv
 from random import choices
 from string import ascii_letters, digits
 from pathlib import Path
 
+load_dotenv()
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -16,7 +18,8 @@ if DJANGO_SECRET:
     DEFAULT_CHANNEL_NAME = "general-game-signups"
     PRIORITY_CHANNEL_NAME = "patron-game-signups"
     CALENDAR_CHANNEL_NAME = "new-bot-testing-calendar"
-
+    SESSION_COOKIE_SECURE = True
+    SESSION_COOKIE_SAMESITE = "None"
 else:
     DEBUG = True
 
@@ -25,8 +28,22 @@ else:
     CALENDAR_CHANNEL_NAME = "bot-test-calendar-channel"
 
 SERVER = getenv("SERVER")
+if SERVER:
+    SERVER_URI = f"https://{SERVER}"
+    SESSION_COOKIE_DOMAIN = f"{SERVER}"
+else:
+    SERVER_URI = "http://127.0.0.1:8000"
+
+WEBAPP_URL = getenv("WEBAPP_URL", "http://127.0.0.1:3000")
+AUTH_DONE_URL = WEBAPP_URL + "/discord_auth_done/"
+AUTH_FAIL_URL = WEBAPP_URL + "/discord_auth_failed/"
+
+# Security Controls
 ALLOWED_HOSTS = ["127.0.0.1"] if SERVER else []
-CSRF_TRUSTED_ORIGINS = [f"https://{SERVER}"] if SERVER else []
+CORS_ALLOWED_ORIGINS = [WEBAPP_URL]
+CSRF_TRUSTED_ORIGINS = [f"https://{SERVER}", WEBAPP_URL] if SERVER else []
+CORS_ALLOW_CREDENTIALS = True
+CORS_ORIGIN_ALLOW_ALL = True
 
 AUTH_USER_MODEL = "core.CustomUser"
 AUTHENTICATION_BACKENDS = ["discord_login.auth.DiscordAuthenticationBackend", "core.auth.CustomUserModelBackend"]
@@ -34,7 +51,6 @@ AUTHENTICATION_BACKENDS = ["discord_login.auth.DiscordAuthenticationBackend", "c
 # Discord OAUTH config
 DISCORD_CLIENT_ID = getenv("DISCORD_CLIENT_ID")
 DISCORD_CLIENT_SECRET = getenv("DISCORD_CLIENT_SECRET")
-SERVER_URI = getenv("OAUTH_SERVER_URI")
 AUTH_DONE_URL = getenv("OAUTH_DONE_URL")
 AUTH_FAIL_URL = getenv("OAUTH_FAIL_URL")
 
@@ -73,6 +89,7 @@ INSTALLED_APPS = [
     "core",
     "api",
     "discord_bot",
+    "discord_login",
 ]
 
 MIDDLEWARE = [
@@ -86,7 +103,6 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
-CORS_ORIGIN_ALLOW_ALL = True
 ROOT_URLCONF = "config.urls"
 
 TEMPLATES = [
