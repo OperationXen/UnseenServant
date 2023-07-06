@@ -4,7 +4,7 @@ from asgiref.sync import sync_to_async
 from django.db.models import Q
 from django.utils import timezone
 
-from core.models.players import Ban, Strike
+from core.models.players import Ban, Strike, Player
 
 
 def get_current_user_strikes(discord_id: str):
@@ -32,9 +32,9 @@ def check_strike_threshold(user, admin):
     if len(outstanding) >= 3:
         Ban.objects.create(
             discord_id=str(user.id),
-            discord_name=f"{user.name}#{user.discriminator}",
+            discord_name=f"{user.name}",
             issuer_id=admin.id,
-            issuer_name=f"{admin.name}#{admin.discriminator}",
+            issuer_name=f"{admin.name}",
             reason="Three strikes and you're out...",
             variant="ST",
             datetime_end=end,
@@ -50,9 +50,9 @@ def add_user_strike(user, reason, admin):
     end = now + timedelta(weeks=52)
     Strike.objects.create(
         discord_id=str(user.id),
-        discord_name=f"{user.name}#{user.discriminator}",
+        discord_name=f"{user.name}",
         issuer_id=admin.id,
-        issuer_name=f"{admin.name}#{admin.discriminator}",
+        issuer_name=f"{admin.name}",
         reason=reason,
         expires=end,
     )
@@ -116,9 +116,9 @@ def add_new_ban(user, variant, reason, admin, ban_length):
 
     Ban.objects.create(
         discord_id=str(user.id),
-        discord_name=f"{user.name}#{user.discriminator}",
+        discord_name=f"{user.name}",
         issuer_id=str(admin.id),
-        issuer_name=f"{admin.name}#{admin.discriminator}",
+        issuer_name=f"{admin.name}",
         reason=reason,
         variant=variant,
         datetime_end=end,
