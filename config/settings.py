@@ -43,7 +43,7 @@ ALLOWED_HOSTS = ["127.0.0.1"] if SERVER else []
 CORS_ALLOWED_ORIGINS = [WEBAPP_URL]
 CSRF_TRUSTED_ORIGINS = [f"https://{SERVER}", WEBAPP_URL] if SERVER else []
 CORS_ALLOW_CREDENTIALS = True
-CORS_ORIGIN_ALLOW_ALL = True
+CORS_ALLOW_ALL_ORIGINS = True
 
 AUTH_USER_MODEL = "core.CustomUser"
 AUTHENTICATION_BACKENDS = ["discord_login.auth.DiscordAuthenticationBackend", "core.auth.CustomUserModelBackend"]
