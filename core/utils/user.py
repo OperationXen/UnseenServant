@@ -1,29 +1,6 @@
-from asgiref.sync import async_to_sync
-
-from discord import Member, Guild
-
-from discord_bot.bot import bot
-from config.settings import DISCORD_GUILDS
 from core.utils.players import get_bonus_credits, get_user_pending_games_count
 from core.utils.ranks import get_highest_rank
 from core.models.auth import CustomUser
-
-
-def get_member_from_guild(guild: Guild, member_id: str) -> Member:
-    """Get a member instance from specified guild"""
-    member = guild.fetch_member(member_id)
-    return member
-
-
-@async_to_sync
-async def get_roles_for_user_id(discord_id: str) -> list[str] | None:
-    """Ask discord for the roles for a given user ID"""
-    for guild_id in DISCORD_GUILDS:
-        guild = await bot.fetch_guild(guild_id)
-        member = await get_member_from_guild(guild, discord_id)
-        if member:
-            return member.roles
-    return None
 
 
 def get_user_max_credit(user: CustomUser) -> int:
