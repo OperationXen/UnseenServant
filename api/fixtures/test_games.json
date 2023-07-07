@@ -25,7 +25,7 @@
     "model": "core.game",
     "pk": 2,
     "fields": {
-      "dm": 2,
+      "dm": 1,
       "name": "Another Test Game",
       "module": "DRW-0101",
       "realm": "Forgotten Realms",
@@ -34,6 +34,28 @@
       "max_players": 4,
       "level_min": 17,
       "level_max": 20,
+      "warnings": "None",
+      "streaming": false,
+      "datetime_release": null,
+      "datetime_open_release": "2022-06-11T12:02:09Z",
+      "datetime": "2022-07-07T22:50:05Z",
+      "length": "4 hours",
+      "ready": true
+    }
+  },
+  {
+    "model": "core.game",
+    "pk": 3,
+    "fields": {
+      "dm": 1,
+      "name": "Test Game 3",
+      "module": "DRW-0102",
+      "realm": "Forgotten Realms",
+      "variant": "Resident AL",
+      "description": "Dreams of the red wizards 2",
+      "max_players": 4,
+      "level_min": 5,
+      "level_max": 10,
       "warnings": "None",
       "streaming": false,
       "datetime_release": null,

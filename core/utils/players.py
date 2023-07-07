@@ -9,61 +9,6 @@ from discord_bot.logs import logger as log
 from core.utils.ranks import get_user_highest_rank
 
 
-def get_current_user_bans(discord_id: str):
-    """Check a given discord user is in good standing - Needs to be syncronous"""
-    now = timezone.now()
-    not_expired = Q(datetime_end__gte=now) | Q(datetime_end=None)
-
-    queryset = Ban.objects.filter(discord_id=discord_id).filter(datetime_start__lte=now)
-    queryset = queryset.filter(not_expired)
-    return queryset.order_by("datetime_end")
-
-def get_all_current_bans():
-    """Retrieve all currently outstanding bans"""
-    now = timezone.now()
-    not_expired = Q(datetime_end__gte=now) | Q(datetime_end=None)
-
-    queryset = Ban.objects.filter(datetime_start__lte=now)
-    queryset = queryset.filter(not_expired)
-    return queryset.order_by("datetime_end")
-
-def add_new_ban(user, variant, reason, admin, ban_length):
-    """Add a new ban"""
-    now = timezone.now()
-    if ban_length == -1 or variant == "PM":
-        variant = "PM"
-        end = None
-    else:
-        end = now + timedelta(days=ban_length)
-    # Remove player from games on hard ban
-    if variant == "HD" or variant == "PM":
-        queryset = Player.objects.filter(discord_id=str(user.id)).filter(game__datetime__gte=now)
-        queryset.delete()
-
-    Ban.objects.create(
-        discord_id=str(user.id),
-        discord_name=f"{user.name}#{user.discriminator}",
-        issuer_id=str(admin.id),
-        issuer_name=f"{admin.name}#{admin.discriminator}",
-        reason=reason,
-        variant=variant,
-        datetime_end=end,
-    )
-
-@sync_to_async
-def get_outstanding_bans(user=None):
-    if user:
-        bans = get_current_user_bans(str(user.id))
-    else:
-        bans = get_all_current_bans()
-    # force queryset evaluation before returning to async
-    return list(bans)
-
-@sync_to_async
-def issue_player_ban(user, variant, reason, admin, ban_length):
-    """Ban a player from using the signup bot"""
-    add_new_ban(user, variant, reason, admin, ban_length)
-
 @sync_to_async
 def issue_player_bonus_credit(user, number, issuer, reason="Not supplied", valid_for=None):
     """Give a player some bonus credits"""
@@ -83,13 +28,15 @@ def issue_player_bonus_credit(user, number, issuer, reason="Not supplied", valid
     )
     return obj
 
-def get_player_game_count(discord_id:str):
+
+def get_player_game_count(discord_id: str):
     """get the total number of games a player is in"""
     now = timezone.now()
     queryset = Player.objects.filter(discord_id=discord_id)
     queryset = queryset.filter(game__datetime__gte=now)
     queryset = queryset.filter(game__ready=True)
     return queryset.count()
+
 
 def get_bonus_credits(discord_id: str) -> int:
     """Get the total number of bonus games awarded to the user and currently valid"""
@@ -100,6 +47,7 @@ def get_bonus_credits(discord_id: str) -> int:
     total = queryset.aggregate(Sum("credits"))
     return total["credits__sum"] or 0
 
+
 def get_player_max_games(discord_user) -> int:
     """get the total number of games a user can sign up for"""
     max_games = 0
@@ -109,6 +57,7 @@ def get_player_max_games(discord_user) -> int:
     bonuses = get_bonus_credits(str(discord_user.id))
     return max_games + bonuses
 
+
 def get_user_pending_games_count(discord_id: str) -> int:
     now = timezone.now()
 
@@ -117,13 +66,15 @@ def get_user_pending_games_count(discord_id: str) -> int:
     pending_games = queryset.count()
     return pending_games
 
-def get_user_signups_remaining(user):
+
+def get_user_signups_remaining(user) -> int:
     """Get the total number of signups the user has availble to them"""
     max_games = get_player_max_games(user)
     game_count = get_user_pending_games_count(str(user.id))
 
     log.info(f"{user} is signed up for {game_count}")
     return max_games - game_count
+
 
 @sync_to_async
 def get_player_credit_text(user):
@@ -134,6 +85,7 @@ def get_player_credit_text(user):
         return f"{credits} / {max_games} game credits available"
     else:
         return f"You have no game credits available from your [{max_games}] total"
+
 
 @sync_to_async
 def populate_game_from_waitlist(game):
@@ -153,16 +105,18 @@ def populate_game_from_waitlist(game):
             break
     return promoted
 
+
 def get_waitlist_rank(player):
     """get the rank of the player in the waitlist"""
     queryset = Player.objects.filter(game=player.game).filter(standby=True)
     waitlist = list(queryset.order_by("waitlist"))
     return waitlist.index(player) + 1
 
+
 def get_last_waitlist_position(game):
     """get the position at the end of the waitlist"""
     queryset = Player.objects.filter(game=game).filter(standby=True)
     last_player = queryset.order_by("waitlist").last()
-    if last_player:
+    if last_player and last_player.waitlist:
         return last_player.waitlist
     return 0

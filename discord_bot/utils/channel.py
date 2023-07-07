@@ -5,8 +5,7 @@ from discord_bot.bot import bot
 from discord_bot.logs import logger as log
 from config.settings import CHANNEL_SEND_PINGS
 from core.utils.channels import get_game_channel_for_game
-from core.utils.games import get_game_by_id
-from discord_bot.utils.games import get_game_id_from_message
+from discord_bot.utils.games import get_game_from_message
 
 
 async def get_channel_for_game(game):
@@ -24,8 +23,7 @@ async def get_game_for_channel(channel):
     """Given a discord channel, attempt to derive which game it represents"""
     try:
         message = await get_channel_first_message(channel)
-        game_id = get_game_id_from_message(message)
-        game = await get_game_by_id(game_id)
+        game = await get_game_from_message(message)
         if game:
             return game
         return None
@@ -87,7 +85,7 @@ async def game_channel_tag_promoted_user(game, user):
         f"Neither snow nor rain nor heat nor glom of nit could stop {user_text} from joining this party",
         f"It's not a doppelganger, it's {user_text}",
         f"{user_text} teleports in with a shower of confetti",
-        f"I would like to cast Player Ally and summon {user_text}",
+        f"I would like to cast summon Player Ally and summon {user_text}",
         f"Everyone knows something is afoot when {user_text} arrives...",
         f"{user_text} has been successfully planar bound to this session!",
         f"BAM! A three point landing like that can only be {user_text}.",
@@ -95,6 +93,8 @@ async def game_channel_tag_promoted_user(game, user):
         f"Yip yip, {user_text}",
         f"{user_text} ponders their orb",
         f"It's your round {user_text}!",
+        f"Daemons run when {user_text} goes to war",
+        f"Even in death, {user_text} still serves",
     ]
 
     message = random.choice(choices)
@@ -116,7 +116,14 @@ async def game_channel_tag_removed_user(game, user):
 async def channel_add_user(channel, user, admin=False):
     """Give a specific user permission to view and post in the channel for an upcoming game"""
     try:
-        await channel.set_permissions(user, read_messages=True, send_messages=True, read_message_history=True, use_slash_commands=True, manage_messages=admin)
+        await channel.set_permissions(
+            user,
+            read_messages=True,
+            send_messages=True,
+            read_message_history=True,
+            use_slash_commands=True,
+            manage_messages=admin,
+        )
         return True
     except Exception as e:
         log.debug(f"Exception occured adding discord user {user.name} to channel")
@@ -132,6 +139,7 @@ async def channel_add_player(channel, player):
     except:
         log.error(f"Unable to add this player to the channel")
     return None
+
 
 async def channel_add_dm(channel, dm):
     """Add a DM to channel by reference from a player object"""

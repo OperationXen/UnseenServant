@@ -6,7 +6,6 @@ import django.db.models.deletion
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("core", "0020_alter_ban_discord_id_alter_ban_issuer_id_and_more"),
     ]

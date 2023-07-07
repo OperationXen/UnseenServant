@@ -1,0 +1,16 @@
+[
+    {
+      "model": "core.ban",
+      "pk": 1,
+      "fields": {
+        "discord_id": "44444444",
+        "discord_name": "BannedUser",
+        "datetime_start": "2020-01-01T18:44:52Z", 
+        "datetime_end": "2032-01-01T18:44:52Z",
+        "issuer_id": "33333333",
+        "issuer_name": "admin",
+        "reason": "Needed to test banned users",
+        "variant": "PM" 
+        }
+    }
+  ]

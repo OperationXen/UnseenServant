@@ -5,16 +5,17 @@ from config.settings import CHANNEL_SEND_PINGS
 from discord_bot.logs import logger as log
 from discord_bot.utils.time import get_hammertime, discord_countdown
 from discord_bot.utils.views import add_persistent_view
-from discord_bot.utils.games import get_game_id_from_message
+from discord_bot.utils.games import get_game_from_message, get_game_id_from_message
 from discord_bot.utils.channel import create_channel_hidden, channel_add_player, channel_add_dm
 from discord_bot.utils.channel import get_all_game_channels_for_guild, get_channel_first_message
 from discord_bot.components.channels import MusteringBanner, MusteringView
-from core.utils.games import get_dm, get_player_list, get_game_by_id
+from core.utils.games import get_dm, get_player_list
 from core.utils.channels import get_game_channels_pending_creation, set_game_channel_created
 from core.utils.channels import get_game_channels_pending_destruction, destroy_game_channel
 from core.utils.channels import get_game_channels_pending_reminder, set_game_channel_reminded
 from core.utils.channels import get_game_channels_pending_warning, set_game_channel_warned
 from core.utils.channels import get_game_channel_for_game
+
 
 class ChannelManager:
     """Manager class for performing channel based functions"""
@@ -37,7 +38,7 @@ class ChannelManager:
         return topic_text
 
     async def get_ping_text(self, game):
-        """ Get text that will ping each of the users mentioned """
+        """Get text that will ping each of the users mentioned"""
         players = await get_player_list(game)
         dm = await get_dm(game)
         ping_text = f"DM: <@{dm.discord_id}>\n"
@@ -46,7 +47,7 @@ class ChannelManager:
         return ping_text
 
     async def get_flat_message_list(self, game):
-        """ Get a list of involved users, but in such a way as to not ping them """
+        """Get a list of involved users, but in such a way as to not ping them"""
         players = await get_player_list(game)
         dm = await get_dm(game)
         text = f"DM: {dm.discord_name}\n"
@@ -58,7 +59,7 @@ class ChannelManager:
         """Add the DM and players to the newly created channel"""
         dm = await get_dm(game)
         await channel_add_dm(channel, dm)
-        
+
         players = await get_player_list(game)
         for player in players:
             await channel_add_player(channel, player)
@@ -101,7 +102,7 @@ class ChannelManager:
                 if channel:
                     await channel.delete()
                 else:
-                    log.info('Cannot retrieve the expected discord channel, assuming its been deleted manually...')
+                    log.info("Cannot retrieve the expected discord channel, assuming its been deleted manually...")
                 await destroy_game_channel(game_channel)
         except Exception as e:
             log.error(e)
@@ -129,18 +130,19 @@ class ChannelManager:
                 log.info(f"Sending 1 hour start warning to channel: {game_channel.name}")
                 channel = self.guild.get_channel(int(game_channel.discord_id))
                 ping_text = await self.get_ping_text(game)
-                await channel.send(f"Game starting {discord_countdown(game.datetime)}, please ensure that you are ready\n{ping_text}")
+                await channel.send(
+                    f"Game starting {discord_countdown(game.datetime)}, please ensure that you are ready\n{ping_text}"
+                )
                 await set_game_channel_warned(game_channel)
         except Exception as e:
             log.error(e)
 
     async def recover_channel_state(self):
-        """ Pull game postings from posting history and reconstruct a game/message status from it """
+        """Pull game postings from posting history and reconstruct a game/message status from it"""
         log.info("Reconnecting to existing mustering views")
         for channel in await get_all_game_channels_for_guild(self.guild):
             message = await get_channel_first_message(channel)
-            game_id = get_game_id_from_message(message)
-            game = await get_game_by_id(game_id)
+            game = await get_game_from_message(message)
             # Rebuild view handlers
             if game:
                 control_view = MusteringView(game)
@@ -148,6 +150,7 @@ class ChannelManager:
                 add_persistent_view(control_view)
                 log.info(f"Reconnected mustering view for {game.name}")
             else:
+                game_id = get_game_id_from_message(message)
                 log.info(f"Identified potentially ophaned mustering channel (no game to match) for game ID: {game_id}")
                 continue
 

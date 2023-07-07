@@ -20,5 +20,16 @@
       "max_games": 1,
       "patreon": false
     }
+  },
+  {
+    "model": "core.rank",
+    "pk": 3,
+    "fields": {
+      "name": "No games allowed",
+      "discord_id": "33333333",
+      "priority": 1,
+      "max_games": 0,
+      "patreon": false
+    }
   }
 ]

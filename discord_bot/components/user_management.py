@@ -2,7 +2,7 @@ import discord
 from discord import Embed, Colour, SelectOption
 from discord.ui import View
 
-from core.utils.players import issue_player_ban, get_outstanding_bans
+from core.utils.sanctions import issue_player_ban, get_outstanding_bans
 
 
 class PlayerBanEmbed(Embed):

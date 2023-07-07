@@ -1,12 +1,10 @@
 from os import getenv
 from dotenv import load_dotenv
-
-from pathlib import Path
 from random import choices
 from string import ascii_letters, digits
+from pathlib import Path
 
 load_dotenv()
-
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -40,6 +38,7 @@ WEBAPP_URL = getenv("WEBAPP_URL", "http://127.0.0.1:3000")
 AUTH_DONE_URL = WEBAPP_URL + "/discord_auth_done/"
 AUTH_FAIL_URL = WEBAPP_URL + "/discord_auth_failed/"
 
+# Security Controls
 ALLOWED_HOSTS = ["127.0.0.1"] if SERVER else []
 CORS_ALLOWED_ORIGINS = [WEBAPP_URL]
 CSRF_TRUSTED_ORIGINS = [f"https://{SERVER}", WEBAPP_URL] if SERVER else []
@@ -47,11 +46,13 @@ CORS_ALLOW_CREDENTIALS = True
 CORS_ORIGIN_ALLOW_ALL = True
 
 AUTH_USER_MODEL = "core.CustomUser"
-AUTHENTICATION_BACKENDS = ["core.auth.CustomUserModelBackend", "discord_login.auth.DiscordAuthenticationBackend"]
+AUTHENTICATION_BACKENDS = ["discord_login.auth.DiscordAuthenticationBackend", "core.auth.CustomUserModelBackend"]
 
 # Discord OAUTH config
 DISCORD_CLIENT_ID = getenv("DISCORD_CLIENT_ID")
 DISCORD_CLIENT_SECRET = getenv("DISCORD_CLIENT_SECRET")
+AUTH_DONE_URL = getenv("OAUTH_DONE_URL")
+AUTH_FAIL_URL = getenv("OAUTH_FAIL_URL")
 
 # Discord API config
 DISCORD_TOKEN = getenv("DISCORD_TOKEN")
@@ -71,9 +72,9 @@ CHANNEL_CREATION_DAYS = getenv("CHANNEL_CREATION_DAYS", 5)
 CHANNEL_REMIND_HOURS = getenv("CHANNEL_REMIND_HOURS", 24)
 CHANNEL_WARN_MINUTES = getenv("CHANNEL_WARN_MINUTES", 60)
 CHANNEL_DESTROY_HOURS = getenv("CHANNEL_DESTROY_HOURS", 72)
+
 CHANNEL_SEND_PINGS = getenv("CHANNEL_SEND_PINGS", False)
 
-# Moonsea Codex Integrations
 MOONSEACODEX_APIKEY = getenv("MOONSEACODEX_APIKEY")
 
 INSTALLED_APPS = [
