@@ -3,6 +3,7 @@ from discord.ui import Button
 
 from discord_bot.logs import logger as log
 from discord_bot.bot import bot
+from core.utils.games import get_game_by_id
 from core.models import Game
 
 
@@ -18,17 +19,25 @@ def get_game_number(input):
     return None
 
 
-def get_game_from_message(message) -> Game | None:
+def get_game_id_from_message(message) -> int | None:
+    """Given a generic message, attempt to get the game ID it refers"""
+    for row in message.components:
+        for button in filter(lambda x: is_button, row.children):
+            if not button.custom_id:
+                continue
+            game_id = get_game_number(button.custom_id)
+            if game_id:
+                return game_id
+    return None
+
+
+async def get_game_from_message(message) -> Game | None:
     """Given a generic message, attempt to get the game instance it refers to [if any]"""
     try:
-        for row in message.components:
-            for button in filter(lambda x: is_button, row.children):
-                if not button.custom_id:
-                    continue
-                game_id = get_game_number(button.custom_id)
-                if game_id:
-                    game = Game.objects.get(pk=game_id)
-                    return game
+        game_id = get_game_id_from_message(message)
+        if game_id:
+            game = await get_game_by_id(game_id)
+            return game
     except Exception as e:
         log.error(e)
     return None

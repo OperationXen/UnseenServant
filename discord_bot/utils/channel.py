@@ -85,7 +85,7 @@ async def game_channel_tag_promoted_user(game, user):
         f"Neither snow nor rain nor heat nor glom of nit could stop {user_text} from joining this party",
         f"It's not a doppelganger, it's {user_text}",
         f"{user_text} teleports in with a shower of confetti",
-        f"I would like to cast Player Ally and summon {user_text}",
+        f"I would like to cast summon Player Ally and summon {user_text}",
         f"Everyone knows something is afoot when {user_text} arrives...",
         f"{user_text} has been successfully planar bound to this session!",
         f"BAM! A three point landing like that can only be {user_text}.",
@@ -93,6 +93,8 @@ async def game_channel_tag_promoted_user(game, user):
         f"Yip yip, {user_text}",
         f"{user_text} ponders their orb",
         f"It's your round {user_text}!",
+        f"Daemons run when {user_text} goes to war",
+        f"Even in death, {user_text} still serves",
     ]
 
     message = random.choice(choices)

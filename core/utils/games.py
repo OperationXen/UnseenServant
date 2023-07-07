@@ -3,6 +3,8 @@ from django.utils import timezone
 from django.db.models import Q
 from asgiref.sync import sync_to_async
 
+from discord import User as DiscordUser
+
 from core.models.game import Game
 from core.models.players import Player
 from discord_bot.logs import logger as log
@@ -40,8 +42,11 @@ def calc_game_tier(game: Game) -> int | None:
 
 def _get_dm(game: Game):
     """Get the specified games DM (syncronous)"""
-    if game.dm:
-        return game.dm
+    try:
+        if game.dm:
+            return game.dm
+    except Exception as e:
+        pass  # Silence
     return None
 
 
@@ -163,20 +168,30 @@ def sanity_check_new_game_player(game: Game, discord_id: str) -> bool:
     return True
 
 
-def check_user_available_credit(discord_id) -> int:
-    """this should exist elsewhere"""
+def check_user_available_credit(discord_id: str) -> int:
+    """Check a logged in users' available credit"""
     user = get_user_by_discord_id(discord_id)
+    if not user:
+        return False
     if not get_user_highest_rank(user.roles):
         return False
-    return get_player_game_count(discord_id) >= get_player_max_games(user)
+    return get_player_game_count(discord_id) < get_player_max_games(user)
 
 
-def handle_game_player_add(game: Game, discord_id: str, discord_name: str):
+def check_discord_user_available_credit(user: DiscordUser) -> int:
+    """Check a discord user (not logged in to API) for available credit"""
+    if not get_user_highest_rank(user.roles):
+        return False
+    discord_id = str(user.id)
+    pending_games = get_player_game_count(discord_id)
+    max_games = get_player_max_games(user)
+    return pending_games < max_games
+
+
+def handle_game_player_add(game: Game, discord_id: str, discord_name: str) -> str | bool:
     """Handle the process of verifying and adding a player to a game"""
     try:
         if not sanity_check_new_game_player(game, discord_id):
-            return False
-        if not check_user_available_credit(discord_id):
             return False
 
         # Add player to game, either on waitlist or party
@@ -195,14 +210,18 @@ def handle_game_player_add(game: Game, discord_id: str, discord_name: str):
 
 
 @sync_to_async
-def db_add_player_to_game(game, user):
+def db_add_player_to_game(game: Game, user: DiscordUser):
     """Add a new player to an existing game"""
     discord_id = str(user.id)
+    credit_available = check_discord_user_available_credit(user)
+    if not credit_available:
+        log.debug(f"{user.name} attempted to sign up for {game.name}, but has insufficient credit")
+        return False
     return handle_game_player_add(game, discord_id, user.name)
 
 
 @sync_to_async
-def db_remove_discord_user_from_game(game, discord_id: str):
+def db_remove_discord_user_from_game(game: Game, discord_id: str):
     """Remove a player from a game by their discord ID"""
     player = game.players.filter(discord_id=discord_id).first()
     if player:
@@ -213,7 +232,7 @@ def db_remove_discord_user_from_game(game, discord_id: str):
 
 
 @sync_to_async
-def check_game_expired(game):
+def check_game_expired(game: Game) -> bool:
     """See if a game object has reached expiry"""
     game = _get_game_by_id(game.id)
     if not game:
@@ -226,7 +245,7 @@ def check_game_expired(game):
     return False
 
 
-def check_game_pending(game):
+def check_game_pending(game: Game) -> bool:
     """See if a game is in the future or not"""
     now = timezone.now()
     if game.datetime > now:
@@ -234,7 +253,7 @@ def check_game_pending(game):
     return False
 
 
-def is_patreon_exclusive(game):
+def is_patreon_exclusive(game: Game) -> bool:
     """Check if the passed game is currently a patreon exclusive"""
     now = timezone.now()
     if game.datetime_release and game.datetime_release < now:
