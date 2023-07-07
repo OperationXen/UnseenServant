@@ -239,12 +239,12 @@ class GameControlView(View):
         """Callback for signup button pressed"""
         await interaction.response.defer(ephemeral=True)
         log.info(f"Player {interaction.user.name} signed up for game {self.game.name}")
-        added = await add_player_to_game(self.game, interaction.user)
-        if not added:
+        player = await add_player_to_game(self.game, interaction.user)
+        if not player:
             await interaction.followup.send("Unable to add you to this game", ephemeral=True)
             return False
         games_remaining_text = await get_player_credit_text(interaction.user)
-        if added == "party":
+        if not player.standby:
             message = f"You're playing in {self.game.name} `({games_remaining_text})`"
         else:
             message = f"Added you to to the waitlist for {self.game.name} `({games_remaining_text})`"

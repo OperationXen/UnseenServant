@@ -11,6 +11,16 @@ class PlayerSummarySerialiser(ModelSerializer):
         fields = ["discord_id", "discord_name", "standby"]
 
 
+class PlayerSerialiser(ModelSerializer):
+    """Serialise a player (include related fields)"""
+
+    game_name = ReadOnlyField(source="game.name")
+
+    class Meta:
+        model = Player
+        fields = ["game", "game_name", "discord_id", "discord_name", "standby", "waitlist"]
+
+
 class GameSerialiser(ModelSerializer):
     """Serialiser for game objects"""
 

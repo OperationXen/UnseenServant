@@ -4,7 +4,8 @@ from discord import Member, Guild
 
 from discord_bot.bot import bot
 from config.settings import DISCORD_GUILDS
-from core.utils.players import get_user_highest_rank, get_bonus_credits, get_user_pending_games_count
+from core.utils.players import get_bonus_credits, get_user_pending_games_count
+from core.utils.ranks import get_highest_rank
 from core.models.auth import CustomUser
 
 
@@ -25,20 +26,23 @@ async def get_roles_for_user_id(discord_id: str) -> list[str] | None:
     return None
 
 
-def get_user_max_credit(discord_id: str) -> int:
+def get_user_max_credit(user: CustomUser) -> int:
     """Get the maximum credit balance for a given user"""
-    roles = get_roles_for_user_id(discord_id)
-    rank = get_user_highest_rank(roles)
+    try:
+        ranks = list(user.ranks.all())
+        rank = get_highest_rank(ranks)
+    except Exception as e:
+        print(e)
     if rank:
         max_games = rank.max_games
-    bonuses = get_bonus_credits(discord_id)
+    bonuses = get_bonus_credits(user.discord_id)
     return max_games + bonuses
 
 
-def get_user_available_credit(discord_id: str) -> int:
-    """Attempt to get the available credits for a discord user"""
-    total_credits = get_user_max_credit(discord_id)
-    used_credits = get_user_pending_games_count(discord_id)
+def get_user_available_credit(user: CustomUser) -> int:
+    """Attempt to get the available credits for a logged in user"""
+    total_credits = get_user_max_credit(user)
+    used_credits = get_user_pending_games_count(user.discord_id)
     return total_credits - used_credits
 
 

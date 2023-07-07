@@ -7,10 +7,11 @@ from rest_framework.decorators import action
 from rest_framework.status import *
 from rest_framework.viewsets import ViewSet
 
-from api.serialisers.games import GameCreationSerialiser, GameSerialiser
+from api.serialisers.games import GameCreationSerialiser, GameSerialiser, PlayerSerialiser
 from core.models import DM, Game, Player
 from core.utils.sanctions import check_discord_user_good_standing
 from core.utils.user import get_user_available_credit
+from core.utils.games import handle_game_player_add
 
 
 class GamesViewSet(ViewSet):
@@ -30,9 +31,15 @@ class GamesViewSet(ViewSet):
             return Response({"message": "You cannot play in your own game"}, HTTP_400_BAD_REQUEST)
         if not check_discord_user_good_standing(request.user.discord_id):
             return Response({"message": "You are currently banned from using this system"}, HTTP_403_FORBIDDEN)
-        if not get_user_available_credit(request.user.discord_id):
-            return Response({"message": "You do not have enough available credits to join this game"})
-        return Response({"message": f"Joined game {game.name}"}, HTTP_200_OK)
+        available_credit = get_user_available_credit(request.user)
+        if not available_credit > 0:
+            return Response(
+                {"message": "You do not have enough available credits to join this game"}, HTTP_401_UNAUTHORIZED
+            )
+        player = handle_game_player_add(game, request.user.discord_id, request.user.discord_name)
+
+        serialiser = PlayerSerialiser(player)
+        return Response(serialiser.data, HTTP_200_OK)
 
     def list(self, request):
         """List games"""

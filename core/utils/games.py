@@ -5,8 +5,7 @@ from asgiref.sync import sync_to_async
 
 from discord import User as DiscordUser
 
-from core.models.game import Game
-from core.models.players import Player
+from core.models import Game, Player, CustomUser
 from discord_bot.logs import logger as log
 from core.utils.players import get_player_max_games, get_player_game_count
 from core.utils.players import get_user_highest_rank
@@ -142,7 +141,7 @@ def get_game_by_id(game_id):
 
 
 @sync_to_async
-def db_force_add_player_to_game(game, user):
+def db_force_add_player_to_game(game: Game, user: CustomUser):
     """Force a player into a specified game, ignoring all conditions"""
     discord_id = str(user.id)
     try:
@@ -150,8 +149,8 @@ def db_force_add_player_to_game(game, user):
         player.standby = False
         player.save()
     except Player.DoesNotExist:
-        Player.objects.create(game=game, discord_id=discord_id, discord_name=user.name, standby=False)
-    return "party"
+        player = Player.objects.create(game=game, discord_id=discord_id, discord_name=user.name, standby=False)
+    return player
 
 
 def sanity_check_new_game_player(game: Game, discord_id: str) -> bool:
@@ -188,25 +187,25 @@ def check_discord_user_available_credit(user: DiscordUser) -> int:
     return pending_games < max_games
 
 
-def handle_game_player_add(game: Game, discord_id: str, discord_name: str) -> str | bool:
+def handle_game_player_add(game: Game, discord_id: str, discord_name: str) -> Player | None:
     """Handle the process of verifying and adding a player to a game"""
     try:
         if not sanity_check_new_game_player(game, discord_id):
-            return False
+            return None
 
         # Add player to game, either on waitlist or party
-        if game.players.filter(standby=False).count() >= game.max_players:
+        current_players = game.players.filter(standby=False).count()
+        if current_players >= game.max_players:
             waitlist_position = get_last_waitlist_position(game) + 1
-            Player.objects.create(
+            player = Player.objects.create(
                 game=game, discord_id=discord_id, discord_name=discord_name, standby=True, waitlist=waitlist_position
             )
-            return "waitlist"
         else:
-            Player.objects.create(game=game, discord_id=discord_id, discord_name=discord_name, standby=False)
-            return "party"
+            player = Player.objects.create(game=game, discord_id=discord_id, discord_name=discord_name, standby=False)
+        return player
     except Exception as e:
         log.debug(f"Exception occured adding {discord_name} to {game.name}")
-        return False
+        return None
 
 
 @sync_to_async
@@ -217,7 +216,8 @@ def db_add_player_to_game(game: Game, user: DiscordUser):
     if not credit_available:
         log.debug(f"{user.name} attempted to sign up for {game.name}, but has insufficient credit")
         return False
-    return handle_game_player_add(game, discord_id, user.name)
+    player = handle_game_player_add(game, discord_id, user.name)
+    return player
 
 
 @sync_to_async

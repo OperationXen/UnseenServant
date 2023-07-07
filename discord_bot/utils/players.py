@@ -47,18 +47,19 @@ async def remove_player_from_game(game, discord_user):
 async def add_player_to_game(game, discord_user, force=False):
     """Add a discord user to a game"""
     if force:
-        added = await db_force_add_player_to_game(game, discord_user)
+        player = await db_force_add_player_to_game(game, discord_user)
     else:
-        added = await db_add_player_to_game(game, discord_user)
-    if added == "party":
+        player = await db_add_player_to_game(game, discord_user)
+    if player and not player.standby:
         channel = await get_channel_for_game(game)
         if channel:
             await channel_add_user(channel, discord_user)
             await game_channel_tag_promoted_user(game, discord_user)
-    return added
+    return player
+
 
 async def get_party_for_game(game, include_waitlist=False):
-    """ Get a list of all players who are part of the game's party """
+    """Get a list of all players who are part of the game's party"""
     party = await get_player_list(game)
     if include_waitlist:
         try:

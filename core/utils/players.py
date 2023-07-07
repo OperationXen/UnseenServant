@@ -37,6 +37,7 @@ def get_player_game_count(discord_id: str):
     queryset = queryset.filter(game__ready=True)
     return queryset.count()
 
+
 def get_bonus_credits(discord_id: str) -> int:
     """Get the total number of bonus games awarded to the user and currently valid"""
     now = timezone.now()
@@ -116,6 +117,6 @@ def get_last_waitlist_position(game):
     """get the position at the end of the waitlist"""
     queryset = Player.objects.filter(game=game).filter(standby=True)
     last_player = queryset.order_by("waitlist").last()
-    if last_player:
+    if last_player and last_player.waitlist:
         return last_player.waitlist
     return 0
