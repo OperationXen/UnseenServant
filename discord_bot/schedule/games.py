@@ -99,25 +99,33 @@ class GamesPoster:
     async def post_outstanding_games(self):
         """Create new messages for any games that need to be announced"""
         for priority in [False, True]:
-            for game in await get_outstanding_games(priority):
-                channel = self.is_game_posted(game)
-                if not channel:
-                    log.info(f"Announcing new game: {game.name}")
-                    await self.do_game_announcement(game, self.channel_priority if priority else self.channel_general)
-                elif not priority and channel == self.channel_priority:
-                    log.info(f"Moving game announcement to general")
-                    await self.remove_specific_game(game.id)
-                    await self.do_game_announcement(game, self.channel_general)
+            try:
+                for game in await get_outstanding_games(priority):
+                    channel = self.is_game_posted(game)
+                    if not channel:
+                        log.info(f"Announcing new game: {game.name}")
+                        await self.do_game_announcement(
+                            game, self.channel_priority if priority else self.channel_general
+                        )
+                    elif not priority and channel == self.channel_priority:
+                        log.info(f"Moving game announcement to general")
+                        await self.remove_specific_game(game.id)
+                        await self.do_game_announcement(game, self.channel_general)
+            except Exception as e:
+                log.error(f"Exception caught in post_outstanding_games: {e.__class__}")
 
     async def remove_stale_games(self):
         """Go through existing games and check for anything stale"""
         for key in self.current_games:
-            announcement = self.current_games[key]
-            if await check_game_expired(announcement["game"]):
-                log.info(f"Deleteing expired game - {announcement['game']}")
-                await announcement["message"].delete()
-                self.current_games.pop(key)
-                break  # because we've modified current_games we can't continue to iterate on it
+            try:
+                announcement = self.current_games[key]
+                if await check_game_expired(announcement["game"]):
+                    log.info(f"Deleteing expired game - {announcement['game']}")
+                    await announcement["message"].delete()
+                    self.current_games.pop(key)
+                    break  # because we've modified current_games we can't continue to iterate on it
+            except Exception as e:
+                log.error(f"Exception caught in remove_stale_games: {e.__class__}, key = {key}")
 
     @tasks.loop(seconds=10)
     async def check_and_post_games(self):
