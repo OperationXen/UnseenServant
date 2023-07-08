@@ -1,7 +1,7 @@
 from datetime import timedelta
 
 from asgiref.sync import sync_to_async
-from django.db.models import Q, Sum
+from django.db.models import Q, Sum, QuerySet
 from django.utils import timezone
 
 from core.models.players import Ban, BonusCredit, Player
@@ -120,3 +120,20 @@ def get_last_waitlist_position(game):
     if last_player and last_player.waitlist:
         return last_player.waitlist
     return 0
+
+
+def _get_historic_players(days: int = 31) -> QuerySet:
+    """Get all players who have played in the last X days"""
+    now = timezone.now()
+    start = now - timedelta(days=days)
+    queryset = Player.objects.filter(game__datetime__gte=start).filter(game__datetime__lte=now)
+    queryset = queryset.order_by("discord_id")
+    return queryset
+
+
+@sync_to_async
+def get_historic_players(days: int = 31) -> list[Player]:
+    """Async wrapper for getting historic players"""
+    queryset = _get_historic_players(days=days)
+    # Force the queryset to be evaluated before leaving the syncronous context
+    return list(queryset)
