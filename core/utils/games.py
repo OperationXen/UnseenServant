@@ -1,6 +1,6 @@
 from datetime import timedelta
 from django.utils import timezone
-from django.db.models import Q
+from django.db.models import Q, QuerySet
 from asgiref.sync import sync_to_async
 
 from discord import User as DiscordUser
@@ -65,6 +65,22 @@ def get_player_list(game):
 def get_wait_list(game):
     """fetch all waitlisted players, arranged in order of position"""
     return list(game.players.filter(standby=True).order_by("waitlist"))
+
+
+def _get_historic_games(days: int = 30) -> QuerySet:
+    """Get games which have been played over the last X days"""
+    now = timezone.now()
+    start = now - timedelta(days=days)
+    queryset = Game.objects.filter(datetime__gte=start).filter(datetime__lte=now)
+    queryset = queryset.order_by("datetime")
+    return queryset
+
+
+@sync_to_async
+def get_historic_games(days: int = 30) -> list[Game]:
+    # force evaluation before leaving this sync context
+    queryset = _get_historic_games(days=days)
+    return list(queryset)
 
 
 @sync_to_async
