@@ -122,7 +122,7 @@ def get_last_waitlist_position(game):
     return 0
 
 
-def _get_historic_players(days: int = 31) -> QuerySet:
+def _get_historic_users(days: int = 31) -> QuerySet:
     """Get all players who have played in the last X days"""
     now = timezone.now()
     start = now - timedelta(days=days)
@@ -132,8 +132,8 @@ def _get_historic_players(days: int = 31) -> QuerySet:
 
 
 @sync_to_async
-def get_historic_players(days: int = 31) -> list[Player]:
+def get_historic_users(days: int = 31) -> list[Player]:
     """Async wrapper for getting historic players"""
-    queryset = _get_historic_players(days=days)
+    queryset = _get_historic_users(days=days)
     # Force the queryset to be evaluated before leaving the syncronous context
     return list(queryset)
