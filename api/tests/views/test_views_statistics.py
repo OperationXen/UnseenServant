@@ -27,16 +27,32 @@ class TestStatisticGameView(TestStatisticView):
         """Test that game statistics show 0 games if 0 games played"""
         response = self.client.get(reverse("stats-games"))
         self.assertEqual(response.status_code, HTTP_200_OK)
-        self.assertIn("games_in_last_month", response.data)
-        self.assertEqual(response.data["games_in_last_month"], 0)
+        self.assertIn("games_in_specified_period", response.data)
+        self.assertEqual(response.data["games_in_specified_period"], 0)
 
     def test_get_game_statistics_one(self) -> None:
         """Test that game statistics show 1 games if 1 games played"""
         self.create_game_yesterday()
         response = self.client.get(reverse("stats-games"))
         self.assertEqual(response.status_code, HTTP_200_OK)
-        self.assertIn("games_in_last_month", response.data)
-        self.assertEqual(response.data["games_in_last_month"], 1)
+        self.assertIn("games_in_specified_period", response.data)
+        self.assertEqual(response.data["games_in_specified_period"], 1)
+
+    def test_get_game_statistics_parameters(self) -> None:
+        """check the statistics endpoint handles day parameters"""
+        self.client.login(username="admin", password="testpassword")
+        response = self.client.get(reverse("stats-games"), {"days": 42})
+        self.assertEqual(response.status_code, HTTP_200_OK)
+        self.assertIn("days_of_data", response.data)
+        self.assertEqual(response.data["days_of_data"], 42)
+
+    def test_get_game_statistics_parameters_auth(self) -> None:
+        """check the statistics endpoint ignores day parameters from non-superusers"""
+        self.client.login(username="testuser", password="testpassword")
+        response = self.client.get(reverse("stats-games"), {"days": 42})
+        self.assertEqual(response.status_code, HTTP_200_OK)
+        self.assertIn("days_of_data", response.data)
+        self.assertEqual(response.data["days_of_data"], 31)
 
 
 class TestStatisticPlayerView(TestStatisticView):
@@ -91,21 +107,53 @@ class TestStatisticPlayerView(TestStatisticView):
         self.assertIn("total_unselected_players", response.data)
         self.assertEqual(response.data["total_unselected_players"], 1)
 
+    def test_get_player_statistics_parameters(self) -> None:
+        """check the statistics endpoint handles day parameters"""
+        self.client.login(username="admin", password="testpassword")
+        response = self.client.get(reverse("stats-players"), {"days": 42})
+        self.assertEqual(response.status_code, HTTP_200_OK)
+        self.assertIn("days_of_data", response.data)
+        self.assertEqual(response.data["days_of_data"], 42)
+
+    def test_get_game_statistics_parameters_auth(self) -> None:
+        """check the statistics endpoint ignores day parameters from non-superusers"""
+        self.client.login(username="testuser", password="testpassword")
+        response = self.client.get(reverse("stats-players"), {"days": 42})
+        self.assertEqual(response.status_code, HTTP_200_OK)
+        self.assertIn("days_of_data", response.data)
+        self.assertEqual(response.data["days_of_data"], 31)
+
 
 class TestStatisticGenericView(TestStatisticView):
     """Test statistics views for player information"""
 
     fixtures = ["test_games", "test_dms", "test_users", "test_ranks"]
 
-    def test_get_player_statistics_empty(self) -> None:
+    def test_get_general_statistics_empty(self) -> None:
         """Test that player statistics show 0 games if 0 games played"""
         response = self.client.get(reverse("stats"))
         self.assertEqual(response.status_code, HTTP_200_OK)
-        self.assertIn("games_in_last_month", response.data)
+        self.assertIn("games_in_specified_period", response.data)
         self.assertIn("active_users", response.data)
         self.assertIn("unique_players", response.data)
         self.assertIn("games_per_player", response.data)
         self.assertIn("total_unselected_players", response.data)
+
+    def test_get_general_statistics_parameters(self) -> None:
+        """check the statistics endpoint handles day parameters"""
+        self.client.login(username="admin", password="testpassword")
+        response = self.client.get(reverse("stats"), {"days": 42})
+        self.assertEqual(response.status_code, HTTP_200_OK)
+        self.assertIn("days_of_data", response.data)
+        self.assertEqual(response.data["days_of_data"], 42)
+
+    def test_get_general_statistics_parameters_auth(self) -> None:
+        """check the statistics endpoint ignores day parameters from non-superusers"""
+        self.client.login(username="testuser", password="testpassword")
+        response = self.client.get(reverse("stats"), {"days": 42})
+        self.assertEqual(response.status_code, HTTP_200_OK)
+        self.assertIn("days_of_data", response.data)
+        self.assertEqual(response.data["days_of_data"], 31)
 
 
 class TestStatisticDetailedView(TestStatisticView):
@@ -117,6 +165,14 @@ class TestStatisticDetailedView(TestStatisticView):
 
         response = self.client.get(reverse("stats-detailed"))
         self.assertEqual(response.status_code, HTTP_403_FORBIDDEN)
+
+    def test_get_detailed_statistics_parameters(self) -> None:
+        """check the detailed statistics endpoint handles day parameters"""
+        self.client.login(username="admin", password="testpassword")
+        response = self.client.get(reverse("stats-detailed"), {"days": 42})
+        self.assertEqual(response.status_code, HTTP_200_OK)
+        self.assertIn("days_of_data", response.data)
+        self.assertEqual(response.data["days_of_data"], 42)
 
     def test_get_detailed_statistics_sane(self) -> None:
         """Ensure that the detailed statistics are sane"""
@@ -134,6 +190,8 @@ class TestStatisticDetailedView(TestStatisticView):
         self.client.login(username="admin", password="testpassword")
         response = self.client.get(reverse("stats-detailed"))
         self.assertEqual(response.status_code, HTTP_200_OK)
-        self.assertIn("waitlist1", response.data)
-        self.assertEqual(response.data["waitlist1"], 2)
-        self.assertEqual(len(response.data), 1)
+        self.assertIn("user_details", response.data)
+        user_details = response.data["user_details"]
+        self.assertIn("waitlist1", user_details)
+        self.assertEqual(user_details["waitlist1"], 2)
+        self.assertEqual(len(user_details), 1)

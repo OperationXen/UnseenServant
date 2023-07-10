@@ -5,7 +5,7 @@ def get_gamestats(game_data: QuerySet) -> dict:
     """build a game statistics object"""
     unique_dms = game_data.values_list("dm__discord_id").distinct().count()
 
-    stats = {"games_in_last_month": game_data.count(), "unique_dms": unique_dms}
+    stats = {"games_in_specified_period": game_data.count(), "unique_dms": unique_dms}
     return stats
 
 
