@@ -10,6 +10,8 @@ from core.models import Game, DM, Player
 class TestStatisticView(TestCase):
     """Parent class to hold utilities"""
 
+    fixtures = ["test_games", "test_dms", "test_users", "test_ranks"]
+
     def create_game_yesterday(self) -> Game:
         now = timezone.now()
         yesterday = now - timedelta(days=1)
@@ -20,8 +22,6 @@ class TestStatisticView(TestCase):
 
 class TestStatisticGameView(TestStatisticView):
     """Test statistics views for game information"""
-
-    fixtures = ["test_games", "test_dms", "test_users", "test_ranks"]
 
     def test_get_game_statistics_empty(self) -> None:
         """Test that game statistics show 0 games if 0 games played"""
@@ -106,3 +106,34 @@ class TestStatisticGenericView(TestStatisticView):
         self.assertIn("unique_players", response.data)
         self.assertIn("games_per_player", response.data)
         self.assertIn("total_unselected_players", response.data)
+
+
+class TestStatisticDetailedView(TestStatisticView):
+    """Test the detailed viewset"""
+
+    def test_no_unauthorised_access(self) -> None:
+        """Ensure that anonymous users cannot see this data"""
+        self.client.login()
+
+        response = self.client.get(reverse("stats-detailed"))
+        self.assertEqual(response.status_code, HTTP_403_FORBIDDEN)
+
+    def test_get_detailed_statistics_sane(self) -> None:
+        """Ensure that the detailed statistics are sane"""
+        game1 = self.create_game_yesterday()
+        game2 = self.create_game_yesterday()
+        # Each game has one player
+        Player.objects.create(game=game1, standby=False, discord_id="0001", discord_name="player1")
+        Player.objects.create(game=game2, standby=False, discord_id="0002", discord_name="player2")
+        # One user is waitlisted for both games
+        Player.objects.create(game=game1, standby=True, discord_id="1001", discord_name="waitlist1", waitlist=1)
+        Player.objects.create(game=game2, standby=True, discord_id="1001", discord_name="waitlist1", waitlist=1)
+        # Player 1 is also waitlisted for game 2
+        Player.objects.create(game=game2, standby=True, discord_id="0001", discord_name="player1", waitlist=2)
+
+        self.client.login(username="admin", password="testpassword")
+        response = self.client.get(reverse("stats-detailed"))
+        self.assertEqual(response.status_code, HTTP_200_OK)
+        self.assertIn("waitlist1", response.data)
+        self.assertEqual(response.data["waitlist1"], 2)
+        self.assertEqual(len(response.data), 1)
