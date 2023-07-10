@@ -14,9 +14,14 @@ class GameStatsViewSet(APIView):
 
     def get(self, request):
         """Return a game statistics message"""
-        data = _get_historic_games(days=31)
-        gamestats = get_gamestats(data)
-        return Response(gamestats)
+        days = 31
+        if request.user.is_superuser:
+            days = int(request.GET.get("days", 31))
+
+        game_data = _get_historic_games(days=days)
+        game_stats = get_gamestats(game_data)
+        general_stats = {"days_of_data": days}
+        return Response(general_stats | game_stats)
 
 
 class PlayerStatsViewSet(APIView):
@@ -24,9 +29,14 @@ class PlayerStatsViewSet(APIView):
 
     def get(self, request):
         """Return player statistics message"""
-        data = _get_historic_users(days=31)
-        playerstats = get_playerstats(data)
-        return Response(playerstats)
+        days = 31
+        if request.user.is_superuser:
+            days = int(request.GET.get("days", 31))
+
+        player_data = _get_historic_users(days=days)
+        player_stats = get_playerstats(player_data)
+        general_stats = {"days_of_data": days}
+        return Response(general_stats | player_stats)
 
 
 class GeneralStatsViewSet(APIView):
@@ -34,12 +44,17 @@ class GeneralStatsViewSet(APIView):
 
     def get(self, request):
         """Get a summary of server statistics for the last 31 days"""
-        game_data = _get_historic_games(days=31)
-        player_data = _get_historic_users(days=31)
+        days = 31
+        if request.user.is_superuser:
+            days = int(request.GET.get("days", 31))
 
-        gamestats = get_gamestats(game_data)
-        playerstats = get_playerstats(player_data)
-        return Response(gamestats | playerstats)
+        player_data = _get_historic_users(days=days)
+        game_data = _get_historic_games(days=days)
+
+        general_stats = {"days_of_data": days}
+        game_stats = get_gamestats(game_data)
+        player_stats = get_playerstats(player_data)
+        return Response(general_stats | game_stats | player_stats)
 
 
 class DetailedStatsViewSet(APIView):
@@ -51,7 +66,7 @@ class DetailedStatsViewSet(APIView):
 
     def get(self, request):
         """Produce a more details view for admin users"""
-        days = request.GET.get("days", 31)
+        days = int(request.GET.get("days", 31))
         player_data = _get_historic_users(days=days)
         unsuccessful_players = get_unsuccessful_player_details(player_data)
-        return Response(unsuccessful_players)
+        return Response({"days_of_data": days, "user_details": unsuccessful_players})
