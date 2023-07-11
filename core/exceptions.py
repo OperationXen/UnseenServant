@@ -1,0 +1,2 @@
+class GameCreditException(Exception):
+    pass
