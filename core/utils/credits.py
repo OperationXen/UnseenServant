@@ -8,23 +8,8 @@ from core.models import Credit, CustomUser, Game
 
 
 # ########################################################################## #
-def get_user_credit_available(user: CustomUser) -> QuerySet:
-    """Get the available, spendable credits for a user"""
-    queryset = user.credits.filter(datetime_spent=None).filter(locked=False)
-    return queryset
-
-
-@sync_to_async
-def async_get_user_credit_available(user: CustomUser) -> list[Credit]:
-    """async wrapper that gets a user's available credits"""
-    queryset = get_user_credit_available(user)
-    # Forcing to list collapses the lazy queryset down to a solved query
-    return list(queryset)
-
-
-# ########################################################################## #
 def get_user_credit(user: CustomUser) -> QuerySet:
-    """Get all of a user's current credit balance, including anything currently being used to hold a slot"""
+    """Get all of a user's currently valid credits"""
     now = timezone.now()
     queryset = user.credits.exclude(datetime_expiry__lte=now)
     return queryset
@@ -35,6 +20,22 @@ def async_get_user_credit(user: CustomUser) -> list[Credit]:
     """async wrapper to get a user's current credit balance"""
     queryset = get_user_credit(user)
     # Forcing to list collapses the lazy queryset down to a solved query before we leave syncronous context
+    return list(queryset)
+
+
+# ########################################################################## #
+def get_user_credit_available(user: CustomUser) -> QuerySet:
+    """Get the available, spendable credits for a user"""
+    queryset = get_user_credit(user)
+    queryset = queryset.filter(datetime_spent=None).filter(locked=False)
+    return queryset
+
+
+@sync_to_async
+def async_get_user_credit_available(user: CustomUser) -> list[Credit]:
+    """async wrapper that gets a user's available credits"""
+    queryset = get_user_credit_available(user)
+    # Forcing to list collapses the lazy queryset down to a solved query
     return list(queryset)
 
 
@@ -55,20 +56,24 @@ def get_user_credit_locked(user: CustomUser) -> QuerySet:
 
 
 # ########################################################################## #
-def spend_user_credit_on_game(user: CustomUser, game: Game, cost: int = 1, lock: bool = False) -> Credit:
+def spend_user_credit_on_game(user: CustomUser, game: Game, cost: int = 1, lock: bool = False) -> list[Credit]:
     """spend a user's available credit on a game"""
-    try:
-        now = timezone.now()
-        credits = get_user_credit_available(user)
-        credits.order_by("datetime_expiry")
+    now = timezone.now()
+    credits = get_user_credit_available(user)
+    credits.order_by("datetime_expiry")
 
-        selected_credits = credits[:cost]
-        if len(selected_credits) != cost:
-            raise GameCreditException("Insufficient credit")
+    selected_credits = credits[:cost]
+    if len(selected_credits) != cost:
+        raise GameCreditException("Insufficient credit")
 
-        for credit in selected_credits:
-            credit.update(game=game, datetime_spent=now, locked=lock)
-            credit.save()
+    for credit in selected_credits:
+        credit.update(game=game, datetime_spent=now, locked=lock, purpose="game_credit")
+        credit = credit.save()
+    return selected_credits
 
-    except Exception as e:
-        log.debug(f"Exception occured in spend_user_credit_on_game - user: {user}, game: {game}")
+
+@sync_to_async
+def async_spend_user_credit_on_game(user: CustomUser, game: Game, cost: int = 1, lock: bool = False) -> list[Credit]:
+    """Async wrapper to spend credits on a game"""
+    updated_credits = spend_user_credit_on_game(user, game, cost, lock)
+    return updated_credits
