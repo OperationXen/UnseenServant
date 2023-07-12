@@ -3,13 +3,13 @@ from discord.ui import View, Button
 
 from discord_bot.components.moonseacodex import MSCCharacterList
 from discord_bot.utils.moonseacodex import get_msc_characters
-from discord_bot.utils.players import do_waitlist_updates
-from core.utils.players import get_player_credit_text
+from discord_bot.utils.players import async_do_waitlist_updates
+from core.utils.players import async_get_player_credit_text
 from core.utils.games import calc_game_tier
 from discord_bot.components.games import BaseGameEmbed
 
-from discord_bot.utils.players import remove_player_from_game
-from discord_bot.utils.games import update_game_listing_embed
+from discord_bot.utils.players import async_remove_player_from_game
+from discord_bot.utils.games import async_update_game_listing_embed
 from discord_bot.logs import logger as log
 
 
@@ -135,14 +135,14 @@ class MusteringView(View):
     async def muster_view_dropout(self, interaction):
         """Callback for dropout button pressed"""
         await interaction.response.defer(ephemeral=True)
-        removed = await remove_player_from_game(self.game, interaction.user)
+        removed = await async_remove_player_from_game(self.game, interaction.user)
         if removed:
             log.info(f"Player {interaction.user.name} dropped from game {self.game.name}")
-            games_remaining_text = await get_player_credit_text(interaction.user)
+            games_remaining_text = await async_get_player_credit_text(interaction.user)
             message = f"Removed you from {self.game.name} `({games_remaining_text})`"
-            await do_waitlist_updates(self.game)
+            await async_do_waitlist_updates(self.game)
             await self.update_message(followup_hook=interaction.followup)
-            await update_game_listing_embed(self.game)
+            await async_update_game_listing_embed(self.game)
             await interaction.user.send(message)
             return True
         await interaction.followup.send(

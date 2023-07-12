@@ -5,7 +5,7 @@ from discord import Member
 
 from config.settings import DISCORD_GUILDS, DISCORD_ADMIN_ROLES, DISCORD_SIGNUP_ROLES, DISCORD_DM_ROLES
 from discord_bot.bot import bot
-from core.utils.players import get_player_credit_text, issue_player_bonus_credit
+from core.utils.players import async_get_player_credit_text, async_issue_player_bonus_credit
 
 from discord_bot.utils.time import discord_time
 
@@ -14,7 +14,7 @@ from discord_bot.utils.time import discord_time
 async def credit(ctx):
     """Show a user their game credit balance"""
     now = timezone.now()
-    game_credit_text = await get_player_credit_text(ctx.author)
+    game_credit_text = await async_get_player_credit_text(ctx.author)
     message = f"As of: {discord_time(now)}\n{game_credit_text}"
 
     await ctx.respond(message, ephemeral=True, delete_after=30)
@@ -34,7 +34,9 @@ async def issue_credit(
     """issue a game credit to a user"""
     if expires_after <= 0:
         expires_after = None
-    credit_issued = await issue_player_bonus_credit(user, credits, ctx.author, reason or "Not given", expires_after)
+    credit_issued = await async_issue_player_bonus_credit(
+        user, credits, ctx.author, reason or "Not given", expires_after
+    )
     if credit_issued:
         message = f"{ctx.author.name} has awarded you [{credits}] bonus game credits!"
         if expires_after:
@@ -55,5 +57,5 @@ async def issue_credit(
 async def check_credits(ctx, user: Option(Member, "Member to check", required=True)):
     """check current game credit balance"""
     await ctx.defer(ephemeral=True)
-    message = await get_player_credit_text(user)
+    message = await async_get_player_credit_text(user)
     await ctx.respond(message, ephemeral=True)

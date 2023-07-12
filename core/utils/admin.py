@@ -11,7 +11,7 @@ from core.utils.passwords import generate_random_password
 
 
 @sync_to_async
-def create_new_dm_from_discord_user(discord_user, name=None, description=None):
+def async_create_new_dm_from_discord_user(discord_user, name=None, description=None):
     new_dm_name = name or discord_user.name
     existing = DM.objects.filter(name=new_dm_name)
     if existing.exists():
@@ -27,7 +27,7 @@ def create_new_dm_from_discord_user(discord_user, name=None, description=None):
     return new_dm
 
 
-def _allocate_limited_admin_permissions(user):
+def allocate_limited_admin_permissions(user):
     """Grant DM specific permissions"""
     permissions = []
     permissions = permissions + list(
@@ -49,7 +49,7 @@ def _allocate_limited_admin_permissions(user):
     return user
 
 
-def _create_new_limited_admin_user(username, password):
+def create_new_limited_admin_user(username, password):
     """Creates a new Admin user that can sign into the admin panel"""
     username = re.sub(f"[{string.punctuation}]", "", username)
     username = re.sub(f"[{string.whitespace}]", "-", username)
@@ -58,10 +58,10 @@ def _create_new_limited_admin_user(username, password):
 
 
 @sync_to_async
-def create_new_admin_user(username):
+def async_create_new_admin_user(username):
     """Creates a new Admin user that can sign into the admin panel"""
     random_password = generate_random_password()
-    new_admin_user = _create_new_limited_admin_user(username, random_password)
-    _allocate_limited_admin_permissions(new_admin_user)
+    new_admin_user = create_new_limited_admin_user(username, random_password)
+    allocate_limited_admin_permissions(new_admin_user)
 
     return new_admin_user.username, random_password

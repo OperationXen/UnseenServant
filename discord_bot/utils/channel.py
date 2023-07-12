@@ -4,14 +4,14 @@ from discord import PermissionOverwrite
 from discord_bot.bot import bot
 from discord_bot.logs import logger as log
 from config.settings import CHANNEL_SEND_PINGS
-from core.utils.channels import get_game_channel_for_game
-from discord_bot.utils.games import get_game_from_message
+from core.utils.channels import async_get_game_channel_for_game
+from discord_bot.utils.games import async_get_game_from_message
 
 
 async def get_channel_for_game(game):
     """Get a discord object for a given game"""
     try:
-        game_channel = await get_game_channel_for_game(game)
+        game_channel = await async_get_game_channel_for_game(game)
         channel = bot.get_channel(int(game_channel.discord_id))
         return channel
     except Exception as e:
@@ -23,7 +23,7 @@ async def get_game_for_channel(channel):
     """Given a discord channel, attempt to derive which game it represents"""
     try:
         message = await get_channel_first_message(channel)
-        game = await get_game_from_message(message)
+        game = await async_get_game_from_message(message)
         if game:
             return game
         return None

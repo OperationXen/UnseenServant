@@ -4,7 +4,7 @@ from discord.errors import Forbidden
 from discord_bot.logs import logger as log
 from config.settings import DISCORD_ADMIN_ROLES
 from core.models.game import Game
-from core.utils.games import get_dm
+from core.utils.games import async_get_dm
 
 
 def get_role_by_name(roles: list[Role], name: str) -> Role:
@@ -15,7 +15,7 @@ def get_role_by_name(roles: list[Role], name: str) -> Role:
     raise ValueError(f"No role named {name} found in roles {roles}")
 
 
-async def grant_role_to_user(role_name, user):
+async def async_grant_role_to_user(role_name, user):
     """Give an arbitrarily named permission to a user"""
     log.info(f"Attempting to add role '{role_name}' to user '{user.name}#{user.discriminator}'")
     for role in user.guild.roles:
@@ -32,9 +32,9 @@ async def grant_role_to_user(role_name, user):
     return False
 
 
-async def set_user_dm_registered(user):
+async def async_set_user_dm_registered(user):
     """Given a discord user, grant them the 'bot-registered' permission"""
-    result = await grant_role_to_user("bot-registered", user)
+    result = await async_grant_role_to_user("bot-registered", user)
     return result
 
 
@@ -44,7 +44,7 @@ def get_user_role_names(discord_user: User):
     return user_role_names
 
 
-def _discord_user_is_admin(discord_user: User) -> bool:
+def discord_user_is_admin(discord_user: User) -> bool:
     """Check if user has any of the specified admin permissions"""
     user_role_names = get_user_role_names(discord_user)
     matching_roles = list(set(user_role_names) & set(DISCORD_ADMIN_ROLES))
@@ -55,10 +55,10 @@ def _discord_user_is_admin(discord_user: User) -> bool:
 
 def do_dm_permissions_check(user: User, game: Game) -> bool:
     """Verify a user has Admin permissions, or is the specified game's DM"""
-    if _discord_user_is_admin(user):
+    if discord_user_is_admin(user):
         log.info(f"{user.name} is an admin, skipping DM game ownership check...")
     else:
-        dm = get_dm(game)
+        dm = async_get_dm(game)
         if dm.discord_id != str(user.id):
             log.error(f"{user.name} does not appear to be the DM for {game.name}, command failed")
             return False
