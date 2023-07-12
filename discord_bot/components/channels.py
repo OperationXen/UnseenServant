@@ -4,7 +4,7 @@ from discord.ui import View, Button
 from discord_bot.components.moonseacodex import MSCCharacterList
 from discord_bot.utils.moonseacodex import get_msc_characters
 from discord_bot.utils.players import async_do_waitlist_updates
-from core.utils.players import get_player_credit_text
+from core.utils.players import async_get_player_credit_text
 from core.utils.games import calc_game_tier
 from discord_bot.components.games import BaseGameEmbed
 
@@ -138,7 +138,7 @@ class MusteringView(View):
         removed = await async_remove_player_from_game(self.game, interaction.user)
         if removed:
             log.info(f"Player {interaction.user.name} dropped from game {self.game.name}")
-            games_remaining_text = await get_player_credit_text(interaction.user)
+            games_remaining_text = await async_get_player_credit_text(interaction.user)
             message = f"Removed you from {self.game.name} `({games_remaining_text})`"
             await async_do_waitlist_updates(self.game)
             await self.update_message(followup_hook=interaction.followup)

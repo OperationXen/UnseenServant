@@ -59,14 +59,14 @@ def add_user_strike(user, reason, admin):
 
 
 @sync_to_async
-def issue_player_strike(user, reason, admin):
+def async_issue_player_strike(user, reason, admin):
     """Issue a strike to the player"""
     add_user_strike(user, reason, admin)
     return check_strike_threshold(user, admin)
 
 
 @sync_to_async
-def get_outstanding_strikes(user):
+def async_get_outstanding_strikes(user):
     """Get outstanding strikes for the user"""
     strikes = get_current_user_strikes(str(user.id))
     # force to list to evaluate before leaving async context
@@ -126,7 +126,7 @@ def add_new_ban(user, variant, reason, admin, ban_length):
 
 
 @sync_to_async
-def get_outstanding_bans(user=None):
+def async_get_outstanding_bans(user=None):
     if user:
         bans = get_current_user_bans(str(user.id))
     else:
@@ -136,6 +136,6 @@ def get_outstanding_bans(user=None):
 
 
 @sync_to_async
-def issue_player_ban(user, variant, reason, admin, ban_length):
+def async_issue_player_ban(user, variant, reason, admin, ban_length):
     """Ban a player from using the signup bot"""
     add_new_ban(user, variant, reason, admin, ban_length)

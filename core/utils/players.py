@@ -4,13 +4,13 @@ from asgiref.sync import sync_to_async
 from django.db.models import Q, Sum, QuerySet
 from django.utils import timezone
 
-from core.models.players import Ban, BonusCredit, Player
+from core.models.players import BonusCredit, Player
 from discord_bot.logs import logger as log
 from core.utils.ranks import get_user_highest_rank
 
 
 @sync_to_async
-def issue_player_bonus_credit(user, number, issuer, reason="Not supplied", valid_for=None):
+def async_issue_player_bonus_credit(user, number, issuer, reason="Not supplied", valid_for=None):
     """Give a player some bonus credits"""
     if valid_for:
         now = timezone.now()
@@ -77,7 +77,7 @@ def get_user_signups_remaining(user) -> int:
 
 
 @sync_to_async
-def get_player_credit_text(user):
+def async_get_player_credit_text(user):
     """Get a text string explaining to the user how many game credits they have"""
     credits = get_user_signups_remaining(user)
     max_games = get_player_max_games(user)
@@ -88,7 +88,7 @@ def get_player_credit_text(user):
 
 
 @sync_to_async
-def populate_game_from_waitlist(game):
+def async_populate_game_from_waitlist(game):
     """fill a game up using the waitlist, return a list of the promoted players"""
     promoted = []
     players = Player.objects.filter(game=game).filter(standby=False)
@@ -122,7 +122,8 @@ def get_last_waitlist_position(game):
     return 0
 
 
-def _get_historic_users(days: int = 31) -> QuerySet:
+# ########################################################################## #
+def get_historic_users(days: int = 31) -> QuerySet:
     """Get all players who have played in the last X days"""
     now = timezone.now()
     start = now - timedelta(days=days)
@@ -132,8 +133,8 @@ def _get_historic_users(days: int = 31) -> QuerySet:
 
 
 @sync_to_async
-def get_historic_users(days: int = 31) -> list[Player]:
+def async_get_historic_users(days: int = 31) -> list[Player]:
     """Async wrapper for getting historic players"""
-    queryset = _get_historic_users(days=days)
+    queryset = get_historic_users(days=days)
     # Force the queryset to be evaluated before leaving the syncronous context
     return list(queryset)

@@ -9,7 +9,7 @@ from core.utils.games import (
     async_get_upcoming_games_for_dm_discord_id,
     async_get_upcoming_games_for_discord_id,
 )
-from core.utils.players import get_player_credit_text
+from core.utils.players import async_get_player_credit_text
 
 from discord_bot.components.games import GameSummaryEmbed
 from discord_bot.utils.time import discord_time
@@ -19,7 +19,7 @@ from discord_bot.utils.time import discord_time
 async def games(ctx, send_dm: Option(bool, "Send information in a DM instead of inline", required=False) = False):
     """Retrieve a list of the users upcoming games and provide a summary"""
     now = timezone.now()
-    game_credit_text = await get_player_credit_text(ctx.author)
+    game_credit_text = await async_get_player_credit_text(ctx.author)
     games = await async_get_upcoming_games_for_discord_id(ctx.author.id, waitlisted=False)
     waitlist = await async_get_upcoming_games_for_discord_id(ctx.author.id, waitlisted=True)
     dming = await async_get_upcoming_games_for_dm_discord_id(ctx.author.id)

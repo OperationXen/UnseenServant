@@ -9,7 +9,7 @@ from discord_bot.utils.channel import (
     game_channel_tag_promoted_player,
 )
 from discord_bot.utils.channel import channel_add_player, channel_add_user, channel_remove_user, get_channel_for_game
-from core.utils.players import populate_game_from_waitlist
+from core.utils.players import async_populate_game_from_waitlist
 from core.utils.games import (
     async_db_add_player_to_game,
     async_db_force_add_player_to_game,
@@ -19,7 +19,7 @@ from core.utils.games import (
 
 async def async_do_waitlist_updates(game):
     """Update a game based on its waitlist"""
-    promoted = await populate_game_from_waitlist(game)
+    promoted = await async_populate_game_from_waitlist(game)
     game_outstanding = check_game_pending(game)
     for player in promoted:
         log.info(f"Player {player.discord_name} promoted from waitlist for game {game.name}")

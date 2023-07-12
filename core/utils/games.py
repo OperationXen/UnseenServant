@@ -313,8 +313,6 @@ def async_check_game_expired(game: Game) -> bool:
 
 
 # ########################################################################## #
-
-
 def check_game_pending(game: Game) -> bool:
     """See if a game is in the future or not"""
     now = timezone.now()

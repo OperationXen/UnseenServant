@@ -16,7 +16,7 @@ from core.utils.games import (
     async_refetch_game_data,
     calc_game_tier,
 )
-from core.utils.players import get_player_credit_text
+from core.utils.players import async_get_player_credit_text
 
 
 class BaseGameEmbed(Embed):
@@ -243,7 +243,7 @@ class GameControlView(View):
         if not player:
             await interaction.followup.send("Unable to add you to this game", ephemeral=True)
             return False
-        games_remaining_text = await get_player_credit_text(interaction.user)
+        games_remaining_text = await async_get_player_credit_text(interaction.user)
         if not player.standby:
             message = f"You're playing in {self.game.name} `({games_remaining_text})`"
         else:
@@ -267,7 +267,7 @@ class GameControlView(View):
 
         if removed:
             log.info(f"Player {interaction.user.name} dropped from game {self.game.name}")
-            games_remaining_text = await get_player_credit_text(interaction.user)
+            games_remaining_text = await async_get_player_credit_text(interaction.user)
             message = f"Removed you from {self.game.name} `({games_remaining_text})`"
             await async_do_waitlist_updates(self.game)
             await self.update_message(followup_hook=interaction.followup)
