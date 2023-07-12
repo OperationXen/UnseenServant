@@ -1,7 +1,7 @@
 from discord_bot.logs import logger as log
 from discord_bot.utils.messaging import async_send_dm
 from discord_bot.utils.time import discord_countdown
-from core.utils.games import check_game_pending, get_player_list, get_wait_list
+from core.utils.games import check_game_pending, async_get_player_list, async_get_wait_list
 
 from discord_bot.utils.channel import (
     game_channel_tag_promoted_user,
@@ -10,7 +10,11 @@ from discord_bot.utils.channel import (
 )
 from discord_bot.utils.channel import channel_add_player, channel_add_user, channel_remove_user, get_channel_for_game
 from core.utils.players import populate_game_from_waitlist
-from core.utils.games import db_add_player_to_game, db_force_add_player_to_game, db_remove_discord_user_from_game
+from core.utils.games import (
+    async_db_add_player_to_game,
+    async_db_force_add_player_to_game,
+    async_db_remove_discord_user_from_game,
+)
 
 
 async def async_do_waitlist_updates(game):
@@ -33,7 +37,7 @@ async def async_do_waitlist_updates(game):
 
 async def async_remove_player_from_game(game, discord_user):
     """Remove a player from a given game"""
-    removed_from_party = await db_remove_discord_user_from_game(game, str(discord_user.id))
+    removed_from_party = await async_db_remove_discord_user_from_game(game, str(discord_user.id))
     if removed_from_party is None:
         return False
     elif removed_from_party:
@@ -47,9 +51,9 @@ async def async_remove_player_from_game(game, discord_user):
 async def async_add_player_to_game(game, discord_user, force=False):
     """Add a discord user to a game"""
     if force:
-        player = await db_force_add_player_to_game(game, discord_user)
+        player = await async_db_force_add_player_to_game(game, discord_user)
     else:
-        player = await db_add_player_to_game(game, discord_user)
+        player = await async_db_add_player_to_game(game, discord_user)
     if player and not player.standby:
         channel = await get_channel_for_game(game)
         if channel:
@@ -60,10 +64,10 @@ async def async_add_player_to_game(game, discord_user, force=False):
 
 async def async_get_party_for_game(game, include_waitlist=False):
     """Get a list of all players who are part of the game's party"""
-    party = await get_player_list(game)
+    party = await async_get_player_list(game)
     if include_waitlist:
         try:
-            waitlist = await get_wait_list(game)
+            waitlist = await async_get_wait_list(game)
             party.append(waitlist[0])
         except Exception as e:
             pass

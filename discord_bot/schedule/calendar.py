@@ -8,7 +8,7 @@ from discord_bot.utils.messaging import get_channel_by_name, async_get_bot_game_
 from discord_bot.utils.time import discord_date
 from discord_bot.components.games import GameSummaryEmbed
 from discord_bot.components.banners import CalendarSummaryBanner
-from core.utils.games import get_upcoming_games
+from core.utils.games import async_get_upcoming_games
 
 
 class GamesCalendarManager:
@@ -33,7 +33,7 @@ class GamesCalendarManager:
         log.info("Updating upcoming games calendar post")
         start = timezone.now()
         end = start + timedelta(days=days)
-        games = await get_upcoming_games(days=days, released=True)
+        games = await async_get_upcoming_games(days=days, released=True)
 
         description = ""
         title = f"[{len(games)}] Upcoming games in the next [{days}] days;"

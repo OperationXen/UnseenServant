@@ -5,7 +5,7 @@ from rest_framework.permissions import IsAdminUser
 
 from core.utils.statistics import get_gamestats, get_playerstats, get_unsuccessful_player_details
 
-from core.utils.games import _get_historic_games
+from core.utils.games import get_historic_games
 from core.utils.players import _get_historic_users
 
 
@@ -18,7 +18,7 @@ class GameStatsViewSet(APIView):
         if request.user.is_superuser:
             days = int(request.GET.get("days", 31))
 
-        game_data = _get_historic_games(days=days)
+        game_data = get_historic_games(days=days)
         game_stats = get_gamestats(game_data)
         general_stats = {"days_of_data": days}
         return Response(general_stats | game_stats)
@@ -49,7 +49,7 @@ class GeneralStatsViewSet(APIView):
             days = int(request.GET.get("days", 31))
 
         player_data = _get_historic_users(days=days)
-        game_data = _get_historic_games(days=days)
+        game_data = get_historic_games(days=days)
 
         general_stats = {"days_of_data": days}
         game_stats = get_gamestats(game_data)

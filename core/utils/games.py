@@ -14,18 +14,20 @@ from core.utils.user import get_user_by_discord_id
 from core.utils.sanctions import get_current_user_bans
 
 
-def _refetch_game_data(game: Game) -> Game:
+# ########################################################################## #
+def refetch_game_data(game: Game) -> Game:
     """Refresh the game object from the database"""
     game.refresh_from_db()
     return game
 
 
 @sync_to_async
-def refetch_game_data(game: Game) -> Game:
+def async_refetch_game_data(game: Game) -> Game:
     """Refresh the game object from the database"""
-    return _refetch_game_data(game)
+    return refetch_game_data(game)
 
 
+# ########################################################################## #
 def calc_game_tier(game: Game) -> int | None:
     """Calculates a game's tier"""
     if game.level_min >= 17:
@@ -39,7 +41,8 @@ def calc_game_tier(game: Game) -> int | None:
     return None
 
 
-def _get_dm(game: Game):
+# ########################################################################## #
+def get_dm(game: Game):
     """Get the specified games DM (syncronous)"""
     try:
         if game.dm:
@@ -50,24 +53,41 @@ def _get_dm(game: Game):
 
 
 @sync_to_async
-def get_dm(game):
+def async_get_dm(game):
     """Async wrapper function to get the specified games' DM"""
-    return _get_dm(game)
+    return get_dm(game)
+
+
+# ########################################################################## #
+def get_player_list(game: Game) -> QuerySet:
+    """Get a list of players for a specified game"""
+    queryset = game.players.filter(standby=False)
+    return queryset
 
 
 @sync_to_async
-def get_player_list(game):
+def async_get_player_list(game) -> list[Player]:
     """get a list of players subscribed to a game"""
-    return list(game.players.filter(standby=False))
+    queryset = get_player_list(game)
+    return list(queryset)
+
+
+# ########################################################################## #
+def get_wait_list(game: Game) -> QuerySet:
+    """Get the waitlist for the specified game"""
+    queryset = game.players.filter(standby=True).order_by("waitlist")
+    return queryset
 
 
 @sync_to_async
-def get_wait_list(game):
-    """fetch all waitlisted players, arranged in order of position"""
-    return list(game.players.filter(standby=True).order_by("waitlist"))
+def async_get_wait_list(game: Game) -> list[Player]:
+    """async wrapper to fetch all waitlisted players, arranged in order of position"""
+    queryset = get_wait_list(game)
+    return list(queryset)
 
 
-def _get_historic_games(days: int = 30) -> QuerySet:
+# ########################################################################## #
+def get_historic_games(days: int = 30) -> QuerySet:
     """Get games which have been played over the last X days"""
     now = timezone.now()
     start = now - timedelta(days=days)
@@ -77,14 +97,16 @@ def _get_historic_games(days: int = 30) -> QuerySet:
 
 
 @sync_to_async
-def get_historic_games(days: int = 30) -> list[Game]:
+def async_get_historic_games(days: int = 30) -> list[Game]:
+    """async wrapper to get historic game information"""
+    queryset = get_historic_games(days=days)
     # force evaluation before leaving this sync context
-    queryset = _get_historic_games(days=days)
     return list(queryset)
 
 
-@sync_to_async
-def get_upcoming_games(days=30, released=False):
+# ########################################################################## #
+def get_upcoming_games(days: int = 30, released: bool = False) -> QuerySet:
+    """get upcoming games"""
     now = timezone.now()
     end = now + timedelta(days=days)
     queryset = Game.objects.filter(ready=True).filter(datetime__gte=now)
@@ -93,13 +115,20 @@ def get_upcoming_games(days=30, released=False):
         released_filter = Q(datetime_release__lte=now) | Q(datetime_open_release__lte=now)
         queryset = queryset.filter(released_filter)
     queryset = queryset.order_by("datetime")
+    return queryset
+
+
+@sync_to_async
+def async_get_upcoming_games(days: int = 30, released: bool = False) -> list[Game]:
+    """asyncronous wrapper to get upcoming games"""
+    queryset = get_upcoming_games(days, released)
     # force evaluation before leaving this sync context
     return list(queryset)
 
 
-@sync_to_async
-def get_upcoming_games_for_player(discord_id: str, waitlisted=False):
-    """Get all of the upcoming games"""
+# ########################################################################## #
+def get_upcoming_games_for_discord_id(discord_id: str, waitlisted: bool = False) -> QuerySet:
+    """Get all of the upcoming games for a specified discord ID"""
     now = timezone.now()
     players = Player.objects.filter(discord_id=discord_id)
     players = players.filter(standby=waitlisted)
@@ -107,20 +136,34 @@ def get_upcoming_games_for_player(discord_id: str, waitlisted=False):
     queryset = Game.objects.filter(players__in=players)
     queryset = queryset.filter(ready=True).filter(datetime__gte=now)
     queryset = queryset.order_by("datetime")
-    # force evaluation before leaving this sync context
-    return list(queryset)
 
 
 @sync_to_async
-def get_upcoming_games_for_dm(dm_id: str):
-    now = timezone.now()
-    queryset = Game.objects.filter(ready=True).filter(datetime__gte=now)
-    queryset = queryset.filter(dm__discord_id=dm_id)
-    queryset = queryset.order_by("datetime")
+def async_get_upcoming_games_for_discord_id(discord_id: str, waitlisted=False) -> list[Game]:
+    """Async wrapper to get games for discord ID"""
+    queryset = get_upcoming_games_for_discord_id(discord_id, waitlisted)
     # force evaluation before leaving this sync context
     return list(queryset)
 
 
+# ########################################################################## #
+def get_upcoming_games_for_dm_discord_id(discord_id: str) -> list[Game]:
+    now = timezone.now()
+    queryset = Game.objects.filter(ready=True).filter(datetime__gte=now)
+    queryset = queryset.filter(dm__discord_id=discord_id)
+    queryset = queryset.order_by("datetime")
+    return queryset
+
+
+@sync_to_async
+def async_get_upcoming_games_for_dm_discord_id(discord_id: str) -> list[Game]:
+    """Async wrapper for find upcoming games for a DM by their discord ID"""
+    queryset = get_upcoming_games_for_dm_discord_id(discord_id)
+    # force evaluation before leaving this sync context
+    return list(queryset)
+
+
+# ########################################################################## #
 @sync_to_async
 def get_outstanding_games(priority=False):
     """Retrieve all game objects that are ready for release"""
@@ -140,7 +183,8 @@ def get_outstanding_games(priority=False):
     return list(queryset)
 
 
-def _get_game_by_id(game_id):
+# ########################################################################## #
+def get_game_by_id(game_id):
     """Syncronous context worker to get game and forcibly evaluate it"""
     try:
         game = Game.objects.get(pk=game_id)
@@ -152,12 +196,13 @@ def _get_game_by_id(game_id):
 
 
 @sync_to_async
-def get_game_by_id(game_id):
-    return _get_game_by_id(game_id)
+def async_get_game_by_id(game_id):
+    return get_game_by_id(game_id)
 
 
+# ########################################################################## #
 @sync_to_async
-def db_force_add_player_to_game(game: Game, user: CustomUser):
+def async_db_force_add_player_to_game(game: Game, user: CustomUser):
     """Force a player into a specified game, ignoring all conditions"""
     discord_id = str(user.id)
     try:
@@ -225,7 +270,7 @@ def handle_game_player_add(game: Game, discord_id: str, discord_name: str) -> Pl
 
 
 @sync_to_async
-def db_add_player_to_game(game: Game, user: DiscordUser):
+def async_db_add_player_to_game(game: Game, user: DiscordUser):
     """Add a new player to an existing game"""
     discord_id = str(user.id)
     credit_available = check_discord_user_available_credit(user)
@@ -237,7 +282,7 @@ def db_add_player_to_game(game: Game, user: DiscordUser):
 
 
 @sync_to_async
-def db_remove_discord_user_from_game(game: Game, discord_id: str):
+def async_db_remove_discord_user_from_game(game: Game, discord_id: str):
     """Remove a player from a game by their discord ID"""
     player = game.players.filter(discord_id=discord_id).first()
     if player:
@@ -247,10 +292,10 @@ def db_remove_discord_user_from_game(game: Game, discord_id: str):
     return None
 
 
-@sync_to_async
+# ########################################################################## #
 def check_game_expired(game: Game) -> bool:
     """See if a game object has reached expiry"""
-    game = _get_game_by_id(game.id)
+    game = get_game_by_id(game.id)
     if not game:
         return True
     expiry = timezone.now() - timedelta(days=1)
@@ -259,6 +304,15 @@ def check_game_expired(game: Game) -> bool:
     if not game.ready:
         return True
     return False
+
+
+@sync_to_async
+def async_check_game_expired(game: Game) -> bool:
+    """Async wrapper for checking if a game has expired"""
+    return check_game_expired(game)
+
+
+# ########################################################################## #
 
 
 def check_game_pending(game: Game) -> bool:

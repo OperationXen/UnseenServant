@@ -9,11 +9,11 @@ from discord_bot.utils.channel import update_mustering_embed
 from discord_bot.utils.format import generate_calendar_message
 from core.models.game import Game
 from core.utils.games import (
-    get_player_list,
-    get_wait_list,
-    get_dm,
+    async_get_player_list,
+    async_get_wait_list,
+    async_get_dm,
     is_patreon_exclusive,
-    refetch_game_data,
+    async_refetch_game_data,
     calc_game_tier,
 )
 from core.utils.players import get_player_credit_text
@@ -41,13 +41,13 @@ class BaseGameEmbed(Embed):
 
     async def refresh_game_data(self) -> Game:
         """Refresh the game object from the database"""
-        self.game = await refetch_game_data(self.game)
+        self.game = await async_refetch_game_data(self.game)
 
     async def get_data(self):
         """Asyncronous wrapper to retrieve data from Django elements"""
-        self.players = await get_player_list(self.game)
-        self.waitlist = await get_wait_list(self.game)
-        self.dm = await get_dm(self.game)
+        self.players = await async_get_player_list(self.game)
+        self.waitlist = await async_get_wait_list(self.game)
+        self.dm = await async_get_dm(self.game)
 
     def get_game_time(self):
         """Helper function to get the game time string"""
@@ -206,8 +206,8 @@ class GameControlView(View):
 
     async def get_data(self):
         """retrieve data from Django (syncronous)"""
-        self.players = await get_player_list(self.game)
-        self.dm = await get_dm(self.game)
+        self.players = await async_get_player_list(self.game)
+        self.dm = await async_get_dm(self.game)
 
     def update_message_embeds(self, new_embed: GameDetailEmbed) -> list[GameDetailEmbed]:
         """Find and replace the game detail embed within the message"""

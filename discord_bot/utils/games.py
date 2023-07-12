@@ -3,7 +3,7 @@ from discord.ui import Button
 
 from discord_bot.logs import logger as log
 from discord_bot.bot import bot
-from core.utils.games import get_game_by_id
+from core.utils.games import async_get_game_by_id
 from core.models import Game
 
 
@@ -36,7 +36,7 @@ async def async_get_game_from_message(message) -> Game | None:
     try:
         game_id = get_game_id_from_message(message)
         if game_id:
-            game = await get_game_by_id(game_id)
+            game = await async_get_game_by_id(game_id)
             return game
     except Exception as e:
         log.error(e)
