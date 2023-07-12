@@ -5,7 +5,7 @@ from config.settings import CHANNEL_SEND_PINGS
 from discord_bot.logs import logger as log
 from discord_bot.utils.time import get_hammertime, discord_countdown
 from discord_bot.utils.views import add_persistent_view
-from discord_bot.utils.games import get_game_from_message, get_game_id_from_message
+from discord_bot.utils.games import async_get_game_from_message, get_game_id_from_message
 from discord_bot.utils.channel import create_channel_hidden, channel_add_player, channel_add_dm
 from discord_bot.utils.channel import get_all_game_channels_for_guild, get_channel_first_message
 from discord_bot.components.channels import MusteringBanner, MusteringView
@@ -142,7 +142,7 @@ class ChannelManager:
         log.info("Reconnecting to existing mustering views")
         for channel in await get_all_game_channels_for_guild(self.guild):
             message = await get_channel_first_message(channel)
-            game = await get_game_from_message(message)
+            game = await async_get_game_from_message(message)
             # Rebuild view handlers
             if game:
                 control_view = MusteringView(game)

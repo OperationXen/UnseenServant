@@ -31,7 +31,7 @@ def get_game_id_from_message(message) -> int | None:
     return None
 
 
-async def get_game_from_message(message) -> Game | None:
+async def async_get_game_from_message(message) -> Game | None:
     """Given a generic message, attempt to get the game instance it refers to [if any]"""
     try:
         game_id = get_game_id_from_message(message)
@@ -43,7 +43,7 @@ async def get_game_from_message(message) -> Game | None:
     return None
 
 
-async def _get_game_control_view_for_game(game):
+async def async_get_game_control_view_for_game(game):
     """Given a game object, check its mustering channel and retrieve the view attached to the mustering embed"""
     for view in bot.persistent_views:
         view_name = str(type(view))
@@ -52,10 +52,10 @@ async def _get_game_control_view_for_game(game):
     return None
 
 
-async def update_game_listing_embed(game):
+async def async_update_game_listing_embed(game):
     """Refresh a game listing embed for a specific game"""
     try:
-        view = await _get_game_control_view_for_game(game)
+        view = await async_get_game_control_view_for_game(game)
         if view:
             return await view.update_message()
     except Exception as e:

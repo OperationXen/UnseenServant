@@ -4,7 +4,7 @@ from discord_bot.logs import logger as log
 from config.settings import DEFAULT_CHANNEL_NAME, PRIORITY_CHANNEL_NAME
 from discord_bot.utils.messaging import get_channel_by_name, get_bot_game_postings
 from discord_bot.components.games import GameDetailEmbed, GameControlView
-from discord_bot.utils.games import get_game_from_message, get_game_id_from_message
+from discord_bot.utils.games import async_get_game_from_message, get_game_id_from_message
 from discord_bot.utils.views import add_persistent_view
 from core.utils.games import get_outstanding_games, check_game_expired
 
@@ -39,7 +39,7 @@ class GamesPoster:
         for channel in [self.channel_priority, self.channel_general]:
             messages = await get_bot_game_postings(channel)
             for message in messages:
-                game = await get_game_from_message(message)
+                game = await async_get_game_from_message(message)
                 if not game:
                     game_id = get_game_id_from_message(message)
                     log.info(f"Removing orphaned message (No matching game) for game ID {game_id}")

@@ -13,7 +13,7 @@ from core.utils.players import populate_game_from_waitlist
 from core.utils.games import db_add_player_to_game, db_force_add_player_to_game, db_remove_discord_user_from_game
 
 
-async def do_waitlist_updates(game):
+async def async_do_waitlist_updates(game):
     """Update a game based on its waitlist"""
     promoted = await populate_game_from_waitlist(game)
     game_outstanding = check_game_pending(game)
@@ -31,7 +31,7 @@ async def do_waitlist_updates(game):
             )
 
 
-async def remove_player_from_game(game, discord_user):
+async def async_remove_player_from_game(game, discord_user):
     """Remove a player from a given game"""
     removed_from_party = await db_remove_discord_user_from_game(game, str(discord_user.id))
     if removed_from_party is None:
@@ -44,7 +44,7 @@ async def remove_player_from_game(game, discord_user):
     return True
 
 
-async def add_player_to_game(game, discord_user, force=False):
+async def async_add_player_to_game(game, discord_user, force=False):
     """Add a discord user to a game"""
     if force:
         player = await db_force_add_player_to_game(game, discord_user)
@@ -58,7 +58,7 @@ async def add_player_to_game(game, discord_user, force=False):
     return player
 
 
-async def get_party_for_game(game, include_waitlist=False):
+async def async_get_party_for_game(game, include_waitlist=False):
     """Get a list of all players who are part of the game's party"""
     party = await get_player_list(game)
     if include_waitlist:
