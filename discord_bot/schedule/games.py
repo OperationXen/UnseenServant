@@ -2,7 +2,7 @@ from discord.ext import tasks
 
 from discord_bot.logs import logger as log
 from config.settings import DEFAULT_CHANNEL_NAME, PRIORITY_CHANNEL_NAME
-from discord_bot.utils.messaging import get_channel_by_name, get_bot_game_postings
+from discord_bot.utils.messaging import get_channel_by_name, async_get_bot_game_postings
 from discord_bot.components.games import GameDetailEmbed, GameControlView
 from discord_bot.utils.games import async_get_game_from_message, get_game_id_from_message
 from discord_bot.utils.views import add_persistent_view
@@ -37,7 +37,7 @@ class GamesPoster:
         """Pull game postings from posting history and reconstruct a game/message status from it"""
         log.info("Rebuilding internal message state")
         for channel in [self.channel_priority, self.channel_general]:
-            messages = await get_bot_game_postings(channel)
+            messages = await async_get_bot_game_postings(channel)
             for message in messages:
                 game = await async_get_game_from_message(message)
                 if not game:

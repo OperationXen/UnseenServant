@@ -8,8 +8,8 @@ import discord_bot.core
 from discord_bot.bot import bot
 from discord_bot.components.admin import AdminUserCreatedEmbed
 from config.settings import DISCORD_GUILDS, DISCORD_ADMIN_ROLES, DISCORD_DM_ROLES
-from core.utils.admin import create_new_dm_from_discord_user, create_new_admin_user
-from discord_bot.utils.roles import set_user_dm_registered
+from core.utils.admin import async_create_new_dm_from_discord_user, async_create_new_admin_user
+from discord_bot.utils.roles import async_set_user_dm_registered
 
 
 @bot.slash_command(guild_ids=DISCORD_GUILDS, description="Register a new DM account")
@@ -22,9 +22,9 @@ async def register_as_dm(
     """Registers the user as a DM and creates them an admin page user"""
     user = user if user else ctx.user
     try:
-        await create_new_dm_from_discord_user(user, name)
-        await set_user_dm_registered(user)
-        username, password = await create_new_admin_user(name or user.name)
+        await async_create_new_dm_from_discord_user(user, name)
+        await async_set_user_dm_registered(user)
+        username, password = await async_create_new_admin_user(name or user.name)
     except (ValidationError, IntegrityError):
         await ctx.respond(
             f"Failed to create new Dungeon Master, are you already registered?", ephemeral=True, delete_after=10

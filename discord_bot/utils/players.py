@@ -1,5 +1,5 @@
 from discord_bot.logs import logger as log
-from discord_bot.utils.messaging import send_dm
+from discord_bot.utils.messaging import async_send_dm
 from discord_bot.utils.time import discord_countdown
 from core.utils.games import check_game_pending, get_player_list, get_wait_list
 
@@ -25,7 +25,7 @@ async def async_do_waitlist_updates(game):
         # Only ping players if they're being promoted into a game that hasn't started
         if game_outstanding:
             await game_channel_tag_promoted_player(game, player)
-            await send_dm(
+            await async_send_dm(
                 player.discord_id,
                 f"You have been promoted from the waitlist for {game.name} in {discord_countdown(game.datetime)}!",
             )
