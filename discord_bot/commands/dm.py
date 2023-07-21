@@ -5,6 +5,8 @@ from discord import Member, HTTPException, Forbidden
 from discord_bot.bot import bot
 from config.settings import DISCORD_GUILDS, DISCORD_DM_ROLES, DISCORD_ADMIN_ROLES
 from discord_bot.logs import logger as log
+from core.utils.games import async_get_wait_list
+from discord_bot.utils.time import discord_countdown
 from discord_bot.utils.games import async_update_game_listing_embed
 from discord_bot.utils.channel import get_game_for_channel, update_mustering_embed, notify_game_channel
 from discord_bot.utils.players import (
@@ -108,3 +110,31 @@ async def tag_players(ctx):
 
     log.info(f"Tagged {len(party)} players in channel for game {game.name}")
     return await ctx.followup.send("Party have been individually tagged", ephemeral=True)
+
+
+@bot.slash_command(guild_ids=DISCORD_GUILDS, description="Send a warning DM to the player at the top of the waitlist")
+@has_any_role(*DISCORD_DM_ROLES, *DISCORD_ADMIN_ROLES)
+async def warn_waitlist(ctx):
+    """Warns the next player in line"""
+    await ctx.response.defer(ephemeral=True)
+    log.info(f"{ctx.author.name} used command /warn_waitlist in channel {ctx.channel.name}")
+    game = await get_game_for_channel(ctx.channel)
+    if not game:
+        log.error(f"Channel {ctx.channel.name} has no associated game, command failed")
+        return await ctx.followup.send("This channel is not linked to a game", ephemeral=True)
+
+    if not do_dm_permissions_check(ctx.author, game):
+        return await ctx.followup.send("You are not the DM for this game", ephemeral=True)
+
+    waitlist = await async_get_wait_list(game)
+    try:
+        player = waitlist[0]
+        discord_user = await bot.fetch_user(player.discord_id)
+        await discord_user.send(
+            f"You are at the top of the waitlist for **{game.name}** which starts {discord_countdown(game.datetime)}"
+        )
+        log.debug(f"Player {discord_user.display_name} notified")
+        return await ctx.followup.send(f"Player {discord_user.display_name} notified", ephemeral=True)
+    except Exception as e:
+        log.error(f"Unable to find waitlisted player")
+        return await ctx.followup.send("Unable to message player at top of waitlist", ephemeral=True)
