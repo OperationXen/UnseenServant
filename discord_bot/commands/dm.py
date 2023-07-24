@@ -8,7 +8,11 @@ from discord_bot.logs import logger as log
 from core.utils.games import async_get_wait_list
 from discord_bot.utils.time import discord_countdown
 from discord_bot.utils.games import async_update_game_listing_embed
-from discord_bot.utils.channel import get_game_for_channel, update_mustering_embed, notify_game_channel
+from discord_bot.utils.channel import (
+    async_get_game_for_channel,
+    async_update_mustering_embed,
+    async_notify_game_channel,
+)
 from discord_bot.utils.players import (
     async_remove_player_from_game,
     async_add_player_to_game,
@@ -34,7 +38,7 @@ async def remove_player(ctx, user: Option(Member, "Player to remove from the gam
     """remove a player from a game - should only be run in a game channel"""
     await ctx.response.defer(ephemeral=True)
     log.info(f"{ctx.author.name} used command /remove_player {user.name} in channel {ctx.channel.name}")
-    game = await get_game_for_channel(ctx.channel)
+    game = await async_get_game_for_channel(ctx.channel)
     if not game:
         log.error(f"Channel {ctx.channel.name} has no associated game, command failed")
         return await ctx.followup.send("This channel is not linked to a game", ephemeral=True)
@@ -45,7 +49,7 @@ async def remove_player(ctx, user: Option(Member, "Player to remove from the gam
     removed = await async_remove_player_from_game(game, user)
     if removed:
         await async_do_waitlist_updates(game)
-        await update_mustering_embed(game)
+        await async_update_mustering_embed(game)
         await async_update_game_listing_embed(game)
         log.info(f"Removed player {user.name} from game {game.name}")
         try:
@@ -67,7 +71,7 @@ async def add_player(ctx, user: Option(Member, "Player to add to the game", requ
     """add a player from a game - should only be run in a game channel"""
     await ctx.response.defer(ephemeral=True)
     log.info(f"{ctx.author.name} used command /add_player {user.name} in channel {ctx.channel.name}")
-    game = await get_game_for_channel(ctx.channel)
+    game = await async_get_game_for_channel(ctx.channel)
     if not game:
         log.error(f"Channel {ctx.channel.name} has no associated game, command failed")
         return await ctx.followup.send("This channel is not linked to a game", ephemeral=True)
@@ -78,7 +82,7 @@ async def add_player(ctx, user: Option(Member, "Player to add to the game", requ
     added = await async_add_player_to_game(game, user, force=True)
     if added:
         await async_do_waitlist_updates(game)
-        await update_mustering_embed(game)
+        await async_update_mustering_embed(game)
         await async_update_game_listing_embed(game)
         log.info(f"Added player {user.name} to game {game.name}")
 
@@ -93,7 +97,7 @@ async def tag_players(ctx):
     """Tags all players in this game channel"""
     await ctx.response.defer(ephemeral=True)
     log.info(f"{ctx.author.name} used command /tag_players in channel {ctx.channel.name}")
-    game = await get_game_for_channel(ctx.channel)
+    game = await async_get_game_for_channel(ctx.channel)
     if not game:
         log.error(f"Channel {ctx.channel.name} has no associated game, command failed")
         return await ctx.followup.send("This channel is not linked to a game", ephemeral=True)
@@ -106,7 +110,7 @@ async def tag_players(ctx):
     for party_member in party:
         discord_user = await bot.fetch_user(party_member.discord_id)
         message += f"{discord_user.mention} "
-    await notify_game_channel(game, message)
+    await async_notify_game_channel(game, message)
 
     log.info(f"Tagged {len(party)} players in channel for game {game.name}")
     return await ctx.followup.send("Party have been individually tagged", ephemeral=True)
@@ -118,7 +122,7 @@ async def warn_waitlist(ctx):
     """Warns the next player in line"""
     await ctx.response.defer(ephemeral=True)
     log.info(f"{ctx.author.name} used command /warn_waitlist in channel {ctx.channel.name}")
-    game = await get_game_for_channel(ctx.channel)
+    game = await async_get_game_for_channel(ctx.channel)
     if not game:
         log.error(f"Channel {ctx.channel.name} has no associated game, command failed")
         return await ctx.followup.send("This channel is not linked to a game", ephemeral=True)
