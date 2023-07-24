@@ -6,7 +6,8 @@ from discord.channel import TextChannel
 from discord_bot.bot import bot
 from discord_bot.logs import logger as log
 from config.settings import CHANNEL_SEND_PINGS
-from core.models import Game, CustomUser, DM
+from core.models import Game, CustomUser, DM, Player
+from core.utils.games import async_get_dm, async_get_player_list
 from core.utils.channels import async_get_game_channel_for_game
 from discord_bot.utils.games import async_get_game_from_message
 
@@ -133,10 +134,10 @@ async def async_channel_add_user(channel: TextChannel, user: DiscordUser, admin=
     return False
 
 
-async def async_channel_add_player(channel: TextChannel, player: CustomUser):
+async def async_channel_add_player(channel: TextChannel, player: Player):
     """Add a user to channel by reference from a player object"""
-    log.info(f"Adding player [{player.display_name}] to channel [{channel.name}]")
     try:
+        log.info(f"Adding player [{player.discord_name}] to channel [{channel.name}]")
         discord_user = await bot.fetch_user(player.discord_id)
         return await async_channel_add_user(channel, discord_user)
     except:
@@ -146,8 +147,8 @@ async def async_channel_add_player(channel: TextChannel, player: CustomUser):
 
 async def async_channel_add_dm(channel: TextChannel, dm: DM):
     """Add a DM to channel by reference from a player object"""
-    log.info(f"Adding Dungeon Master [{dm.display_name}] to channel [{channel.name}]")
     try:
+        log.info(f"Adding Dungeon Master [{dm.discord_name}] to channel [{channel.name}]")
         discord_user = await bot.fetch_user(dm.discord_id)
         return await async_channel_add_user(channel, discord_user, admin=True)
     except Exception as e:
@@ -192,3 +193,24 @@ async def async_get_channel_first_message(channel: TextChannel):
     """Get the first message in a specified channel"""
     message = await channel.history(limit=1, oldest_first=True).flatten()
     return message[0]
+
+
+async def async_remove_all_channel_members(channel: TextChannel) -> bool:
+    """Remove all the members of a specific channel"""
+    for member in channel.members:
+        if not member.bot:
+            log.info(f"Removed [{member.display_name}] from [{channel.name}]")
+            await channel.set_permissions(
+                member, read_messages=False, send_messages=False, read_message_history=False, use_slash_commands=False
+            )
+    return True
+
+
+async def async_add_channel_users(channel: TextChannel, game: Game):
+    """Add the DM and players to a specific channel"""
+    dm = await async_get_dm(game)
+    await async_channel_add_dm(channel, dm)
+
+    players = await async_get_player_list(game)
+    for player in players:
+        await async_channel_add_player(channel, player)
