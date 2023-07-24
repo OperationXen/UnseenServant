@@ -1,14 +1,18 @@
 import random
 from discord import PermissionOverwrite
+from discord import User as DiscordUser
+from discord.channel import TextChannel
 
 from discord_bot.bot import bot
 from discord_bot.logs import logger as log
 from config.settings import CHANNEL_SEND_PINGS
+from core.models import Game, CustomUser, DM, Player
+from core.utils.games import async_get_dm, async_get_player_list
 from core.utils.channels import async_get_game_channel_for_game
 from discord_bot.utils.games import async_get_game_from_message
 
 
-async def get_channel_for_game(game):
+async def async_get_channel_for_game(game: Game) -> TextChannel:
     """Get a discord object for a given game"""
     try:
         game_channel = await async_get_game_channel_for_game(game)
@@ -19,10 +23,10 @@ async def get_channel_for_game(game):
     return None
 
 
-async def get_game_for_channel(channel):
+async def async_get_game_for_channel(channel: TextChannel) -> Game | None:
     """Given a discord channel, attempt to derive which game it represents"""
     try:
-        message = await get_channel_first_message(channel)
+        message = await async_get_channel_first_message(channel)
         game = await async_get_game_from_message(message)
         if game:
             return game
@@ -31,7 +35,7 @@ async def get_game_for_channel(channel):
         return None
 
 
-async def _get_mustering_view_for_game(game):
+def async_get_mustering_view_for_game(game: Game):
     """Given a game object, check its mustering channel and retrieve the view attached to the mustering embed"""
     for view in bot.persistent_views:
         view_name = str(type(view))
@@ -40,10 +44,10 @@ async def _get_mustering_view_for_game(game):
     return None
 
 
-async def update_mustering_embed(game):
+async def async_update_mustering_embed(game: Game):
     """Refresh a mustering embed for a specific game"""
     try:
-        view = await _get_mustering_view_for_game(game)
+        view = async_get_mustering_view_for_game(game)
         if view:
             return await view.update_message()
     except Exception as e:
@@ -51,11 +55,11 @@ async def update_mustering_embed(game):
     return False
 
 
-async def notify_game_channel(game, message):
+async def async_notify_game_channel(game: Game, message: str):
     """Send a notification to a game channel"""
-    channel = await get_channel_for_game(game)
+    channel = await async_get_channel_for_game(game)
     if channel:
-        log.debug(f"Sending channel message to {channel.name}. Message: {message}")
+        log.info(f"Sending message to channel [{channel.name}]: {message}")
         status = await channel.send(message)
         return status
     else:
@@ -63,7 +67,7 @@ async def notify_game_channel(game, message):
     return False
 
 
-async def game_channel_tag_promoted_user(game, user):
+async def async_game_channel_tag_promoted_user(game: Game, user: DiscordUser):
     """Send a message to the game channel notifying the player that they've been promoted"""
     if CHANNEL_SEND_PINGS:
         user_text = user.mention
@@ -98,22 +102,22 @@ async def game_channel_tag_promoted_user(game, user):
     ]
 
     message = random.choice(choices)
-    message = await notify_game_channel(game, message)
+    message = await async_notify_game_channel(game, message)
 
 
-async def game_channel_tag_promoted_player(game, player):
+async def async_game_channel_tag_promoted_player(game: Game, player: CustomUser):
     """Tag a user in a channel from a player object"""
     discord_user = await bot.fetch_user(player.discord_id)
-    return await game_channel_tag_promoted_user(game, discord_user)
+    return await async_game_channel_tag_promoted_user(game, discord_user)
 
 
-async def game_channel_tag_removed_user(game, user):
+async def async_game_channel_tag_removed_user(game: Game, user: DiscordUser):
     """Send a message to the game channel notifying the DM that a player has dropped"""
     message = f"{user.display_name} dropped out"
-    message = await notify_game_channel(game, message)
+    message = await async_notify_game_channel(game, message)
 
 
-async def channel_add_user(channel, user, admin=False):
+async def async_channel_add_user(channel: TextChannel, user: DiscordUser, admin=False):
     """Give a specific user permission to view and post in the channel for an upcoming game"""
     try:
         await channel.set_permissions(
@@ -126,33 +130,33 @@ async def channel_add_user(channel, user, admin=False):
         )
         return True
     except Exception as e:
-        log.debug(f"Exception occured adding discord user {user.name} to channel")
+        log.error(f"Exception occured adding discord user {user.display_name} to channel")
     return False
 
 
-async def channel_add_player(channel, player):
+async def async_channel_add_player(channel: TextChannel, player: Player):
     """Add a user to channel by reference from a player object"""
-    log.info(f"Adding player [{player.discord_name}] to channel [{channel.name}]")
     try:
+        log.info(f"Adding player [{player.discord_name}] to channel [{channel.name}]")
         discord_user = await bot.fetch_user(player.discord_id)
-        return await channel_add_user(channel, discord_user)
+        return await async_channel_add_user(channel, discord_user)
     except:
         log.error(f"Unable to add this player to the channel")
     return None
 
 
-async def channel_add_dm(channel, dm):
+async def async_channel_add_dm(channel: TextChannel, dm: DM):
     """Add a DM to channel by reference from a player object"""
-    log.info(f"Adding Dungeon Master [{dm.discord_name}] to channel [{channel.name}]")
     try:
+        log.info(f"Adding Dungeon Master [{dm.discord_name}] to channel [{channel.name}]")
         discord_user = await bot.fetch_user(dm.discord_id)
-        return await channel_add_user(channel, discord_user, admin=True)
+        return await async_channel_add_user(channel, discord_user, admin=True)
     except Exception as e:
         log.error(f"Unable to add this DM to the channel")
     return None
 
 
-async def channel_remove_user(channel, user):
+async def async_channel_remove_user(channel: TextChannel, user: DiscordUser):
     """Remove a specific player from a game channel"""
     try:
         log.info(f"Removing player [{user.display_name}] from channel [{channel.name}]")
@@ -161,11 +165,11 @@ async def channel_remove_user(channel, user):
         )
         return True
     except Exception as e:
-        log.debug(f"Exception occured removing discord user {user.discord_name} from channel")
+        log.debug(f"Exception occured removing discord user {user.display_name} from channel")
     return False
 
 
-async def create_channel_hidden(guild, parent, name, topic):
+async def async_create_channel_hidden(guild, parent, name, topic):
     """creates a channel which can only be seen and used by the bot"""
     log.info(f"Creating new game mustering channel: {name} ")
     overwrites = {
@@ -176,7 +180,7 @@ async def create_channel_hidden(guild, parent, name, topic):
     return channel
 
 
-async def get_all_game_channels_for_guild(guild):
+async def async_get_all_game_channels_for_guild(guild):
     """List all existing game channels"""
     all_channels = guild.by_category()
     for channel_group in all_channels:
@@ -185,7 +189,28 @@ async def get_all_game_channels_for_guild(guild):
     return []
 
 
-async def get_channel_first_message(channel):
+async def async_get_channel_first_message(channel: TextChannel):
     """Get the first message in a specified channel"""
     message = await channel.history(limit=1, oldest_first=True).flatten()
     return message[0]
+
+
+async def async_remove_all_channel_members(channel: TextChannel) -> bool:
+    """Remove all the members of a specific channel"""
+    for member in channel.members:
+        if not member.bot:
+            log.info(f"Removed [{member.display_name}] from [{channel.name}]")
+            await channel.set_permissions(
+                member, read_messages=False, send_messages=False, read_message_history=False, use_slash_commands=False
+            )
+    return True
+
+
+async def async_add_channel_users(channel: TextChannel, game: Game):
+    """Add the DM and players to a specific channel"""
+    dm = await async_get_dm(game)
+    await async_channel_add_dm(channel, dm)
+
+    players = await async_get_player_list(game)
+    for player in players:
+        await async_channel_add_player(channel, player)

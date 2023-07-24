@@ -5,7 +5,7 @@ import discord_bot.core
 from discord_bot.logs import logger as log
 from discord_bot.utils.players import async_do_waitlist_updates, async_remove_player_from_game, async_add_player_to_game
 from discord_bot.utils.time import discord_time, discord_countdown
-from discord_bot.utils.channel import update_mustering_embed
+from discord_bot.utils.channel import async_update_mustering_embed
 from discord_bot.utils.format import generate_calendar_message
 from core.models.game import Game
 from core.utils.games import (
@@ -250,7 +250,7 @@ class GameControlView(View):
             message = f"Added you to to the waitlist for {self.game.name} `({games_remaining_text})`"
         await async_do_waitlist_updates(self.game)
         await self.update_message(followup_hook=interaction.followup)
-        await update_mustering_embed(self.game)
+        await async_update_mustering_embed(self.game)
         await interaction.user.send(message)
         return True
 
@@ -271,7 +271,7 @@ class GameControlView(View):
             message = f"Removed you from {self.game.name} `({games_remaining_text})`"
             await async_do_waitlist_updates(self.game)
             await self.update_message(followup_hook=interaction.followup)
-            await update_mustering_embed(self.game)
+            await async_update_mustering_embed(self.game)
             await interaction.user.send(message)
             return True
         await interaction.followup.send("Unable to remove you from this game", ephemeral=True)
@@ -281,4 +281,4 @@ class GameControlView(View):
         """Force refresh button callback"""
         await async_do_waitlist_updates(self.game)
         await self.update_message(response_hook=interaction.response)
-        await update_mustering_embed(self.game)
+        await async_update_mustering_embed(self.game)

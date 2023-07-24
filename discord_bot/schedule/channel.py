@@ -6,8 +6,8 @@ from discord_bot.logs import logger as log
 from discord_bot.utils.time import get_hammertime, discord_countdown
 from discord_bot.utils.views import add_persistent_view
 from discord_bot.utils.games import async_get_game_from_message, get_game_id_from_message
-from discord_bot.utils.channel import create_channel_hidden, channel_add_player, channel_add_dm
-from discord_bot.utils.channel import get_all_game_channels_for_guild, get_channel_first_message
+from discord_bot.utils.channel import async_create_channel_hidden, async_channel_add_player, async_channel_add_dm
+from discord_bot.utils.channel import async_get_all_game_channels_for_guild, async_get_channel_first_message
 from discord_bot.components.channels import MusteringBanner, MusteringView
 from core.utils.games import async_get_dm, async_get_player_list
 from core.utils.channels import async_get_game_channels_pending_creation, async_set_game_channel_created
@@ -58,11 +58,11 @@ class ChannelManager:
     async def add_channel_users(self, channel, game):
         """Add the DM and players to the newly created channel"""
         dm = await async_get_dm(game)
-        await channel_add_dm(channel, dm)
+        await async_channel_add_dm(channel, dm)
 
         players = await async_get_player_list(game)
         for player in players:
-            await channel_add_player(channel, player)
+            await async_channel_add_player(channel, player)
 
     async def send_banner_message(self, channel, game):
         """send the welcome banner"""
@@ -86,7 +86,7 @@ class ChannelManager:
             log.info(f"Creating channel for game: {upcoming_game.name}")
             channel_name = upcoming_game.datetime.strftime("%Y%m%d-") + upcoming_game.module
             channel_topic = await self.get_topic_text(upcoming_game)
-            channel = await create_channel_hidden(self.guild, self.parent_category, channel_name, channel_topic)
+            channel = await async_create_channel_hidden(self.guild, self.parent_category, channel_name, channel_topic)
             if channel:
                 game_channel = await async_set_game_channel_created(
                     upcoming_game, channel.id, channel.jump_url, channel.name
@@ -142,8 +142,8 @@ class ChannelManager:
     async def recover_channel_state(self):
         """Pull game postings from posting history and reconstruct a game/message status from it"""
         log.info("Reconnecting to existing mustering views")
-        for channel in await get_all_game_channels_for_guild(self.guild):
-            message = await get_channel_first_message(channel)
+        for channel in await async_get_all_game_channels_for_guild(self.guild):
+            message = await async_get_channel_first_message(channel)
             game = await async_get_game_from_message(message)
             # Rebuild view handlers
             if game:
