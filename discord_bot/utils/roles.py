@@ -4,7 +4,7 @@ from discord.errors import Forbidden
 from discord_bot.logs import logger as log
 from config.settings import DISCORD_ADMIN_ROLES
 from core.models.game import Game
-from core.utils.games import async_get_dm
+from core.utils.games import get_dm
 
 
 def get_role_by_name(roles: list[Role], name: str) -> Role:
@@ -58,7 +58,7 @@ def do_dm_permissions_check(user: User, game: Game) -> bool:
     if discord_user_is_admin(user):
         log.info(f"{user.name} is an admin, skipping DM game ownership check...")
     else:
-        dm = async_get_dm(game)
+        dm = get_dm(game)
         if dm.discord_id != str(user.id):
             log.error(f"{user.name} does not appear to be the DM for {game.name}, command failed")
             return False
