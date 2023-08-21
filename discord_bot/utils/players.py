@@ -36,7 +36,7 @@ async def async_do_waitlist_updates(game):
             await async_game_channel_tag_promoted_player(game, player)
             await async_send_dm(
                 player.discord_id,
-                f"You have been promoted from the waitlist for {game.name} in {discord_countdown(game.datetime)}!",
+                f"You have been promoted from the waitlist for {game.name} {discord_countdown(game.datetime)}!",
             )
 
 
