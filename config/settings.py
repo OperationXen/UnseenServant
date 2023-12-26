@@ -46,7 +46,10 @@ CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOW_ALL_ORIGINS = True
 
 AUTH_USER_MODEL = "core.CustomUser"
-AUTHENTICATION_BACKENDS = ["discord_login.auth.DiscordAuthenticationBackend", "core.auth.CustomUserModelBackend"]
+AUTHENTICATION_BACKENDS = [
+    "discord_login.auth.DiscordAuthenticationBackend",
+    "core.auth.CustomUserModelBackend",
+]
 
 # Discord OAUTH config
 DISCORD_CLIENT_ID = getenv("DISCORD_CLIENT_ID")
@@ -64,9 +67,10 @@ DISCORD_SIGNUP_ROLES = ["Signup Master"]
 DISCORD_DM_ROLES = ["Dungeon Master"]
 
 # Event role management configuration
-EVENT_PLAYER_ROLE_NAME = "Event Participant"
+EVENT_PLAYER_ROLE_NAMES = ["Event Participant", "Event Table Captain"]
+EVENT_MANAGEMENT_ROLE_NAMES = ["Event DM"]
 DISCORD_EVENT_COORDINATOR_ROLES = ["Event Coordinator"]
-DISCORD_EVENT_USER_ROLES = [EVENT_PLAYER_ROLE_NAME]
+DISCORD_EVENT_USER_ROLES = [*EVENT_PLAYER_ROLE_NAMES, *EVENT_MANAGEMENT_ROLE_NAMES]
 
 CHANNEL_CREATION_DAYS = getenv("CHANNEL_CREATION_DAYS", 5)
 CHANNEL_REMIND_HOURS = getenv("CHANNEL_REMIND_HOURS", 24)
