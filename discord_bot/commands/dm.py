@@ -140,9 +140,13 @@ async def add_waitlist(
         await async_do_waitlist_updates(game)
         await async_update_mustering_embed(game)
         await async_update_game_listing_embed(game)
-        log.info(f"Added {user.name} to game {game.name} waitlist")
-
-        return await ctx.followup.send("Player added to waitlist", ephemeral=True)
+        if added.waitlist:
+            log.info(f"Added {user.name} to game {game.name} waitlist")
+            message = "Player added to waitlist"
+        else:
+            log.info(f"Added {user.name} to game {game.name}")
+            message = "Player added to game, as there was a space"
+        return await ctx.followup.send(message, ephemeral=True)
     log.info(f"Unable to add player {user.name} to waitlist {game.name}")
     return await ctx.followup.send(
         f"Unable to add {user.name} to waitlist for {game.name}"
