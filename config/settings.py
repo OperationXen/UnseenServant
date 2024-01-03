@@ -35,8 +35,6 @@ else:
     SERVER_URI = "http://127.0.0.1:8000"
 
 WEBAPP_URL = getenv("WEBAPP_URL", "http://127.0.0.1:3000")
-AUTH_DONE_URL = WEBAPP_URL + "/discord_auth_done/"
-AUTH_FAIL_URL = WEBAPP_URL + "/discord_auth_failed/"
 
 # Security Controls
 ALLOWED_HOSTS = ["127.0.0.1"] if SERVER else []
@@ -51,8 +49,8 @@ AUTHENTICATION_BACKENDS = ["discord_login.auth.DiscordAuthenticationBackend", "c
 # Discord OAUTH config
 DISCORD_CLIENT_ID = getenv("DISCORD_CLIENT_ID")
 DISCORD_CLIENT_SECRET = getenv("DISCORD_CLIENT_SECRET")
-AUTH_DONE_URL = getenv("OAUTH_DONE_URL")
-AUTH_FAIL_URL = getenv("OAUTH_FAIL_URL")
+AUTH_COMPLETE_URL = getenv("OAUTH_COMPLETE_URL", WEBAPP_URL + "/discord_auth/complete")
+AUTH_FAIL_URL = getenv("OAUTH_FAIL_URL", WEBAPP_URL + "/discord_auth/failed")
 
 # Discord API config
 DISCORD_TOKEN = getenv("DISCORD_TOKEN")
