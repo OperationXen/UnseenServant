@@ -6,10 +6,10 @@ from rest_framework.status import *
 from rest_framework.views import Request
 
 from discord_bot.logs import logger as log
-from config.settings import DISCORD_CLIENT_ID, DISCORD_CLIENT_SECRET, DISCORD_GUILDS, SERVER_URI
-from config.settings import AUTH_DONE_URL, AUTH_FAIL_URL
+from config.settings import DISCORD_CLIENT_ID, DISCORD_CLIENT_SECRET, DISCORD_GUILDS
+from config.settings import AUTH_COMPLETE_URL, AUTH_FAIL_URL, AUTH_REDIRECT_URL
 
-auth_url_discord = f"https://discord.com/api/oauth2/authorize?client_id={DISCORD_CLIENT_ID}&redirect_uri={SERVER_URI}/discord_auth/done/&response_type=code&scope=identify%20guilds%20guilds.members.read"
+auth_url_discord = f"https://discord.com/api/oauth2/authorize?client_id={DISCORD_CLIENT_ID}&redirect_uri={AUTH_REDIRECT_URL}&response_type=code&scope=identify%20guilds%20guilds.members.read"
 
 
 def discord_login(request: Request) -> redirect:
@@ -24,7 +24,7 @@ def exchange_code(code: str):
         "client_secret": DISCORD_CLIENT_SECRET,
         "grant_type": "authorization_code",
         "code": code,
-        "redirect_uri": f"{SERVER_URI}/discord_auth/done/",
+        "redirect_uri": AUTH_REDIRECT_URL,
         "scope": "identify",
     }
     headers = {"Content-Type": "application/x-www-form-urlencoded"}
