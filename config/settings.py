@@ -35,12 +35,11 @@ else:
     SERVER_URI = "http://127.0.0.1:8000"
 
 WEBAPP_URL = getenv("WEBAPP_URL", "http://127.0.0.1:3000")
-WEB_ADMIN_URL = getenv("WEB_ADMIN_URL", "http://127.0.0.1:3000")
 
 # Security Controls
 ALLOWED_HOSTS = ["127.0.0.1"] if SERVER else []
 # CORS_ALLOWED_ORIGINS = [WEBAPP_URL]
-CSRF_TRUSTED_ORIGINS = [f"https://{SERVER}", WEBAPP_URL, WEB_ADMIN_URL] if SERVER else []
+CSRF_TRUSTED_ORIGINS = [f"https://{SERVER}", WEBAPP_URL, "https://*.tridengames.com"] if SERVER else []
 CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOW_ALL_ORIGINS = True
 
