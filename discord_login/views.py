@@ -57,5 +57,5 @@ def discord_auth_done(request: Request) -> JsonResponse:
             discord_user = authenticate(request, user_data=user_data["user"], roles=user_data["roles"])
             if discord_user:
                 login(request, discord_user)
-                return redirect(AUTH_DONE_URL)
+                return redirect(AUTH_COMPLETE_URL)
     return redirect(AUTH_FAIL_URL)
