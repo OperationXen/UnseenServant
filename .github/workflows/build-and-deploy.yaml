@@ -79,7 +79,7 @@ jobs:
               -e MOONSEACODEX_APIKEY=${{ secrets.MOONSEACODEX_APIKEY }} -e WEBAPP_URL=${{ secrets.WEBAPP_URL }} \
               -e CHANNEL_SEND_PINGS=${{ secrets.CHANNEL_SEND_PINGS }} -e OAUTH_COMPLETE_URL=${{ secrets.OAUTH_COMPLETE_URL }} \
               -e OAUTH_REDIRECT_URL=${{ secrets.OAUTH_REDIRECT_URL }} -e OAUTH_FAIL_URL=${{ secrets.OAUTH_FAIL_URL }} \
-              -v /var/opt/unseen_servant:/unseen_servant/database \
+              -v /var/opt/unseen_servant:/unseen_servant/database -e WEB_ADMIN_URL=${{ secrets.WEB_ADMIN_URL }} \
               --restart always \
               operationxen/unseen_servant:main
 

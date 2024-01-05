@@ -35,13 +35,12 @@ else:
     SERVER_URI = "http://127.0.0.1:8000"
 
 WEBAPP_URL = getenv("WEBAPP_URL", "http://127.0.0.1:3000")
-AUTH_DONE_URL = WEBAPP_URL + "/discord_auth_done/"
-AUTH_FAIL_URL = WEBAPP_URL + "/discord_auth_failed/"
+WEB_ADMIN_URL = getenv("WEB_ADMIN_URL", "http://127.0.0.1:3000")
 
 # Security Controls
 ALLOWED_HOSTS = ["127.0.0.1"] if SERVER else []
 # CORS_ALLOWED_ORIGINS = [WEBAPP_URL]
-CSRF_TRUSTED_ORIGINS = [f"https://{SERVER}", WEBAPP_URL] if SERVER else []
+CSRF_TRUSTED_ORIGINS = [f"https://{SERVER}", WEBAPP_URL, WEB_ADMIN_URL] if SERVER else []
 CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOW_ALL_ORIGINS = True
 
@@ -54,9 +53,9 @@ AUTHENTICATION_BACKENDS = [
 # Discord OAUTH config
 DISCORD_CLIENT_ID = getenv("DISCORD_CLIENT_ID")
 DISCORD_CLIENT_SECRET = getenv("DISCORD_CLIENT_SECRET")
+AUTH_REDIRECT_URL = getenv("OAUTH_REDIRECT_URL", "")
 AUTH_COMPLETE_URL = getenv("OAUTH_COMPLETE_URL", WEBAPP_URL + "/discord_auth/complete")
 AUTH_FAIL_URL = getenv("OAUTH_FAIL_URL", WEBAPP_URL + "/discord_auth/failed")
-AUTH_REDIRECT_URL = getenv("OAUTH_REDIRECT_URL", "")
 
 # Discord API config
 DISCORD_TOKEN = getenv("DISCORD_TOKEN")
