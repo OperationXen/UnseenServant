@@ -56,7 +56,7 @@ DISCORD_CLIENT_ID = getenv("DISCORD_CLIENT_ID")
 DISCORD_CLIENT_SECRET = getenv("DISCORD_CLIENT_SECRET")
 AUTH_COMPLETE_URL = getenv("OAUTH_COMPLETE_URL", WEBAPP_URL + "/discord_auth/complete")
 AUTH_FAIL_URL = getenv("OAUTH_FAIL_URL", WEBAPP_URL + "/discord_auth/failed")
-AUTH_REDIRECT_URL = getenv("OAUTH_REDIRECT_URL", "https://unseen-servant.tridengames.com/discord_auth/done/")
+AUTH_REDIRECT_URL = getenv("OAUTH_REDIRECT_URL", "")
 
 # Discord API config
 DISCORD_TOKEN = getenv("DISCORD_TOKEN")
