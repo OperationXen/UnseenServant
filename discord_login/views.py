@@ -1,11 +1,12 @@
 import requests
-from django.contrib.auth import authenticate, login
+from django.contrib.auth import authenticate, login, logout
 from django.http import JsonResponse
 from django.shortcuts import redirect
 from rest_framework.status import *
 from rest_framework.views import Request
 
 from discord_bot.logs import logger as log
+
 from config.settings import DISCORD_CLIENT_ID, DISCORD_CLIENT_SECRET, DISCORD_GUILDS
 from config.settings import AUTH_COMPLETE_URL, AUTH_FAIL_URL, AUTH_REDIRECT_URL
 
@@ -15,6 +16,12 @@ auth_url_discord = f"https://discord.com/api/oauth2/authorize?client_id={DISCORD
 def discord_login(request: Request) -> redirect:
     """Redirect user to discord login page"""
     return redirect(auth_url_discord)
+
+
+def discord_logout(request: Request) -> JsonResponse:
+    """Invalidate the user's current session"""
+    logout(request)
+    return JsonResponse({"message": "logged out"}, status=HTTP_200_OK)
 
 
 def exchange_code(code: str):
@@ -58,4 +65,20 @@ def discord_auth_done(request: Request) -> JsonResponse:
             if discord_user:
                 login(request, discord_user)
                 return redirect(AUTH_COMPLETE_URL)
+            else:
+                log.error("User failed authentication")
+        else:
+            log.error("Unable to exchange supplied code for token")
+    else:
+        log.error("Unable to get code from request")
     return redirect(AUTH_FAIL_URL)
+
+
+def discord_auth_complete(request: Request) -> JsonResponse:
+    """fallback view for showing a successful login"""
+    return JsonResponse({"message": "Authenticated via discord"}, status=HTTP_200_OK)
+
+
+def discord_auth_failed(request: Request) -> JsonResponse:
+    """fallback view for showing a failed login"""
+    return JsonResponse({"message": "Authentication failed"}, status=HTTP_401_UNAUTHORIZED)
