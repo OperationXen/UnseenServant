@@ -50,6 +50,15 @@ class GamesViewSet(ViewSet):
         serialised = GameSerialiser(queryset, many=True)
         return Response(serialised.data)
 
+    def get(self, request, pk=None):
+        """Get a single game"""
+        try:
+            game = Game.objects.get(pk=pk)
+            serialised = GameSerialiser(game, many=False)
+            return Response(serialised.data)
+        except Game.DoesNotExist:
+            return Response({"message": "Cannot find this game"}, HTTP_404_NOT_FOUND)
+        
     def create(self, request):
         """Create a new game"""
         try:
@@ -58,9 +67,11 @@ class GamesViewSet(ViewSet):
             if serialiser.is_valid():
                 game = serialiser.save(dm=dm)
                 return Response(serialiser.data, HTTP_201_CREATED)
+            else:
+                errors = serialiser.errors;
+                return Response({"message": "Failed to create game", "errors": errors}, HTTP_400_BAD_REQUEST)        
         except DM.DoesNotExist:
             return Response({"message": "You are not registered as a DM"}, HTTP_403_FORBIDDEN)
-        return Response({"message": "Failed to create game"}, HTTP_400_BAD_REQUEST)
 
     def partial_update(self, request, pk=None):
         """Update an existing game"""
@@ -76,7 +87,9 @@ class GamesViewSet(ViewSet):
             if serialiser.is_valid():
                 game = serialiser.save()
                 return Response(serialiser.data, HTTP_200_OK)
-            return Response({"message": "Failed to update game"}, HTTP_400_BAD_REQUEST)
+            else:
+                errors = serialiser.errors;
+                return Response({"message": "Failed to update game", "errors": errors}, HTTP_400_BAD_REQUEST)        
         except Exception as e:
             return Response({"message": "Unable to change this game"}, HTTP_500_INTERNAL_SERVER_ERROR)
 
