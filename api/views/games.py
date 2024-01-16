@@ -66,7 +66,8 @@ class GamesViewSet(ViewSet):
             serialiser = GameCreationSerialiser(data=request.data)
             if serialiser.is_valid():
                 game = serialiser.save(dm=dm)
-                return Response(serialiser.data, HTTP_201_CREATED)
+                serialised = GameSerialiser(game, many=False)
+                return Response(serialised.data, HTTP_201_CREATED)
             else:
                 errors = serialiser.errors;
                 return Response({"message": "Failed to create game", "errors": errors}, HTTP_400_BAD_REQUEST)        
