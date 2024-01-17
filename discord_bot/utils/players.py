@@ -10,7 +10,6 @@ from discord_bot.utils.channel import (
 )
 from discord_bot.utils.channel import (
     async_channel_add_player,
-    async_channel_add_user,
     async_channel_remove_user,
     async_get_channel_for_game,
 )
