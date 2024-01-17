@@ -20,18 +20,14 @@ if DJANGO_SECRET:
     CALENDAR_CHANNEL_NAME = "new-bot-testing-calendar"
     SESSION_COOKIE_SECURE = True
     SESSION_COOKIE_SAMESITE = "None"
+    SESSION_COOKIE_DOMAIN = ".tridengames.com"
+    SERVER_URI = f"https://unseen-servant.tridengames.com"
 else:
     DEBUG = True
 
     DEFAULT_CHANNEL_NAME = "bot-test-channel"
     PRIORITY_CHANNEL_NAME = "bot-test-priority-channel"
     CALENDAR_CHANNEL_NAME = "bot-test-calendar-channel"
-
-SERVER = getenv("SERVER")
-if SERVER:
-    SERVER_URI = f"https://{SERVER}"
-    SESSION_COOKIE_DOMAIN = f"{SERVER}"
-else:
     SERVER_URI = "http://127.0.0.1:8000"
 
 WEBAPP_URL = getenv("WEBAPP_URL", "http://127.0.0.1:3000")
