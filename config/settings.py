@@ -30,6 +30,8 @@ else:
     CALENDAR_CHANNEL_NAME = "bot-test-calendar-channel"
     SERVER_URI = "http://127.0.0.1:8000"
 
+
+SERVER = getenv("SERVER")
 WEBAPP_URL = getenv("WEBAPP_URL", "http://127.0.0.1:3000")
 
 # Security Controls
