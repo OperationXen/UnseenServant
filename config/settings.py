@@ -14,7 +14,6 @@ SECRET_KEY = DJANGO_SECRET or RANDOM_KEY
 
 if DJANGO_SECRET:
     DEBUG = False
-
     DEFAULT_CHANNEL_NAME = "general-game-signups"
     PRIORITY_CHANNEL_NAME = "patron-game-signups"
     CALENDAR_CHANNEL_NAME = "new-bot-testing-calendar"
@@ -22,24 +21,23 @@ if DJANGO_SECRET:
     SESSION_COOKIE_SAMESITE = "None"
     SESSION_COOKIE_DOMAIN = ".tridengames.com"
     SERVER_URI = f"https://unseen-servant.tridengames.com"
+    CSRF_COOKIE_SECURE = True
+    CSRF_COOKIE_DOMAIN = "*.tridengames.com"
 else:
     DEBUG = True
-
     DEFAULT_CHANNEL_NAME = "bot-test-channel"
     PRIORITY_CHANNEL_NAME = "bot-test-priority-channel"
     CALENDAR_CHANNEL_NAME = "bot-test-calendar-channel"
     SERVER_URI = "http://127.0.0.1:8000"
-
+    CSRF_TRUSTED_ORIGINS = ["http://127.0.0.1:3000", "http:localhost:3000"]
 
 SERVER = getenv("SERVER")
 WEBAPP_URL = getenv("WEBAPP_URL", "http://127.0.0.1:3000")
 
 # Security Controls
-ALLOWED_HOSTS = ["127.0.0.1"] if SERVER else []
+ALLOWED_HOSTS = ["127.0.0.1"]
+
 # CORS_ALLOWED_ORIGINS = [WEBAPP_URL]
-CSRF_TRUSTED_ORIGINS = (
-    [f"https://{SERVER}", "https://*.tridengames.com", WEBAPP_URL] if SERVER else ["http://127.0.0.1:3000"]
-)
 CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOW_ALL_ORIGINS = True
 
@@ -125,7 +123,6 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = "config.wsgi.application"
-
 
 # Database
 # https://docs.djangoproject.com/en/4.0/ref/settings/#databases
