@@ -21,8 +21,6 @@ if DJANGO_SECRET:
     SESSION_COOKIE_SAMESITE = "None"
     SESSION_COOKIE_DOMAIN = ".tridengames.com"
     SERVER_URI = f"https://unseen-servant.tridengames.com"
-    CSRF_COOKIE_SECURE = True
-    CSRF_USE_SESSIONS = True
     CSRF_TRUSTED_ORIGINS = ["https://*.tridengames.com"]
 else:
     DEBUG = True
