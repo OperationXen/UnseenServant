@@ -176,6 +176,8 @@ class GameDetailEmbed(BaseGameEmbed):
         )
         if self.game.streaming:
             self.add_field(name="Streaming", value=f"This game may be streamed")
+        if self.game.play_test:
+            self.add_field(name="Playtest", value=f"This game is a playtest")
 
 
 class GameControlView(View):

@@ -41,6 +41,7 @@ class Game(models.Model):
     level_max = models.IntegerField(default=4, help_text="Maximum player level")
     warnings = models.TextField(blank=True, default="None", help_text="Content warnings or advisories")
     streaming = models.BooleanField(default=False, help_text="Set to indicate that you may wish to stream the game")
+    play_test = models.BooleanField(default=False, help_text="Set to indicate that this is a playtest")
 
     datetime_release = models.DateTimeField(
         blank=True,
