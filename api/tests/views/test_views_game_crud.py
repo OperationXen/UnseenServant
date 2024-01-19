@@ -23,6 +23,7 @@ class TestGameViews(TestCase):
         "max_players": 4,
         "level_min": 1,
         "level_max": 4,
+        "play_test": False,
         "warnings": "Beware of the Leopard",
         "streaming": False,
         "datetime_release": datetime.now(),
