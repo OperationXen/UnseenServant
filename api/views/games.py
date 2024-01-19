@@ -109,12 +109,12 @@ class GamesViewSet(ViewSet):
         game.delete()
         return Response({"message": "Game deleted"}, HTTP_200_OK)
     
-    def game_variants(self, request):
+    def game_variants(self, reqsuest):
         """Get the variants of games available for a game"""
-        choices = [(key, value) for key, value in Game.GameTypes.choices]
+        choices = [{key: value} for key, value in Game.GameTypes.choices]
         return Response(choices);
 
     def game_realms(self, request):
         """Get the realms available for a game"""
-        choices = [(key, value) for key, value in Game.Realms.choices]
+        choices = [{key: value} for key, value in Game.Realms.choices]
         return Response(choices);
