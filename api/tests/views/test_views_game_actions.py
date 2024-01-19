@@ -73,10 +73,29 @@ class TestGameActionViews(TestCase):
         player = Player.objects.filter(game=game).last()
         self.assertTrue(player.standby)
 
+    def test_anonymous_user_cant_leave_game(self) -> None:
+        """Users must be logged in"""
+        self.client.logout()
+
+        response = self.client.post(reverse("games-drop", kwargs={"pk": 1}))
+        self.assertEqual(response.status_code, HTTP_403_FORBIDDEN)
+
     def test_user_can_leave_game(self) -> None:
         """Players leaving games are refunded their signup credit"""
-        pass
+        game = Game.objects.get(pk=1)
+        self.assertEqual(Player.objects.filter(game=game).count(), 2)
+
+        self.client.login(username="playeruser", password="testpassword")
+        response = self.client.post(reverse("games-drop", kwargs={"pk": 1}))
+        self.assertIn(game.name, response.data["message"])
+        self.assertEqual(Player.objects.filter(game=game).count(), 1)
 
     def test_leave_game_error_message(self) -> None:
         """An error message should be returned if you attempt to leave a game you are not in"""
-        pass
+        game = Game.objects.get(pk=1)
+        self.assertEqual(Player.objects.filter(game=game).count(), 2)
+
+        self.client.login(username="nogamesuser", password="testpassword")
+        response = self.client.post(reverse("games-drop", kwargs={"pk": 1}))
+        self.assertIn("You are not in this game", response.data["message"])
+        self.assertEqual(Player.objects.filter(game=game).count(), 2)

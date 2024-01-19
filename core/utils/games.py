@@ -117,9 +117,7 @@ def get_upcoming_games(days: int = 30, released: bool = False) -> QuerySet:
     queryset = Game.objects.filter(ready=True).filter(datetime__gte=now)
     queryset = queryset.filter(datetime__lte=end)
     if released:
-        released_filter = Q(datetime_release__lte=now) | Q(
-            datetime_open_release__lte=now
-        )
+        released_filter = Q(datetime_release__lte=now) | Q(datetime_open_release__lte=now)
         queryset = queryset.filter(released_filter)
     queryset = queryset.order_by("datetime")
     return queryset
@@ -134,9 +132,7 @@ def async_get_upcoming_games(days: int = 30, released: bool = False) -> list[Gam
 
 
 # ########################################################################## #
-def get_upcoming_games_for_discord_id(
-    discord_id: str, waitlisted: bool = False
-) -> QuerySet:
+def get_upcoming_games_for_discord_id(discord_id: str, waitlisted: bool = False) -> QuerySet:
     """Get all of the upcoming games for a specified discord ID"""
     now = timezone.now()
     players = Player.objects.filter(discord_id=discord_id)
@@ -149,9 +145,7 @@ def get_upcoming_games_for_discord_id(
 
 
 @sync_to_async
-def async_get_upcoming_games_for_discord_id(
-    discord_id: str, waitlisted=False
-) -> list[Game]:
+def async_get_upcoming_games_for_discord_id(discord_id: str, waitlisted=False) -> list[Game]:
     """Async wrapper to get games for discord ID"""
     queryset = get_upcoming_games_for_discord_id(discord_id, waitlisted)
     # force evaluation before leaving this sync context
@@ -222,9 +216,7 @@ def async_db_force_add_player_to_game(game: Game, user: CustomUser):
         player.standby = False
         player.save()
     except Player.DoesNotExist:
-        player = Player.objects.create(
-            game=game, discord_id=discord_id, discord_name=user.name, standby=False
-        )
+        player = Player.objects.create(game=game, discord_id=discord_id, discord_name=user.name, standby=False)
     return player
 
 
@@ -263,9 +255,7 @@ def check_discord_user_available_credit(user: DiscordUser) -> int:
     return pending_games < max_games
 
 
-def handle_game_player_add(
-    game: Game, discord_id: str, discord_name: str
-) -> Player | None:
+def handle_game_player_add(game: Game, discord_id: str, discord_name: str) -> Player | None:
     """Handle the process of verifying and adding a player to a game"""
     game = refetch_game_data(game)
     try:
@@ -302,23 +292,28 @@ def async_db_add_player_to_game(game: Game, user: DiscordUser):
     discord_id = str(user.id)
     credit_available = check_discord_user_available_credit(user)
     if not credit_available:
-        log.debug(
-            f"{user.name} attempted to sign up for {game.name}, but has insufficient credit"
-        )
+        log.debug(f"{user.name} attempted to sign up for {game.name}, but has insufficient credit")
         return False
     player = handle_game_player_add(game, discord_id, user.name)
     return player
 
 
-@sync_to_async
-def async_db_remove_discord_user_from_game(game: Game, discord_id: str):
-    """Remove a player from a game by their discord ID"""
+# ########################################################################## #
+def remove_user_from_game_by_discord_id(game: Game, discord_id: str) -> bool:
+    """Syncronous worker to remove the player from the game"""
     player = game.players.filter(discord_id=discord_id).first()
     if player:
         removed_from_party = not player.waitlist
         player.delete()
         return removed_from_party
     return None
+
+
+@sync_to_async
+def async_db_remove_discord_user_from_game(game: Game, discord_id: str):
+    """Remove a player from a game by their discord ID"""
+    result = remove_user_from_game_by_discord_id(game, discord_id)
+    return result
 
 
 # ########################################################################## #

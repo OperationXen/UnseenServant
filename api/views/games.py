@@ -10,8 +10,8 @@ from rest_framework.viewsets import ViewSet
 from api.serialisers.games import GameCreationSerialiser, GameSerialiser, PlayerSerialiser
 from core.models import DM, Game, Player
 from core.utils.sanctions import check_discord_user_good_standing
-from core.utils.user import get_user_available_credit
-from core.utils.games import handle_game_player_add
+from core.utils.user import get_user_available_credit, user_in_game
+from core.utils.games import handle_game_player_add, remove_user_from_game_by_discord_id
 
 
 class GamesViewSet(ViewSet):
@@ -41,6 +41,20 @@ class GamesViewSet(ViewSet):
         serialiser = PlayerSerialiser(player)
         return Response(serialiser.data, HTTP_200_OK)
 
+    @action(detail=True, methods=["post"], permission_classes=[IsAuthenticated])
+    def drop(self, request, pk):
+        """Drop out of a specified game"""
+        try:
+            game = Game.objects.get(pk=pk)
+        except Game.DoesNotExist:
+            return Response({"message": "Invalid game ID"}, HTTP_400_BAD_REQUEST)
+
+        if not user_in_game(request.user, game):
+            return Response({"message": "You are not in this game"}, HTTP_400_BAD_REQUEST)
+        else:
+            remove_user_from_game_by_discord_id(game, request.user.discord_id)
+            return Response({"message": f"Removed {request.user.discord_name} from {game.name}"}, HTTP_200_OK)
+
     def list(self, request):
         """List games"""
         yesterday = timezone.now() - timedelta(days=1)
@@ -58,7 +72,7 @@ class GamesViewSet(ViewSet):
             return Response(serialised.data)
         except Game.DoesNotExist:
             return Response({"message": "Cannot find this game"}, HTTP_404_NOT_FOUND)
-        
+
     def create(self, request):
         """Create a new game"""
         try:
@@ -69,8 +83,8 @@ class GamesViewSet(ViewSet):
                 serialised = GameSerialiser(game, many=False)
                 return Response(serialised.data, HTTP_201_CREATED)
             else:
-                errors = serialiser.errors;
-                return Response({"message": "Failed to create game", "errors": errors}, HTTP_400_BAD_REQUEST)        
+                errors = serialiser.errors
+                return Response({"message": "Failed to create game", "errors": errors}, HTTP_400_BAD_REQUEST)
         except DM.DoesNotExist:
             return Response({"message": "You are not registered as a DM"}, HTTP_403_FORBIDDEN)
 
@@ -89,8 +103,8 @@ class GamesViewSet(ViewSet):
                 game = serialiser.save()
                 return Response(serialiser.data, HTTP_200_OK)
             else:
-                errors = serialiser.errors;
-                return Response({"message": "Failed to update game", "errors": errors}, HTTP_400_BAD_REQUEST)        
+                errors = serialiser.errors
+                return Response({"message": "Failed to update game", "errors": errors}, HTTP_400_BAD_REQUEST)
         except Exception as e:
             return Response({"message": "Unable to change this game"}, HTTP_500_INTERNAL_SERVER_ERROR)
 

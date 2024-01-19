@@ -1,6 +1,8 @@
 from core.utils.players import get_bonus_credits, get_user_pending_games_count
 from core.utils.ranks import get_highest_rank
 from core.models.auth import CustomUser
+from core.models.players import Player
+from core.models.game import Game
 
 
 def get_user_max_credit(user: CustomUser) -> int:
@@ -28,3 +30,13 @@ def get_user_by_discord_id(discord_id: str) -> CustomUser:
         return CustomUser.objects.get(discord_id=discord_id)
     except CustomUser.DoesNotExist:
         return None
+
+
+def user_in_game(user: CustomUser, game: Game) -> bool:
+    """Checks if a user is in a given game or not"""
+    queryset = Player.objects.filter(game=game)
+    queryset = queryset.filter(discord_id=user.discord_id)
+    matches = queryset.count()
+    if matches > 0:
+        return True
+    return False
