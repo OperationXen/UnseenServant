@@ -123,5 +123,26 @@
       "groups": [],
       "user_permissions": []
     }
+  },
+  {
+    "model": "core.customuser",
+    "pk": 7,
+    "fields": {
+      "password": "pbkdf2_sha256$320000$ErnfaXZbxLBeRUmrqkCWjk$Nr88785PgBr4IbsZ7pX2qoliVlhSazNk6WUFuyWDJcc=",
+      "last_login": null,
+      "is_superuser": false,
+      "username": "playeruser",
+      "first_name": "",
+      "last_name": "",
+      "email": "player1@localhost",
+      "is_staff": false,
+      "is_active": true,
+      "date_joined": "2022-07-08T18:48:00Z",
+      "discord_id": "12345678900987654321",
+      "discord_name": "TheGreatAndPowerfulOz",
+      "ranks": [],
+      "groups": [],
+      "user_permissions": []
+    }
   }
 ]
