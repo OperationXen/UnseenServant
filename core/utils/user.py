@@ -7,6 +7,7 @@ from core.models.game import Game
 
 def get_user_max_credit(user: CustomUser) -> int:
     """Get the maximum credit balance for a given user"""
+    max_games = 0
     try:
         ranks = list(user.ranks.all())
         rank = get_highest_rank(ranks)
