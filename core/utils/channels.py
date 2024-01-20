@@ -1,10 +1,12 @@
 from datetime import timedelta
 from django.utils import timezone
 from asgiref.sync import sync_to_async
+from typing import List
 
 from config.settings import CHANNEL_CREATION_DAYS, CHANNEL_REMIND_HOURS, CHANNEL_WARN_MINUTES, CHANNEL_DESTROY_HOURS
 from core.models.channel import GameChannel
 from core.models.game import Game
+from core.models.auth import CustomUser
 
 
 def get_games_pending(hours=0, days=0, minutes=0):
@@ -91,3 +93,17 @@ def async_get_game_channels_pending_warning():
 def async_get_game_channel_for_game(game):
     """Get the game channel object related to a game"""
     return game.text_channel.first()
+
+
+@sync_to_async
+def async_get_all_current_game_channels():
+    """Retrieve all current game channels"""
+    queryset = GameChannel.objects.all()
+    return list(queryset)  # force evaluation before leaving this sync context
+
+
+@sync_to_async
+def async_get_game_channel_members(channel: GameChannel) -> List[CustomUser]:
+    """Given a game channel object retrieve its expected membership list"""
+    queryset = channel.members.all()
+    return list(queryset)  # force evaluation before leaving this sync context

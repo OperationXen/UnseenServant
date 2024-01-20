@@ -5,7 +5,8 @@ from discord_bot.logs import logger as log
 from discord_bot.bot import bot
 from discord_bot.commands import *
 from discord_bot.schedule.games import GamesPoster
-from discord_bot.schedule.channel import ChannelManager
+from discord_bot.schedule.channels.manager import ChannelController
+from discord_bot.schedule.channels.membership import ChannelMembershipController
 
 
 def start_bot():
@@ -23,6 +24,10 @@ async def on_ready():
         discord_bot.core.guild = bot.get_guild(guild_id)
 
         discord_bot.core.game_controller = GamesPoster()
-        discord_bot.core.channel_controller = ChannelManager(discord_bot.core.guild)
+        log.info("[+] Games service")
+        discord_bot.core.channel_controller = ChannelController(discord_bot.core.guild)
+        log.info("[+] Channel creation/deletion service")
+        # discord_bot.core.channel_membership_controller = ChannelMembershipController(discord_bot.core.guild)
+        # log.info("[+] Channel membership service")
     except IndexError:
         log.info("Unable to find the specified guild")
