@@ -19,6 +19,15 @@ def get_discord_channel(game_channel: GameChannel) -> TextChannel:
     return channel
 
 
+async def get_discord_user_by_id(discord_id):
+    """retrieve a discord user object from the server by its ID"""
+    try:
+        discord_user = await bot.fetch_user(discord_id)
+        return discord_user
+    except Exception as e:
+        return None
+
+
 async def async_get_channel_for_game(game: Game) -> TextChannel:
     """Get a discord object for a given game"""
     try:
@@ -144,7 +153,7 @@ async def async_channel_add_user(channel: TextChannel, user: DiscordUser, admin=
 async def async_channel_add_player(channel: TextChannel, player: Player):
     """Add a user to channel by reference from a player object"""
     try:
-        log.info(f"Adding player [{player.discord_name}] to channel [{channel.name}]")
+        log.debug(f"Adding player [{player.discord_name}] to channel [{channel.name}]")
         discord_user = await bot.fetch_user(player.discord_id)
         return await async_channel_add_user(channel, discord_user)
     except:
@@ -155,7 +164,7 @@ async def async_channel_add_player(channel: TextChannel, player: Player):
 async def async_channel_add_dm(channel: TextChannel, dm: DM):
     """Add a DM to channel by reference from a player object"""
     try:
-        log.info(f"Adding Dungeon Master [{dm.discord_name}] to channel [{channel.name}]")
+        log.debug(f"Adding Dungeon Master [{dm.discord_name}] to channel [{channel.name}]")
         discord_user = await bot.fetch_user(dm.discord_id)
         return await async_channel_add_user(channel, discord_user, admin=True)
     except Exception as e:
@@ -166,7 +175,7 @@ async def async_channel_add_dm(channel: TextChannel, dm: DM):
 async def async_channel_remove_user(channel: TextChannel, user: DiscordUser):
     """Remove a specific player from a game channel"""
     try:
-        log.info(f"Removing player [{user.display_name}] from channel [{channel.name}]")
+        log.debug(f"Removing player [{user.display_name}] from channel [{channel.name}]")
         await channel.set_permissions(
             user, read_messages=False, send_messages=False, read_message_history=False, use_slash_commands=False
         )
@@ -234,3 +243,29 @@ async def async_get_channel_current_members(channel: TextChannel):
             current_members.append(member)
 
     return current_members
+
+
+async def async_add_discord_ids_to_channel(discord_ids, channel: TextChannel) -> int:
+    """Add the users refered to by their discord IDs in the list to the channel"""
+    num_added = 0
+    for discord_id in discord_ids:
+        discord_user = await get_discord_user_by_id(discord_id)
+        if not discord_user:
+            continue
+        success = await async_channel_add_user(channel, discord_user)
+        if success:
+            num_added = num_added + 1
+    return num_added
+
+
+async def async_remove_discord_ids_from_channel(discord_ids, channel: TextChannel) -> int:
+    """remove the users refered to in the list of discord IDs from the channel"""
+    num_removed = 0
+    for discord_id in discord_ids:
+        discord_user = await get_discord_user_by_id(discord_id)
+        if not discord_user:
+            continue
+        success = await async_channel_remove_user(channel, discord_user)
+        if success:
+            num_removed = num_removed + 1
+    return num_removed
