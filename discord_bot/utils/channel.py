@@ -2,6 +2,7 @@ import random
 from discord import PermissionOverwrite
 from discord import User as DiscordUser
 from discord.channel import TextChannel
+from discord.member import Member
 
 from discord_bot.bot import bot
 from discord_bot.logs import logger as log
@@ -226,8 +227,10 @@ async def async_get_channel_current_members(channel: TextChannel):
     """Get all the current members of the channel on discord"""
     current_members = []
 
-    for member in channel.members:
-        if not member.bot:
+    for member in channel.overwrites:
+        if type(member) != Member or member.bot:
+            pass
+        else:
             current_members.append(member)
 
     return current_members

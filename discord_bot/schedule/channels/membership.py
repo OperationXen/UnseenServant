@@ -27,8 +27,8 @@ class ChannelMembershipController:
         expected_members = await async_get_game_channel_members(game_channel)
         actual_members = await async_get_channel_current_members(discord_channel)
 
-        print(expected_members)
-        print(actual_members)
+        print(f"Expected: {expected_members}")
+        print(f"Actual: {actual_members}")
 
     @tasks.loop(seconds=42)
     async def channel_event_loop(self):
