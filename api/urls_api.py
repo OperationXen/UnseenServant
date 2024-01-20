@@ -10,6 +10,8 @@ router.register(r"games", GamesViewSet, basename="games")
 
 urlpatterns = [
     path(r"", include(router.urls)),
+    path('game_variants/', GamesViewSet.as_view(({"get":"game_variants"})), name="game-variants"),
+    path('game_realms/', GamesViewSet.as_view(({"get":"game_realms"})), name="game-realms"),
     re_path("status/?", StatusViewSet.as_view(), name="status"),
     re_path("statistics/games/?", GameStatsViewSet.as_view(), name="stats-games"),
     re_path("statistics/players/?", PlayerStatsViewSet.as_view(), name="stats-players"),
