@@ -17,7 +17,7 @@ from core.utils.channels import async_get_game_channels_pending_warning, async_s
 from core.utils.channels import async_get_game_channel_for_game
 
 
-class ChannelManager:
+class ChannelController:
     """Manager class for performing channel based functions"""
 
     initialised = False
@@ -156,10 +156,10 @@ class ChannelManager:
                 log.info(f"Identified potentially ophaned mustering channel (no game to match) for game ID: {game_id}")
                 continue
 
-    @tasks.loop(seconds=42)
+    @tasks.loop(seconds=120)
     async def channel_event_loop(self):
         if not self.initialised:
-            log.debug("Starting up the channel watcher")
+            log.debug("[++] Starting up the Channel Controller loop")
             self.parent_category = get(self.guild.categories, name="Your Upcoming Games")
             await self.recover_channel_state()
             self.initialised = True

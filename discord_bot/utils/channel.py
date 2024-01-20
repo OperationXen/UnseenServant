@@ -6,17 +6,23 @@ from discord.channel import TextChannel
 from discord_bot.bot import bot
 from discord_bot.logs import logger as log
 from config.settings import CHANNEL_SEND_PINGS
-from core.models import Game, CustomUser, DM, Player
+from core.models import Game, CustomUser, DM, Player, GameChannel
 from core.utils.games import async_get_dm, async_get_player_list
 from core.utils.channels import async_get_game_channel_for_game
 from discord_bot.utils.games import async_get_game_from_message
+
+
+def get_discord_channel(game_channel: GameChannel) -> TextChannel:
+    """Get a discord channel object represent by an Unseen Servant GameChannel object"""
+    channel = bot.get_channel(int(game_channel.discord_id))
+    return channel
 
 
 async def async_get_channel_for_game(game: Game) -> TextChannel:
     """Get a discord object for a given game"""
     try:
         game_channel = await async_get_game_channel_for_game(game)
-        channel = bot.get_channel(int(game_channel.discord_id))
+        channel = get_discord_channel(game_channel)
         return channel
     except Exception as e:
         log.debug(f"Unable to get an active channel for {game.name}")
@@ -214,3 +220,14 @@ async def async_add_channel_users(channel: TextChannel, game: Game):
     players = await async_get_player_list(game)
     for player in players:
         await async_channel_add_player(channel, player)
+
+
+async def async_get_channel_current_members(channel: TextChannel):
+    """Get all the current members of the channel on discord"""
+    current_members = []
+
+    for member in channel.members:
+        if not member.bot:
+            current_members.append(member)
+
+    return current_members
