@@ -6,7 +6,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView, Response
 from rest_framework.status import *
 
-from api.serialisers.auth import UserSerialiser
+from api.serialisers.users import UserSerialiser, UserDetailsSerialiser
 
 UserModel = get_user_model()
 
@@ -44,11 +44,11 @@ class RegisterUser(APIView):
 
     def post(self, request) -> Response:
         """Receive and handle a registration request"""
-        username = request.data.get('username')
-        password = request.data.get('password')
-        email = request.data.get('password')
-        discord_id = request.data.get('discord_id')
-        
+        username = request.data.get("username")
+        password = request.data.get("password")
+        email = request.data.get("password")
+        discord_id = request.data.get("discord_id")
+
         user = UserModel.objects.create_user(username=username, password=password, email=email)
         user.discord_id = discord_id
         user.save()
@@ -83,10 +83,11 @@ class ChangeUserPassword(APIView):
 
 
 class UserDetails(APIView):
-    """ View to allow a user to query their own auth status """
+    """View to allow a user to query their own auth status"""
+
     def get(self, request) -> Response:
         if not request.user.is_authenticated:
             return Response({"user_data": None})
         else:
-            serialiser = UserSerialiser(request.user)
+            serialiser = UserDetailsSerialiser(request.user)
             return Response({"user_data": serialiser.data})

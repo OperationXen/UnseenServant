@@ -32,6 +32,8 @@ class TestUserDetails(TestCase):
         self.assertEqual(user_data["username"], "testuser1")
         self.assertEqual(user_data["email"], "testuser1@localhost")
         self.assertEqual(user_data["discord_name"], "testuser")
+        self.assertEqual(user_data["credit_max"], 10)
+        self.assertEqual(user_data["credit_available"], 10)
         self.assertIsNotNone(user_data["ranks"])
 
         ranks = user_data["ranks"]
