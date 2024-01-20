@@ -27,7 +27,7 @@ async def on_ready():
         log.info("[+] Games service")
         discord_bot.core.channel_controller = ChannelController(discord_bot.core.guild)
         log.info("[+] Channel creation/deletion service")
-        discord_bot.core.channel_membership_controller = ChannelMembershipController(discord_bot.core.guild)
-        log.info("[+] Channel membership service")
+        # discord_bot.core.channel_membership_controller = ChannelMembershipController(discord_bot.core.guild)
+        # log.info("[+] Channel membership service")
     except IndexError:
         log.info("Unable to find the specified guild")
