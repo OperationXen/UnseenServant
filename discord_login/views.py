@@ -4,6 +4,9 @@ from django.http import JsonResponse
 from django.shortcuts import redirect
 from rest_framework.status import *
 from rest_framework.views import Request
+import base64
+import json
+import uuid
 
 from discord_bot.logs import logger as log
 
@@ -15,7 +18,13 @@ auth_url_discord = f"https://discord.com/api/oauth2/authorize?client_id={DISCORD
 
 def discord_login(request: Request) -> redirect:
     """Redirect user to discord login page"""
-    return redirect(auth_url_discord)
+    state_id = str(uuid.uuid4())
+    request.session['oauth_state'] = state_id
+    referer = request.META.get('HTTP_REFERER', AUTH_COMPLETE_URL)
+    state_data = { 'referer': referer, 'id': state_id}
+    state_json = json.dumps(state_data)
+    state = base64.b64encode(state_json.encode()).decode('utf-8')
+    return redirect(f"{auth_url_discord}&state={state}")
 
 
 def discord_logout(request: Request) -> JsonResponse:
@@ -57,20 +66,32 @@ def exchange_code(code: str):
 
 def discord_auth_done(request: Request) -> JsonResponse:
     """view to handle the request made back to us after the user has authenticated against Discord"""
-    code = request.GET.get("code")
-    if code:
-        user_data = exchange_code(code)
-        if user_data:
-            discord_user = authenticate(request, user_data=user_data["user"], roles=user_data["roles"])
-            if discord_user:
-                login(request, discord_user)
-                return redirect(AUTH_COMPLETE_URL)
-            else:
-                log.error("User failed authentication")
+    state = request.GET.get("state", None)
+    if state:
+        decoded_state = base64.b64decode(state.encode()).decode('utf-8')
+        state_dict = json.loads(decoded_state)
+        state_id = state_dict.get('id', None)
+        stored_state_id = request.session.get('oauth_state', None)
+        if state_id is None or state_id != stored_state_id:
+            log.error("return id from discord does not match stored one, possible hijack")
         else:
-            log.error("Unable to exchange supplied code for token")
-    else:
-        log.error("Unable to get code from request")
+            code = request.GET.get("code")
+            if code:
+                user_data = exchange_code(code)
+                if user_data:
+                    discord_user = authenticate(request, user_data=user_data["user"], roles=user_data["roles"])
+                    if discord_user:
+                        login(request, discord_user)
+                        webapp_redirect  = state_dict.get('referer', AUTH_COMPLETE_URL)
+                        return redirect(webapp_redirect)
+                    else:
+                        log.error("User failed authentication")
+                else:
+                    log.error("Unable to exchange supplied code for token")
+            else:
+                log.error("Unable to get code from request")
+    else :
+        log.error("No state in discord return, possible hijack")
     return redirect(AUTH_FAIL_URL)
 
 
