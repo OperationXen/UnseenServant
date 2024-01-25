@@ -2,16 +2,17 @@ from django.urls import path, include, re_path
 from rest_framework.routers import DefaultRouter
 
 from api.views.games import GamesViewSet
+from api.views.options import GameRealmOptionsViewset, GameVariantOptionsViewset
 from api.views.status import StatusViewSet
 from api.views.statistics import GameStatsViewSet, PlayerStatsViewSet, GeneralStatsViewSet, DetailedStatsViewSet
 
 router = DefaultRouter()
 router.register(r"games", GamesViewSet, basename="games")
+router.register(r"game/variants", GameVariantOptionsViewset, basename="game-variants")
+router.register(r"game/realms", GameRealmOptionsViewset, basename="game-realms")
 
 urlpatterns = [
     path(r"", include(router.urls)),
-    path('game_variants/', GamesViewSet.as_view(({"get":"game_variants"})), name="game-variants"),
-    path('game_realms/', GamesViewSet.as_view(({"get":"game_realms"})), name="game-realms"),
     re_path("status/?", StatusViewSet.as_view(), name="status"),
     re_path("statistics/games/?", GameStatsViewSet.as_view(), name="stats-games"),
     re_path("statistics/players/?", PlayerStatsViewSet.as_view(), name="stats-players"),
