@@ -1,10 +1,16 @@
 import re
-from discord.ui import Button
 
 from discord_bot.logs import logger as log
 from discord_bot.bot import bot
+from discord import Member as DiscordMember
+from discord.ui import Button
+
 from core.utils.games import async_get_game_by_id
-from core.models import Game
+from core.utils.games_rework import add_user_to_game
+from core.utils.user import get_user_by_discord_id
+from core.models import Game, Player
+
+from discord_bot.utils.auth import create_user_from_discord_member
 
 
 def is_button(element):
@@ -61,3 +67,15 @@ async def async_update_game_listing_embed(game):
     except Exception as e:
         log.debug(f"Error when updating associated game listing embed")
     return False
+
+
+# ################################################################################ #
+def add_discord_member_to_game(discord_member: DiscordMember, game: Game) -> Player | None:
+    """2024 Rework - Wrapper to facilitate adding a member/user to a game by their discord id"""
+    user = get_user_by_discord_id(discord_member.id)
+    if not user:
+        try:
+            user = create_user_from_discord_member(discord_member)
+        except Exception as e:
+            return None
+    return add_user_to_game(user, game)

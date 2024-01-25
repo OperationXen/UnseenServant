@@ -1,20 +1,20 @@
 from django.contrib.auth.backends import BaseBackend
 from rest_framework.views import Request
 
-from core.utils.ranks import get_user_ranks
+from core.utils.ranks import get_ranks_for_discord_roles
 from core.models.auth import CustomUser
 
 
 class DiscordAuthenticationBackend(BaseBackend):
     def set_user_ranks(self, user, roles: list):
-        user_ranks = get_user_ranks(roles)
+        user_ranks = get_ranks_for_discord_roles(roles)
         user.ranks.set(user_ranks)
         user.save()
 
     def update_user(self, user, user_data: dict, roles: list) -> bool:
         """Update an existing user object with latest data"""
         try:
-            user_ranks = get_user_ranks(roles)
+            user_ranks = get_ranks_for_discord_roles(roles)
             user.ranks.set(user_ranks)
 
             user.username = f"{user_data['username']}"
@@ -35,12 +35,17 @@ class DiscordAuthenticationBackend(BaseBackend):
                 self.update_user(existing_user, user_data, roles)
                 return existing_user
 
+            try:
+                avatar = f"https://cdn.discordapp.com/avatars/{user_data['id']}/{user_data['avatar']}"
+            except:
+                avatar = ""
+
             print(f"User not found in database, creating a new entry for {user_data['username']}")
             new_user = CustomUser.objects.create_user(
                 f"{user_data['username']}",
                 discord_name=user_data["username"],
                 discord_id=user_data["id"],
-                avatar=user_data["avatar"],
+                avatar=avatar,
             )
             self.set_user_ranks(new_user, roles)
             return new_user
