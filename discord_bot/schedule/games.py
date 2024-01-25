@@ -10,7 +10,6 @@ from core.utils.games import get_outstanding_games, async_check_game_expired
 
 
 class GamesPoster:
-    initialised = False
     current_games = {}
 
     channel_general = None
@@ -21,12 +20,11 @@ class GamesPoster:
         # self.refresh_state.start()
         self.check_and_post_games.start()
 
-    async def startup(self):
+    async def fetch_message_state(self):
         """Perform async initialisation"""
         self.current_games = {}
         await self.get_bot_channels()
         await self.recover_message_state()
-        self.initialised = True
 
     async def get_bot_channels(self):
         """Attempt to get the specified channels"""
@@ -125,19 +123,14 @@ class GamesPoster:
                     self.current_games.pop(key)
                     break  # because we've modified current_games we can't continue to iterate on it
             except Exception as e:
-                log.error(f"Exception caught in remove_stale_games: {e.__class__}, key = {key}")
+                log.error(f"[!] Exception caught in remove_stale_games: {e.__class__}, key = {key}")
+                log.info(f"[-] Removing game ID {key} from list and continuing...")
+                self.current_games.pop(key)
 
-    @tasks.loop(seconds=10)
+    @tasks.loop(seconds=60)
     async def check_and_post_games(self):
-        if not self.initialised:
-            await self.startup()
+        await self.fetch_message_state()
 
         if self.channel_priority and self.channel_general:
             await self.remove_stale_games()
             await self.post_outstanding_games()
-
-    @tasks.loop(seconds=60)
-    async def refresh_state(self):
-        """Force a refresh every minute"""
-        if self.initialised:
-            self.initialised = False
