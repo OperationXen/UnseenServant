@@ -6,8 +6,6 @@ from rest_framework.status import *
 from django.test import TestCase
 from django.urls import reverse
 
-from core.models import Game
-
 
 class TestGameVariantViews(TestCase):
     """Check that the game variant endpoint is functional"""
