@@ -16,7 +16,7 @@ class DMProfileViewset(ViewSet):
         """Make a new DM profile"""
         existing_profile = DM.objects.filter(user=request.user)
         if existing_profile.exists():
-            return Response({"message": "You're already registerd as a DM"}, HTTP_400_BAD_REQUEST)
+            return Response({"message": "You're already registered as a DM"}, HTTP_400_BAD_REQUEST)
 
         serialiser = DMSerialiser(data=request.data)
         if serialiser.is_valid():
