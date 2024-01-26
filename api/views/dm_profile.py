@@ -53,9 +53,10 @@ class DMProfileViewset(ViewSet):
         """Update"""
         try:
             if pk == "me":
-                dm = DM.objects.filter(user=request.user)
-                if not dm.exists():
+                if not DM.objects.filter(user=request.user).exists():
                     dm = DM.objects.create(user=request.user, name=f"DM {request.user.discord_name}")
+                else:
+                    dm = DM.objects.get(user=request.user)
             else:
                 dm = DM.objects.get(pk=pk)
         except DM.DoesNotExist:
