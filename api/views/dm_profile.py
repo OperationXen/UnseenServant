@@ -52,7 +52,12 @@ class DMProfileViewset(ViewSet):
     def partial_update(self, request, pk=None):
         """Update"""
         try:
-            dm = DM.objects.get(pk=pk)
+            if pk == "me":
+                dm = DM.objects.filter(user=request.user)
+                if not dm.exists():
+                    dm = DM.objects.create(user=request.user, name=f"DM {request.user.discord_name}")
+            else:
+                dm = DM.objects.get(pk=pk)
         except DM.DoesNotExist:
             return Response({"message": "This DM does not exist"}, status=HTTP_400_BAD_REQUEST)
         if dm.user != request.user and not request.user.is_superuser:

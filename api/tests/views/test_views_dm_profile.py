@@ -124,12 +124,25 @@ class TestDMProfileViews(TestCase):
         initial_name = dm.name
 
         response = self.client.patch(
-            reverse("dms-detail", kwargs={"pk": 1}), json.dumps(update_data), content_type="application/json"
+            reverse("dms-detail", kwargs={"pk": "me"}), json.dumps(update_data), content_type="application/json"
         )
         self.assertEqual(response.status_code, HTTP_200_OK)
         self.assertIn("name", response.data)
         self.assertIn("updated DM", response.data.get("name"))
         dm = DM.objects.get(pk=1)
+        self.assertEqual(dm.name, "updated DM")
+
+    def test_update_dm_creates_missing(self) -> None:
+        """A user without a DM profile updating theirs should have the profile created"""
+        self.client.login(username="testuser1", password="testpassword")
+
+        update_data = {"name": "updated DM"}
+
+        response = self.client.patch(
+            reverse("dms-detail", kwargs={"pk": "me"}), json.dumps(update_data), content_type="application/json"
+        )
+        self.assertEqual(response.status_code, HTTP_200_OK)
+        dm = DM.objects.get(user__username="testuser1")
         self.assertEqual(dm.name, "updated DM")
 
     def test_delete_dm_fails_for_invalid_user(self) -> None:
