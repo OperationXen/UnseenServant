@@ -30,11 +30,18 @@ class DMProfileViewset(ViewSet):
     def get(self, request, pk=None):
         """get single DM profile"""
         try:
-            dm = DM.objects.get(pk=pk)
+            if pk == "me":
+                if request.user.is_anonymous:
+                    return Response({"message": "You are not logged in"}, status=HTTP_401_UNAUTHORIZED)
+                dm = DM.objects.get(user=request.user)
+            else:
+                dm = DM.objects.get(pk=pk)
             serialised = DMSerialiser(dm, many=False)
             return Response(serialised.data)
         except DM.DoesNotExist:
             return Response({"message": "This DM does not exist"}, status=HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return Response(status=HTTP_500_INTERNAL_SERVER_ERROR)
 
     def list(self, request):
         """Get the variants of games available for a game"""

@@ -30,16 +30,39 @@ class TestDMProfileViews(TestCase):
         self.assertIsInstance(response.data, list)
         self.assertGreaterEqual(len(response.data), 1)
 
+    def test_get_current_user_dm_details(self) -> None:
+        """Get the DM profile for the current user"""
+        self.client.login(username="Test DM", password="testpassword")
+
+        response = self.client.get(reverse("dms-detail", kwargs={"pk": "me"}))
+        self.assertEqual(response.status_code, HTTP_200_OK)
+        self.assertIn("name", response.data)
+        self.assertEqual(response.data.get("name"), "Test DM")
+
+    def test_get_current_user_dm_details_failure(self) -> None:
+        """Test that a user without a DM profile gets a sensible response"""
+        self.client.login(username="testuser1", password="testpassword")
+
+        response = self.client.get(reverse("dms-detail", kwargs={"pk": "me"}))
+        self.assertEqual(response.status_code, HTTP_400_BAD_REQUEST)
+
+    def test_get_current_user_dm_requires_login(self) -> None:
+        """Test that a user without a DM profile gets a sensible response"""
+        self.client.logout()
+
+        response = self.client.get(reverse("dms-detail", kwargs={"pk": "me"}))
+        self.assertEqual(response.status_code, HTTP_401_UNAUTHORIZED)
+
     def test_get_dm_details(self) -> None:
         """Get detail view of a single DM"""
         self.client.logout()
 
-        response = self.client.get(reverse("dms-list"), kwargs={"pk": 1})
+        response = self.client.get(reverse("dms-detail", kwargs={"pk": 1}))
         self.assertEqual(response.status_code, HTTP_200_OK)
-        self.assertIn("name", response.data[0])
-        self.assertEqual(response.data[0].get("name"), "Test DM")
-        self.assertIn("discord_id", response.data[0])
-        self.assertEqual(response.data[0].get("discord_id"), "33333333")
+        self.assertIn("name", response.data)
+        self.assertEqual(response.data.get("name"), "Test DM")
+        self.assertIn("discord_id", response.data)
+        self.assertEqual(response.data.get("discord_id"), "33333333")
 
     def test_create_dm_fails_anonymously(self) -> None:
         """Create a new DM"""
