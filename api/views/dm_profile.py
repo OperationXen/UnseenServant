@@ -27,7 +27,7 @@ class DMProfileViewset(ViewSet):
             errors = serialiser.errors
             return Response({"message": "Failed to create DM profile", "errors": errors}, HTTP_400_BAD_REQUEST)
 
-    def get(self, request, pk=None):
+    def details(self, request, pk=None):
         """get single DM profile"""
         try:
             if pk == "me":
