@@ -54,7 +54,9 @@ class DMProfileViewset(ViewSet):
         try:
             if pk == "me":
                 if not DM.objects.filter(user=request.user).exists():
-                    dm = DM.objects.create(user=request.user, name=f"DM {request.user.discord_name}")
+                    dm = DM.objects.create(
+                        user=request.user, name=request.data["name"] or f"DM {request.user.discord_name}"
+                    )
                 else:
                     dm = DM.objects.get(user=request.user)
             else:
