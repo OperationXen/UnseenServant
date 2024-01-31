@@ -167,11 +167,7 @@ class GameDetailEmbed(BaseGameEmbed):
             inline=True,
         )
         self.add_field(name="Game Type", value=f"{self.game.variant}", inline=True)
-        self.add_field(
-            name="Content Warnings",
-            value=f"{self.game.warnings or 'None'}",
-            inline=False,
-        )
+        self.add_field(name="Content Warnings", value=f"{self.game.warnings or 'None'}", inline=False)
         self.add_field(
             name=f"Players ({self.player_count()} / {self.game.max_players})",
             value=self.player_details_list(),
