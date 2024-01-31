@@ -255,7 +255,7 @@ class GameControlView(View):
         log.info(f"Player {interaction.user.name} signed up for game {self.game.name}")
         player = await async_add_player_to_game(self.game, interaction.user)
         if not player:
-            credits = await async_get_user_signups_remaining()
+            credits = await async_get_user_signups_remaining(interaction.user)
             await interaction.followup.send(
                 f"Unable to add you to this game - {credits} signup credits available", ephemeral=True
             )
