@@ -3,7 +3,11 @@ from discord.ui import View, Button
 
 import discord_bot.core
 from discord_bot.logs import logger as log
-from discord_bot.utils.players import async_do_waitlist_updates, async_remove_player_from_game, async_add_player_to_game
+from discord_bot.utils.players import (
+    async_do_waitlist_updates,
+    async_remove_player_from_game,
+    async_add_player_to_game,
+)
 from discord_bot.utils.time import discord_time, discord_countdown
 from discord_bot.utils.channel import async_update_mustering_embed
 from discord_bot.utils.format import generate_calendar_message
@@ -16,7 +20,7 @@ from core.utils.games import (
     async_refetch_game_data,
     calc_game_tier,
 )
-from core.utils.players import async_get_player_credit_text
+from core.utils.players import async_get_player_credit_text, async_get_user_signups_remaining
 
 
 class BaseGameEmbed(Embed):
@@ -192,10 +196,14 @@ class GameControlView(View):
         self.signup_button = Button(
             style=ButtonStyle.primary, label="Signup", custom_id=f"unseen-servant-signup#{game.pk}"
         )
-        self.calendar_button = Button(style=ButtonStyle.grey, emoji="📆", custom_id=f"unseen-servant-calendar#{game.pk}")
+        self.calendar_button = Button(
+            style=ButtonStyle.grey, emoji="📆", custom_id=f"unseen-servant-calendar#{game.pk}"
+        )
         self.refresh_button = Button(style=ButtonStyle.grey, emoji="🔄", custom_id=f"unseen-servant-refresh#{game.pk}")
         self.dropout_button = Button(
-            style=ButtonStyle.red, label="Drop out", custom_id=f"unseen-servant-dropout#{game.pk}"
+            style=ButtonStyle.red,
+            label="Drop out",
+            custom_id=f"unseen-servant-dropout#{game.pk}",
         )
         self.signup_button.callback = self.game_listing_view_signup
         self.calendar_button.callback = self.calendar
@@ -243,7 +251,10 @@ class GameControlView(View):
         log.info(f"Player {interaction.user.name} signed up for game {self.game.name}")
         player = await async_add_player_to_game(self.game, interaction.user)
         if not player:
-            await interaction.followup.send("Unable to add you to this game", ephemeral=True)
+            credits = await async_get_user_signups_remaining(interaction.user)
+            await interaction.followup.send(
+                f"Unable to add you to this game - {credits} signup credits available", ephemeral=True
+            )
             return False
         games_remaining_text = await async_get_player_credit_text(interaction.user)
         if not player.standby:

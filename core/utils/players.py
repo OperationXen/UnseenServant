@@ -77,6 +77,12 @@ def get_user_signups_remaining(user) -> int:
 
 
 @sync_to_async
+def async_get_user_signups_remaining(user) -> int:
+    """Async wrapper to get signups remaining from async context"""
+    return get_user_signups_remaining(user)
+
+
+@sync_to_async
 def async_get_player_credit_text(user):
     """Get a text string explaining to the user how many game credits they have"""
     credits = get_user_signups_remaining(user)
