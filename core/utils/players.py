@@ -10,9 +10,7 @@ from core.utils.ranks import get_user_highest_rank
 
 
 @sync_to_async
-def async_issue_player_bonus_credit(
-    user, number, issuer, reason="Not supplied", valid_for=None
-):
+def async_issue_player_bonus_credit(user, number, issuer, reason="Not supplied", valid_for=None):
     """Give a player some bonus credits"""
     if valid_for:
         now = timezone.now()
@@ -102,12 +100,7 @@ def async_populate_game_from_waitlist(game):
     players = Player.objects.filter(game=game).filter(standby=False)
 
     while len(players) < game.max_players:
-        next = (
-            Player.objects.filter(game=game)
-            .filter(standby=True)
-            .order_by("waitlist")
-            .first()
-        )
+        next = Player.objects.filter(game=game).filter(standby=True).order_by("waitlist").first()
         if next:
             next.standby = False
             next.save()
@@ -140,9 +133,7 @@ def get_historic_users(days: int = 31) -> QuerySet:
     """Get all players who have played in the last X days"""
     now = timezone.now()
     start = now - timedelta(days=days)
-    queryset = Player.objects.filter(game__datetime__gte=start).filter(
-        game__datetime__lte=now
-    )
+    queryset = Player.objects.filter(game__datetime__gte=start).filter(game__datetime__lte=now)
     queryset = queryset.order_by("discord_id")
     return queryset
 
