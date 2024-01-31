@@ -3,7 +3,11 @@ from discord.ui import View, Button
 
 import discord_bot.core
 from discord_bot.logs import logger as log
-from discord_bot.utils.players import async_do_waitlist_updates, async_remove_player_from_game, async_add_player_to_game
+from discord_bot.utils.players import (
+    async_do_waitlist_updates,
+    async_remove_player_from_game,
+    async_add_player_to_game,
+)
 from discord_bot.utils.time import discord_time, discord_countdown
 from discord_bot.utils.channel import async_update_mustering_embed
 from discord_bot.utils.format import generate_calendar_message
@@ -16,7 +20,7 @@ from core.utils.games import (
     async_refetch_game_data,
     calc_game_tier,
 )
-from core.utils.players import async_get_player_credit_text
+from core.utils.players import async_get_player_credit_text, async_get_user_signups_remaining
 
 
 class BaseGameEmbed(Embed):
@@ -126,7 +130,9 @@ class GameDetailEmbed(BaseGameEmbed):
 
     def player_details_list(self):
         """get list of all players with a spot in the game"""
-        player_list = "\n".join(f"{p.discord_name}" for p in self.players if not p.standby)
+        player_list = "\n".join(
+            f"{p.discord_name}" for p in self.players if not p.standby
+        )
         return player_list or "None"
 
     def waitlist_details_list(self, max):
@@ -138,7 +144,9 @@ class GameDetailEmbed(BaseGameEmbed):
 
         player_list = "\n".join(f"{p.discord_name}" for p in self.waitlist[:max])
         if len(self.waitlist) > max:
-            player_list = player_list + f"\nand {len(self.waitlist) - max} more brave souls"
+            player_list = (
+                player_list + f"\nand {len(self.waitlist) - max} more brave souls"
+            )
         return player_list or "None"
 
     async def build(self):
@@ -163,7 +171,11 @@ class GameDetailEmbed(BaseGameEmbed):
             inline=True,
         )
         self.add_field(name="Game Type", value=f"{self.game.variant}", inline=True)
-        self.add_field(name="Content Warnings", value=f"{self.game.warnings or 'None'}", inline=False)
+        self.add_field(
+            name="Content Warnings",
+            value=f"{self.game.warnings or 'None'}",
+            inline=False,
+        )
         self.add_field(
             name=f"Players ({self.player_count()} / {self.game.max_players})",
             value=self.player_details_list(),
@@ -190,12 +202,24 @@ class GameControlView(View):
         super().__init__(timeout=None)
         # Creating these longhand instead of using the decorator because I need access to the game variable for unique custom IDs
         self.signup_button = Button(
-            style=ButtonStyle.primary, label="Signup", custom_id=f"unseen-servant-signup#{game.pk}"
+            style=ButtonStyle.primary,
+            label="Signup",
+            custom_id=f"unseen-servant-signup#{game.pk}",
         )
-        self.calendar_button = Button(style=ButtonStyle.grey, emoji="📆", custom_id=f"unseen-servant-calendar#{game.pk}")
-        self.refresh_button = Button(style=ButtonStyle.grey, emoji="🔄", custom_id=f"unseen-servant-refresh#{game.pk}")
+        self.calendar_button = Button(
+            style=ButtonStyle.grey,
+            emoji="📆"
+           , custom_id=f"unseen-servant-calendar#{game.pk},
+        ")
+        self.refresh_button = Button(
+            style=ButtonStyle.grey,
+            emoji="🔄"
+           , custom_id=f"unseen-servant-refresh#{game.pk},
+        ")
         self.dropout_button = Button(
-            style=ButtonStyle.red, label="Drop out", custom_id=f"unseen-servant-dropout#{game.pk}"
+            style=ButtonStyle.red,
+            label="Drop out",
+            custom_id=f"unseen-servant-dropout#{game.pk}",
         )
         self.signup_button.callback = self.game_listing_view_signup
         self.calendar_button.callback = self.calendar
@@ -211,13 +235,17 @@ class GameControlView(View):
         self.players = await async_get_player_list(self.game)
         self.dm = await async_get_dm(self.game)
 
-    def update_message_embeds(self, new_embed: GameDetailEmbed) -> list[GameDetailEmbed]:
+    def update_message_embeds(
+        self, new_embed: GameDetailEmbed
+    ) -> list[GameDetailEmbed]:
         """Find and replace the game detail embed within the message"""
         embeds = self.message.embeds
         if len(embeds) <= 1:  # If there's only one (or none) embed, replace it
             embeds[0] = new_embed
         else:
-            for embed in embeds:  # Otherwise we need to look for a match by comparing titles
+            for (
+                embed
+            ) in embeds:  # Otherwise we need to look for a match by comparing titles
                 if embed.title == new_embed.title:
                     index = embeds.index(embed)
                     embeds[index] = new_embed
@@ -231,7 +259,9 @@ class GameControlView(View):
         embeds = self.update_message_embeds(detail_embed)
 
         if followup_hook:
-            return await followup_hook.edit_message(message_id=self.message.id, embeds=embeds)
+            return await followup_hook.edit_message(
+                message_id=self.message.id, embeds=embeds
+            )
         elif response_hook:
             return await response_hook.edit_message(embeds=embeds)
         else:
@@ -243,7 +273,10 @@ class GameControlView(View):
         log.info(f"Player {interaction.user.name} signed up for game {self.game.name}")
         player = await async_add_player_to_game(self.game, interaction.user)
         if not player:
-            await interaction.followup.send("Unable to add you to this game", ephemeral=True)
+            credits = await async_get_user_signups_remaining()
+            await interaction.followup.send(
+                f"Unable to add you to this game - {credits} signup credits available", ephemeral=True
+            )
             return False
         games_remaining_text = await async_get_player_credit_text(interaction.user)
         if not player.standby:
@@ -268,7 +301,9 @@ class GameControlView(View):
         removed = await async_remove_player_from_game(self.game, interaction.user)
 
         if removed:
-            log.info(f"Player {interaction.user.name} dropped from game {self.game.name}")
+            log.info(
+                f"Player {interaction.user.name} dropped from game {self.game.name}"
+            )
             games_remaining_text = await async_get_player_credit_text(interaction.user)
             message = f"Removed you from {self.game.name} `({games_remaining_text})`"
             await async_do_waitlist_updates(self.game)
@@ -276,7 +311,9 @@ class GameControlView(View):
             await async_update_mustering_embed(self.game)
             await interaction.user.send(message)
             return True
-        await interaction.followup.send("Unable to remove you from this game", ephemeral=True)
+        await interaction.followup.send(
+            "Unable to remove you from this game", ephemeral=True
+        )
         return False
 
     async def game_listing_view_refresh(self, interaction):
