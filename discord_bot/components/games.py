@@ -149,7 +149,7 @@ class GameDetailEmbed(BaseGameEmbed):
         """Get data from database and populate the embed"""
         await self.get_data()
         try:
-            dm_name = self.dm.discord_name
+            dm_name = self.dm.name
         except:
             log.error(f"Unable to find DM entity for game {self.game.name}")
             dm_name = "Unknown DM"
