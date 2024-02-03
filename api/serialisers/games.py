@@ -1,4 +1,5 @@
 from rest_framework.serializers import ModelSerializer, ReadOnlyField, SerializerMethodField
+from rest_framework.fields import CurrentUserDefault
 
 from core.models import Game, Player
 
@@ -24,8 +25,17 @@ class PlayerSerialiser(ModelSerializer):
 class GameSerialiser(ModelSerializer):
     """Serialiser for game objects"""
 
+    def get_user_is_dm(self, game):
+        """Checks if the currently logged in user is the DM for this game"""
+        try:
+            requesting_user = self.context["request"].user
+            return game.dm.user == requesting_user
+        except:
+            return False
+
     id = ReadOnlyField(source="pk")
     dm_name = ReadOnlyField(source="dm.name")
+    user_is_dm = SerializerMethodField()
     players = PlayerSummarySerialiser(many=True)
 
     class Meta:
@@ -49,6 +59,7 @@ class GameSerialiser(ModelSerializer):
             "datetime_open_release",
             "datetime",
             "length",
+            "user_is_dm",
         ]
 
 

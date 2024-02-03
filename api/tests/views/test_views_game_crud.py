@@ -50,6 +50,20 @@ class TestGameViews(TestCase):
         self.assertIsInstance(response.data[0].get("players"), list)
         self.assertIn("discord_id", response.data[0]["players"][0])
 
+    def test_list_games_identifes_user_dm(self) -> None:
+        """Games that a user is DMing should be flagged as such in list view"""
+        self.client.login(username="Test DM", password="testpassword")
+        game = Game.objects.get(pk=1)
+        game.datetime = datetime.now() + timedelta(days=1)
+        game.save()
+
+        response = self.client.get(reverse("games-list"))
+        self.assertEqual(response.status_code, HTTP_200_OK)
+        self.assertIsInstance(response.data, list)
+        self.assertGreaterEqual(len(response.data), 1)
+        self.assertIn("user_is_dm", response.data[0])
+        self.assertTrue(response.data[0].get("user_is_dm"))
+
     def test_anonymous_user_cant_create_game(self) -> None:
         """An anonymous user should get a 403 error"""
         self.client.logout()

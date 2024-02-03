@@ -61,14 +61,14 @@ class GamesViewSet(ViewSet):
 
         queryset = Game.objects.filter(datetime__gte=yesterday)
         queryset = queryset.filter(ready=True)
-        serialised = GameSerialiser(queryset, many=True)
+        serialised = GameSerialiser(queryset, many=True, context={"request": request})
         return Response(serialised.data)
 
     def get(self, request, pk=None):
         """Get a single game"""
         try:
             game = Game.objects.get(pk=pk)
-            serialised = GameSerialiser(game, many=False)
+            serialised = GameSerialiser(game, many=False, context={"request": request})
             return Response(serialised.data)
         except Game.DoesNotExist:
             return Response({"message": "Cannot find this game"}, HTTP_404_NOT_FOUND)
