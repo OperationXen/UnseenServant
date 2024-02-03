@@ -1,5 +1,4 @@
 from rest_framework.serializers import ModelSerializer, ReadOnlyField, SerializerMethodField
-from rest_framework.fields import CurrentUserDefault
 
 from core.models import Game, Player
 
