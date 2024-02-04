@@ -4,7 +4,7 @@ from discord.role import Role as DiscordRole
 from core.models import Rank
 
 
-def get_user_ranks(discord_user_roles: list) -> list[Rank]:
+def get_ranks_for_discord_roles(discord_user_roles: list) -> list[Rank]:
     """Gather a list of rank objects for a given list of rank names, identifiers or discord roles"""
     user_ranks = []
 
@@ -31,6 +31,6 @@ def get_highest_rank(ranks: list[Rank]) -> Rank:
 
 def get_user_highest_rank(discord_user_roles: list) -> Rank:
     """Given a users list of roles, returns their highest matching rank"""
-    user_ranks = get_user_ranks(discord_user_roles)
+    user_ranks = get_ranks_for_discord_roles(discord_user_roles)
     highest_rank = get_highest_rank(user_ranks)
     return highest_rank
