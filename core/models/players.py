@@ -1,5 +1,6 @@
 from django.db import models
 
+from core.models.auth import CustomUser
 from core.models.game import Game, Character
 from core.utils.time import a_year_from_now, a_month_from_now
 
@@ -36,13 +37,18 @@ class Player(models.Model):
     waitlist = models.IntegerField(
         null=True, blank=True, help_text="Rank in queue for place in game", verbose_name="Waitlist Position"
     )
+    user = models.ForeignKey(
+        CustomUser,
+        null=True,
+        related_name="playing",
+        on_delete=models.CASCADE,
+        help_text="User playing in game",
+    )
     discord_id = models.CharField(null=True, blank=True, max_length=32, help_text="Discord ID of player")
     discord_name = models.CharField(blank=True, max_length=32, help_text="Discord username")
     character = models.ForeignKey(
         Character, null=True, blank=True, on_delete=models.SET_NULL, help_text="Character info"
     )
-    # waitlisting priority for higher ranks (exact implementation to follow)
-    # waitlist alerting logic, perhaps pm users and give an hour to decline?
 
     def __str__(self):
         return f"{self.game.datetime.date()} | {self.game.name} - {self.discord_name}"
