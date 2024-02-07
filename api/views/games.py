@@ -11,7 +11,7 @@ from api.serialisers.games import GameCreationSerialiser, GameSerialiser, Player
 from core.models import DM, Game, Player
 from core.utils.sanctions import check_discord_user_good_standing
 from core.utils.user import get_user_available_credit, user_in_game
-from core.utils.games import handle_game_player_add, remove_user_from_game_by_discord_id
+from core.utils.games import handle_game_player_add, remove_user_from_game_by_discord_id, game_has_player_by_discord_id
 
 
 class GamesViewSet(ViewSet):
@@ -29,17 +29,20 @@ class GamesViewSet(ViewSet):
 
         if game.dm.user == request.user:
             return Response({"message": "You cannot play in your own game"}, HTTP_400_BAD_REQUEST)
+        if game_has_player_by_discord_id(game, request.user.discord_id):
+            return Response({"message": "You are already in this game"}, HTTP_400_BAD_REQUEST)
         if not check_discord_user_good_standing(request.user.discord_id):
             return Response({"message": "You are currently banned from using this system"}, HTTP_403_FORBIDDEN)
+
         available_credit = get_user_available_credit(request.user)
         if not available_credit > 0:
-            return Response(
-                {"message": "You do not have enough available credits to join this game"}, HTTP_401_UNAUTHORIZED
-            )
+            return Response({"message": "You do not have any available credits"}, HTTP_401_UNAUTHORIZED)
         player = handle_game_player_add(game, request.user.discord_id, request.user.discord_name)
-
-        serialiser = PlayerSerialiser(player)
-        return Response(serialiser.data, HTTP_200_OK)
+        if player:
+            serialiser = PlayerSerialiser(player)
+            return Response(serialiser.data, HTTP_200_OK)
+        else:
+            return Response({"message": "Unable to add you to this game"}, HTTP_500_INTERNAL_SERVER_ERROR)
 
     @action(detail=True, methods=["post"], permission_classes=[IsAuthenticated])
     def drop(self, request, pk):
