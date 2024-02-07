@@ -206,6 +206,14 @@ def async_get_game_by_id(game_id):
     return get_game_by_id(game_id)
 
 
+def game_has_player_by_discord_id(game: Game, discord_id: str) -> bool:
+    """Check to see if a specific game has a player by their discord ID"""
+    existing = game.players.filter(discord_id=discord_id).first()
+    if existing:
+        return True
+    return False
+
+
 # ########################################################################## #
 @sync_to_async
 def async_db_force_add_player_to_game(game: Game, user: CustomUser):
@@ -225,8 +233,7 @@ def sanity_check_new_game_player(game: Game, discord_id: str) -> bool:
     # If use is DM, already playing or waitlisted they can't join
     if discord_id == game.dm.discord_id:
         return False
-    existing = game.players.filter(discord_id=discord_id).first()
-    if existing:
+    if game_has_player_by_discord_id(game, discord_id):
         return False
 
     # If user is banned they can't join

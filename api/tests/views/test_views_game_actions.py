@@ -99,3 +99,11 @@ class TestGameActionViews(TestCase):
         response = self.client.post(reverse("games-drop", kwargs={"pk": 1}))
         self.assertIn("You are not in this game", response.data["message"])
         self.assertEqual(Player.objects.filter(game=game).count(), 2)
+
+    def test_user_cant_join_game_twice(self) -> None:
+        """A user who is already in a game cannot join it again"""
+        self.client.login(username="playeruser", password="testpassword")
+        game = Game.objects.get(pk=1)
+
+        response = self.client.post(reverse("games-join", kwargs={"pk": 1}))
+        self.assertEqual(response.status_code, HTTP_400_BAD_REQUEST)
