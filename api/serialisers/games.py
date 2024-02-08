@@ -1,6 +1,7 @@
 from rest_framework.serializers import ModelSerializer, ReadOnlyField, SerializerMethodField
 
 from core.models import Game, Player
+from core.utils.user import user_is_player_in_game, user_is_waitlisted_in_game
 
 
 class PlayerSummarySerialiser(ModelSerializer):
@@ -32,10 +33,28 @@ class GameSerialiser(ModelSerializer):
         except:
             return False
 
+    def get_user_is_player(self, game):
+        """check to see if the current user is a player in the game"""
+        try:
+            requesting_user = self.context["request"].user
+            return user_is_player_in_game(requesting_user, game)
+        except:
+            return False
+
+    def get_user_is_waitlisted(self, game):
+        """check to see if the current user is a player in the game"""
+        try:
+            requesting_user = self.context["request"].user
+            return user_is_waitlisted_in_game(requesting_user, game)
+        except:
+            return False
+
     id = ReadOnlyField(source="pk")
     dm_name = ReadOnlyField(source="dm.name")
-    user_is_dm = SerializerMethodField()
     players = PlayerSummarySerialiser(many=True)
+    user_is_dm = SerializerMethodField()
+    user_is_player = SerializerMethodField()
+    user_is_waitlisted = SerializerMethodField()
 
     class Meta:
         model = Game
@@ -47,7 +66,6 @@ class GameSerialiser(ModelSerializer):
             "realm",
             "variant",
             "description",
-            "players",
             "max_players",
             "level_min",
             "level_max",
@@ -59,6 +77,9 @@ class GameSerialiser(ModelSerializer):
             "datetime",
             "length",
             "user_is_dm",
+            "user_is_player",
+            "user_is_waitlisted",
+            "players",
         ]
 
 

@@ -80,6 +80,34 @@ class TestGameViews(TestCase):
         self.assertIn("user_is_dm", response.data[0])
         self.assertFalse(response.data[0].get("user_is_dm"))
 
+    def test_list_games_identifies_user_is_player(self) -> None:
+        """A user who is playing in a game should be flagged as such"""
+        self.client.login(username="playeruser", password="testpassword")
+        game = Game.objects.get(pk=1)
+        game.datetime = datetime.now() + timedelta(days=1)
+        game.save()
+
+        response = self.client.get(reverse("games-list"))
+        self.assertEqual(response.status_code, HTTP_200_OK)
+        self.assertIsInstance(response.data, list)
+        self.assertGreaterEqual(len(response.data), 1)
+        self.assertIn("user_is_player", response.data[0])
+        self.assertTrue(response.data[0].get("user_is_player"))
+
+    def test_list_games_identifies_user_is_waitlisted(self) -> None:
+        """A user who is waitlisted in a game should be flagged as such"""
+        self.client.login(username="waitlistuser", password="testpassword")
+        game = Game.objects.get(pk=1)
+        game.datetime = datetime.now() + timedelta(days=1)
+        game.save()
+
+        response = self.client.get(reverse("games-list"))
+        self.assertEqual(response.status_code, HTTP_200_OK)
+        self.assertIsInstance(response.data, list)
+        self.assertGreaterEqual(len(response.data), 1)
+        self.assertIn("user_is_waitlisted", response.data[0])
+        self.assertTrue(response.data[0].get("user_is_waitlisted"))
+
     def test_anonymous_user_cant_create_game(self) -> None:
         """An anonymous user should get a 403 error"""
         self.client.logout()
