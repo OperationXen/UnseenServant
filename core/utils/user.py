@@ -41,3 +41,23 @@ def user_in_game(user: CustomUser, game: Game) -> bool:
     if matches > 0:
         return True
     return False
+
+
+def user_is_player_in_game(user: CustomUser, game: Game) -> bool:
+    """Checks if a user is playing in a given game or not"""
+    queryset = Player.objects.filter(game=game)
+    queryset = queryset.filter(standby=False)
+    queryset = queryset.filter(discord_id=user.discord_id)
+    if queryset.exists():
+        return True
+    return False
+
+
+def user_is_waitlisted_in_game(user: CustomUser, game: Game) -> bool:
+    """Checks if a user is waitlisted in a given game or not"""
+    queryset = Player.objects.filter(game=game)
+    queryset = queryset.filter(standby=True)
+    queryset = queryset.filter(discord_id=user.discord_id)
+    if queryset.exists():
+        return True
+    return False
