@@ -52,6 +52,40 @@ class TestGameViews(TestCase):
         self.assertIsInstance(response.data[0].get("players"), list)
         self.assertIn("discord_id", response.data[0]["players"][0])
 
+    def test_list_games_retrieves_waitlist(self) -> None:
+        """Part of the returned object should be a list of waitlisted users"""
+        self.client.logout()
+        game = Game.objects.get(pk=1)
+        game.datetime = datetime.now() + timedelta(days=1)
+        game.save()
+
+        response = self.client.get(reverse("games-list"))
+        self.assertEqual(response.status_code, HTTP_200_OK)
+        self.assertIsInstance(response.data, list)
+        self.assertGreaterEqual(len(response.data), 1)
+
+        self.assertIn("waitlist", response.data[0])
+        self.assertIsInstance(response.data[0].get("waitlist"), list)
+        self.assertIn("discord_name", response.data[0]["waitlist"][0])
+        self.assertEqual("Waitlister", response.data[0]["waitlist"][0]["discord_name"])
+
+    def test_list_games_retrieves_players(self) -> None:
+        """Part of the returned object should be a list of users playing in the game"""
+        self.client.logout()
+        game = Game.objects.get(pk=1)
+        game.datetime = datetime.now() + timedelta(days=1)
+        game.save()
+
+        response = self.client.get(reverse("games-list"))
+        self.assertEqual(response.status_code, HTTP_200_OK)
+        self.assertIsInstance(response.data, list)
+        self.assertGreaterEqual(len(response.data), 1)
+
+        self.assertIn("players", response.data[0])
+        self.assertIsInstance(response.data[0].get("players"), list)
+        self.assertIn("discord_name", response.data[0]["players"][0])
+        self.assertEqual("TheGreatAndPowerfulOz", response.data[0]["players"][0]["discord_name"])
+
     def test_list_games_identifes_user_dm(self) -> None:
         """Games that a user is DMing should be flagged as such in list view"""
         self.client.login(username="Test DM", password="testpassword")
