@@ -49,9 +49,20 @@ class GameSerialiser(ModelSerializer):
         except:
             return False
 
+    def get_waitlist(self, game):
+        """Get a list of the players who are waitlisted"""
+        waitlist = game.players.filter(standby=True)
+        return PlayerSummarySerialiser(waitlist, many=True).data
+
+    def get_players(self, game):
+        """Get a list of the players who are confirmed as playing"""
+        party = game.players.filter(standby=False)
+        return PlayerSummarySerialiser(party, many=True).data
+
     id = ReadOnlyField(source="pk")
     dm_name = ReadOnlyField(source="dm.name")
-    players = PlayerSummarySerialiser(many=True)
+    players = SerializerMethodField()
+    waitlist = SerializerMethodField()
     user_is_dm = SerializerMethodField()
     user_is_player = SerializerMethodField()
     user_is_waitlisted = SerializerMethodField()
@@ -80,6 +91,7 @@ class GameSerialiser(ModelSerializer):
             "user_is_player",
             "user_is_waitlisted",
             "players",
+            "waitlist",
         ]
 
 
