@@ -245,6 +245,9 @@ async def async_get_channel_current_members(channel: TextChannel):
     return current_members
 
 
+# ################################################################################### #
+#               Channel Membership Manager add / remove functions                     #
+# ################################################################################### #
 async def async_add_discord_ids_to_channel(discord_ids, channel: TextChannel) -> int:
     """Add the users refered to by their discord IDs in the list to the channel"""
     num_added = 0
