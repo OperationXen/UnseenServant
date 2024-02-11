@@ -72,6 +72,7 @@ class TestGameActionViews(TestCase):
         self.assertEqual(Player.objects.filter(game=game).count(), 3)
         player = Player.objects.filter(game=game).last()
         self.assertTrue(player.standby)
+        self.assertGreaterEqual(player.waitlist, 1)
 
     def test_anonymous_user_cant_leave_game(self) -> None:
         """Users must be logged in"""
