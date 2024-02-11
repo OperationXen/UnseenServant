@@ -79,3 +79,9 @@ def add_discord_member_to_game(discord_member: DiscordMember, game: Game) -> Pla
         except Exception as e:
             return None
     return add_user_to_game(user, game)
+
+
+async def async_add_discord_member_to_game(discord_member: DiscordMember, game: Game) -> Player | None:
+    """Async wrapper to allow this utility to be called from an async context"""
+    player = add_discord_member_to_game(discord_member, game)
+    return player

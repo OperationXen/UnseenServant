@@ -52,7 +52,7 @@ async def async_remove_player_from_game(game, discord_user):
     return True
 
 
-async def async_add_player_to_game(game, discord_user, force=False):
+async def _async_add_player_to_game(game, discord_user, force=False):
     """Add a discord user to a game"""
     if force:
         player = await async_db_force_add_player_to_game(game, discord_user)

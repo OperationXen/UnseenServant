@@ -6,7 +6,7 @@ from discord_bot.logs import logger as log
 from discord_bot.utils.players import (
     async_do_waitlist_updates,
     async_remove_player_from_game,
-    async_add_player_to_game,
+    async_add_discord_member_to_game,
 )
 from discord_bot.utils.time import discord_time, discord_countdown
 from discord_bot.utils.channel import async_update_mustering_embed
@@ -249,7 +249,7 @@ class GameControlView(View):
         """Callback for signup button pressed"""
         await interaction.response.defer(ephemeral=True)
         log.info(f"Player {interaction.user.name} signed up for game {self.game.name}")
-        player = await async_add_player_to_game(self.game, interaction.user)
+        player = await async_add_discord_member_to_game(interaction.user, self.game)
         if not player:
             credits = await async_get_user_signups_remaining(interaction.user)
             await interaction.followup.send(
