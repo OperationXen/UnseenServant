@@ -11,8 +11,8 @@ from api.serialisers.games import GameCreationSerialiser, GameSerialiser, Player
 from core.models import DM, Game, Player
 from core.utils.sanctions import check_discord_user_good_standing
 from core.utils.user import get_user_available_credit, user_in_game
-from core.utils.games import remove_user_from_game_by_discord_id, game_has_player_by_discord_id
-from core.utils.games_rework import add_user_to_game
+from core.utils.games import game_has_player_by_discord_id
+from core.utils.games_rework import add_user_to_game, remove_user_from_game
 
 
 class GamesViewSet(ViewSet):
@@ -56,7 +56,7 @@ class GamesViewSet(ViewSet):
         if not user_in_game(request.user, game):
             return Response({"message": "You are not in this game"}, HTTP_400_BAD_REQUEST)
         else:
-            remove_user_from_game_by_discord_id(game, request.user.discord_id)
+            remove_user_from_game(request.user, game)
             return Response({"message": f"Removed {request.user.discord_name} from {game.name}"}, HTTP_200_OK)
 
     def list(self, request):

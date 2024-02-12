@@ -37,7 +37,20 @@ def remove_user_from_game(user: CustomUser, game: Game) -> bool:
         player.delete()
         return True
     except Player.DoesNotExist:
-        return False
+        # Replace this when all players have an associated user object
+        # return False
+        remove_player_by_discord_id(game, user.discord_id)
     except Exception as e:
         log.error(f"[!] Exception occured when removing user {user.username} from game {game.name}")
         return False
+
+
+# ########################################################################## #
+def remove_player_by_discord_id(game: Game, discord_id: str) -> bool:
+    """Syncronous worker to remove the player from the game"""
+    player = game.players.filter(discord_id=discord_id).first()
+    if player:
+        removed_from_party = not player.waitlist
+        player.delete()
+        return removed_from_party
+    return None

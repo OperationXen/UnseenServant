@@ -7,7 +7,7 @@ from discord import Member as DiscordMember
 from discord.ui import Button
 
 from core.utils.games import async_get_game_by_id
-from core.utils.games_rework import add_user_to_game, remove_user_from_game
+from core.utils.games_rework import add_user_to_game, remove_user_from_game, remove_player_by_discord_id
 from core.utils.user import get_user_by_discord_id
 from core.models import Game, Player
 
@@ -102,3 +102,11 @@ def async_remove_discord_member_from_game(member: DiscordMember, game: Game) -> 
     """Async wrapper for removing a discord member from game"""
     success = remove_discord_member_from_game(member, game)
     return success
+
+
+# ############################################################################# #
+@sync_to_async
+def async_remove_player_by_discord_id(game: Game, discord_id: str):
+    """Remove a player from a game by their discord ID"""
+    result = remove_player_by_discord_id(game, discord_id)
+    return result
