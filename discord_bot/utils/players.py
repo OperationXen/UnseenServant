@@ -3,13 +3,8 @@ from discord_bot.utils.messaging import async_send_dm
 from discord_bot.utils.time import discord_countdown
 from core.utils.games import check_game_pending, async_get_player_list, async_get_wait_list
 
-from discord_bot.utils.channel import (
-    async_game_channel_tag_promoted_player,
-)
-from discord_bot.utils.channel import (
-    async_channel_add_player,
-    async_get_channel_for_game,
-)
+from discord_bot.utils.channel import async_game_channel_tag_promoted_player
+from discord_bot.utils.channel import async_channel_add_player, async_get_channel_for_game
 from core.utils.players import async_populate_game_from_waitlist
 
 
