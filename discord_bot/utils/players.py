@@ -34,19 +34,6 @@ async def async_do_waitlist_updates(game):
             )
 
 
-async def async_remove_player_from_game(game, discord_user):
-    """Remove a player from a given game"""
-    removed_from_party = await async_db_remove_discord_user_from_game(game, str(discord_user.id))
-    if removed_from_party is None:
-        return False
-    elif removed_from_party:
-        channel = await async_get_channel_for_game(game)
-        if channel:
-            await async_channel_remove_user(channel, discord_user)
-            await async_game_channel_tag_removed_user(game, discord_user)
-    return True
-
-
 async def async_get_party_for_game(game, include_waitlist=False):
     """Get a list of all players who are part of the game's party"""
     party = await async_get_player_list(game)

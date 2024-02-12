@@ -13,11 +13,11 @@ from discord_bot.utils.channel import (
     async_notify_game_channel,
 )
 from discord_bot.utils.players import (
-    async_remove_player_from_game,
     async_do_waitlist_updates,
     async_get_party_for_game,
 )
-from discord_bot.utils.games import async_add_discord_member_to_game, async_update_game_listing_embed
+from discord_bot.utils.games import async_add_discord_member_to_game, async_remove_discord_member_from_game
+from discord_bot.utils.games import async_update_game_listing_embed
 from discord_bot.utils.roles import do_dm_permissions_check
 
 
@@ -35,7 +35,7 @@ async def remove_player(ctx, user: Option(Member, "Player to remove from the gam
     if not do_dm_permissions_check(ctx.author, game):
         return await ctx.followup.send("You are not the DM for this game", ephemeral=True)
 
-    removed = await async_remove_player_from_game(game, user)
+    removed = await async_remove_discord_member_from_game(game, user)
     if removed:
         await async_do_waitlist_updates(game)
         await async_update_mustering_embed(game)
