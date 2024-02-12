@@ -28,3 +28,16 @@ def add_user_to_game(user: CustomUser, game: Game, force: bool = False) -> bool:
         return player
     except Exception as e:
         log.error(f"[!] Exception occured when adding user {user.username} to game {game.name}")
+
+
+def remove_user_from_game(user: CustomUser, game: Game) -> bool:
+    """Remove a user from a game completely"""
+    try:
+        player = game.players.get(user=user)
+        player.delete()
+        return True
+    except Player.DoesNotExist:
+        return False
+    except Exception as e:
+        log.error(f"[!] Exception occured when removing user {user.username} from game {game.name}")
+        return False

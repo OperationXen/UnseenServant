@@ -6,7 +6,7 @@ from discord import Member as DiscordMember
 from discord.ui import Button
 
 from core.utils.games import async_get_game_by_id
-from core.utils.games_rework import add_user_to_game
+from core.utils.games_rework import add_user_to_game, remove_user_from_game
 from core.utils.user import get_user_by_discord_id
 from core.models import Game, Player
 
@@ -85,3 +85,17 @@ async def async_add_discord_member_to_game(member: DiscordMember, game: Game, fo
     """Async wrapper to allow this utility to be called from an async context"""
     player = add_discord_member_to_game(member, game, force)
     return player
+
+
+def remove_discord_member_from_game(member: DiscordMember, game: Game) -> bool:
+    """Remove a discord member from a game"""
+    user = get_user_by_discord_id(member.id)
+    if not user:
+        return False
+    return remove_user_from_game(user, game)
+
+
+async def async_remove_discord_member_from_game(member: DiscordMember, game: Game) -> bool:
+    """Async wrapper for removing a discord member from game"""
+    success = remove_discord_member_from_game
+    return success
