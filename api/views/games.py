@@ -91,6 +91,8 @@ class GamesViewSet(ViewSet):
                 return Response({"message": "Failed to create game", "errors": errors}, HTTP_400_BAD_REQUEST)
         except DM.DoesNotExist:
             return Response({"message": "You are not registered as a DM"}, HTTP_403_FORBIDDEN)
+        except DM.MultipleObjectsReturned:
+            return Response({"message": "Multiple DMs detected for user"}, HTTP_400_BAD_REQUEST)
 
     def partial_update(self, request, pk=None):
         """Update an existing game"""
