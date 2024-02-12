@@ -33,14 +33,14 @@ class GamesPoster:
 
     async def recover_message_state(self):
         """Pull game postings from posting history and reconstruct a game/message status from it"""
-        log.info("Rebuilding internal message state")
+        log.debug("Rebuilding internal message state")
         for channel in [self.channel_priority, self.channel_general]:
             messages = await async_get_bot_game_postings(channel)
             for message in messages:
                 game = await async_get_game_from_message(message)
                 if not game:
                     game_id = get_game_id_from_message(message)
-                    log.info(f"Removing orphaned message (No matching game) for game ID {game_id}")
+                    log.info(f"[-] Removing orphaned message (No matching game) for game ID {game_id}")
                     await message.delete()
                     continue
 
@@ -101,16 +101,16 @@ class GamesPoster:
                 for game in await get_outstanding_games(priority):
                     channel = self.is_game_posted(game)
                     if not channel:
-                        log.info(f"Announcing new game: {game.name}")
+                        log.info(f"[-] Announcing new game: {game.name}")
                         await self.do_game_announcement(
                             game, self.channel_priority if priority else self.channel_general
                         )
                     elif not priority and channel == self.channel_priority:
-                        log.info(f"Moving game announcement to general")
+                        log.info(f"[-] Moving game announcement to general")
                         await self.remove_specific_game(game.id)
                         await self.do_game_announcement(game, self.channel_general)
             except Exception as e:
-                log.error(f"Exception caught in post_outstanding_games: {e.__class__}")
+                log.error(f"[!] Exception caught in post_outstanding_games: {e.__class__}")
 
     async def remove_stale_games(self):
         """Go through existing games and check for anything stale"""
