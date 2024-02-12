@@ -1,4 +1,5 @@
 import re
+from asgiref.sync import sync_to_async
 
 from discord_bot.logs import logger as log
 from discord_bot.bot import bot
@@ -81,7 +82,8 @@ def add_discord_member_to_game(member: DiscordMember, game: Game, force: bool = 
     return add_user_to_game(user, game, force)
 
 
-async def async_add_discord_member_to_game(member: DiscordMember, game: Game, force: bool = False) -> Player | None:
+@sync_to_async
+def async_add_discord_member_to_game(member: DiscordMember, game: Game, force: bool = False) -> Player | None:
     """Async wrapper to allow this utility to be called from an async context"""
     player = add_discord_member_to_game(member, game, force)
     return player
@@ -95,7 +97,8 @@ def remove_discord_member_from_game(member: DiscordMember, game: Game) -> bool:
     return remove_user_from_game(user, game)
 
 
-async def async_remove_discord_member_from_game(member: DiscordMember, game: Game) -> bool:
+@sync_to_async
+def async_remove_discord_member_from_game(member: DiscordMember, game: Game) -> bool:
     """Async wrapper for removing a discord member from game"""
     success = remove_discord_member_from_game
     return success
