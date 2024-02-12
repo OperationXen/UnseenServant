@@ -20,31 +20,13 @@ def get_games_pending(hours=0, days=0, minutes=0):
 
 
 @sync_to_async
-def async_get_game_channels_pending_creation():
-    """Retrieve all game objects that need a channel posting"""
-    queryset = get_games_pending(days=CHANNEL_CREATION_DAYS)
-    queryset = queryset.filter(text_channel=None)  # Only interested in games which don't yet have a channel
-    return list(queryset)  # force evaluation before leaving this sync context
-
-
-@sync_to_async
 def async_destroy_game_channel(game_channel):
     """Destroy a given game channel object"""
     game_channel.delete()
     return True
 
 
-@sync_to_async
-def async_get_game_channels_pending_destruction():
-    """Retrieve all game channel objects which are defunct"""
-    now = timezone.now()
-    expiry_time = now - timedelta(hours=CHANNEL_DESTROY_HOURS)
-
-    queryset = GameChannel.objects.filter(game__datetime__lte=expiry_time)
-    queryset = queryset.order_by("game__datetime")
-    return list(queryset)  # force evaluation before dropping back to async
-
-
+# ################################################################## #
 @sync_to_async
 def async_set_game_channel_created(game, channel_id, link="", name=""):
     """Set the game channel status to created"""
@@ -55,19 +37,31 @@ def async_set_game_channel_created(game, channel_id, link="", name=""):
 
 
 @sync_to_async
-def _async_set_game_channel_reminded(game_channel):
-    """Update a game channel object to show the reminder has been sent"""
-    game_channel.status = GameChannel.ChannelStatuses.REMINDED
-    game_channel.save()
-    return True
-
-
-@sync_to_async
 def async_set_game_channel_warned(game_channel):
     """Update a game channel object to show the 1 hour warning"""
     game_channel.status = GameChannel.ChannelStatuses.WARNED
     game_channel.save()
     return True
+
+
+@sync_to_async
+def async_set_game_channel_reminded(game_channel):
+    """Update a game channel object to show the 1 day reminder"""
+    game_channel.status = GameChannel.ChannelStatuses.REMINDED
+    game_channel.save()
+    return True
+
+
+# ################################################################## #
+@sync_to_async
+def async_get_game_channels_pending_destruction():
+    """Retrieve all game channel objects which are defunct"""
+    now = timezone.now()
+    expiry_time = now - timedelta(hours=CHANNEL_DESTROY_HOURS)
+
+    queryset = GameChannel.objects.filter(game__datetime__lte=expiry_time)
+    queryset = queryset.order_by("game__datetime")
+    return list(queryset)  # force evaluation before dropping back to async
 
 
 @sync_to_async
@@ -90,9 +84,23 @@ def async_get_game_channels_pending_warning():
 
 
 @sync_to_async
-def async_get_game_channel_for_game(game):
-    """Get the game channel object related to a game"""
+def async_get_game_channels_pending_creation():
+    """Retrieve all game objects that need a channel posting"""
+    queryset = get_games_pending(days=CHANNEL_CREATION_DAYS)
+    queryset = queryset.filter(text_channel=None)  # Only interested in games which don't yet have a channel
+    return list(queryset)  # force evaluation before leaving this sync context
+
+
+# ################################################################## #
+def get_channel_for_game(game: Game) -> GameChannel | None:
+    """Get the channel for the specified game if it exists"""
     return game.text_channel.first()
+
+
+@sync_to_async
+def async_get_game_channel_for_game(game: Game) -> GameChannel | None:
+    """Get the game channel object related to a game"""
+    return get_channel_for_game(game)
 
 
 @sync_to_async
@@ -107,3 +115,16 @@ def async_get_game_channel_members(channel: GameChannel) -> List[CustomUser]:
     """Given a game channel object retrieve its expected membership list"""
     queryset = channel.members.all()
     return list(queryset)  # force evaluation before leaving this sync context
+
+
+@sync_to_async
+def async_set_default_channel_membership(channel: GameChannel) -> bool:
+    """Attempt to set a default membership list for a game channel"""
+    try:
+        game = channel.game
+        players = game.players.filter(standby=False)
+        users = list(CustomUser.objects.filter(playing__in=players))
+        channel.members.set(users)
+        return True
+    except Exception as e:
+        return False
