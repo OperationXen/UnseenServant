@@ -7,11 +7,11 @@ from discord_bot.logs import logger as log
 # ########################################################################## #
 
 
-def add_user_to_game(user: CustomUser, game: Game) -> bool:
+def add_user_to_game(user: CustomUser, game: Game, force: bool = False) -> bool:
     """2024 Rework - Attempt to add a user to a game"""
     try:
         current_players = game.players.all()
-        if current_players.count() >= game.max_players:  # party is full
+        if current_players.count() >= game.max_players and not force:  # party is full
             # Add player to end of waitlist
             waitlist = current_players.filter(standby=True).order_by("-waitlist")
             last_waitlist_position = waitlist.last().waitlist or 0

@@ -70,18 +70,18 @@ async def async_update_game_listing_embed(game):
 
 
 # ################################################################################ #
-def add_discord_member_to_game(discord_member: DiscordMember, game: Game) -> Player | None:
+def add_discord_member_to_game(member: DiscordMember, game: Game, force: bool = False) -> Player | None:
     """2024 Rework - Wrapper to facilitate adding a member/user to a game by their discord id"""
-    user = get_user_by_discord_id(discord_member.id)
+    user = get_user_by_discord_id(member.id)
     if not user:
         try:
-            user = create_user_from_discord_member(discord_member)
+            user = create_user_from_discord_member(member)
         except Exception as e:
             return None
-    return add_user_to_game(user, game)
+    return add_user_to_game(user, game, force)
 
 
-async def async_add_discord_member_to_game(discord_member: DiscordMember, game: Game) -> Player | None:
+async def async_add_discord_member_to_game(member: DiscordMember, game: Game, force: bool = False) -> Player | None:
     """Async wrapper to allow this utility to be called from an async context"""
-    player = add_discord_member_to_game(discord_member, game)
+    player = add_discord_member_to_game(member, game, force)
     return player
