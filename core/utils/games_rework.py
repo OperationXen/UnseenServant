@@ -15,10 +15,10 @@ def add_user_to_game(user: CustomUser, game: Game, force: bool = False) -> bool:
             # Add player to end of waitlist
             waitlist = current_players.filter(standby=True).order_by("-waitlist")
             last_waitlist_position = waitlist.last().waitlist or 0
-            player = Player.objects.create(game=game, waitlist=last_waitlist_position + 1, standby=True)
+            player = Player.objects.create(game=game, user=user, waitlist=last_waitlist_position + 1, standby=True)
         else:
             # Add player to party
-            player = Player.objects.create(game=game, waitlist=0, standby=False)
+            player = Player.objects.create(game=game, user=user, waitlist=0, standby=False)
 
         # Discord data currently still stored on player object for transition
         player.discord_id = user.discord_id
@@ -33,7 +33,7 @@ def add_user_to_game(user: CustomUser, game: Game, force: bool = False) -> bool:
 def remove_user_from_game(user: CustomUser, game: Game) -> bool:
     """Remove a user from a game completely"""
     try:
-        player = game.players.get(user=user)
+        player = game.players.all().get(user=user)
         player.delete()
         return True
     except Player.DoesNotExist:

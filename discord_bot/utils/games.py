@@ -100,5 +100,5 @@ def remove_discord_member_from_game(member: DiscordMember, game: Game) -> bool:
 @sync_to_async
 def async_remove_discord_member_from_game(member: DiscordMember, game: Game) -> bool:
     """Async wrapper for removing a discord member from game"""
-    success = remove_discord_member_from_game
+    success = remove_discord_member_from_game(member, game)
     return success
