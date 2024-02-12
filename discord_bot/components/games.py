@@ -5,7 +5,12 @@ import discord_bot.core
 from discord_bot.logs import logger as log
 from discord_bot.utils.players import async_do_waitlist_updates
 from discord_bot.utils.time import discord_time, discord_countdown
-from discord_bot.utils.channel import async_update_mustering_embed
+from discord_bot.utils.channel import (
+    async_update_mustering_embed,
+    async_get_channel_for_game,
+    async_channel_remove_user,
+    async_channel_add_user,
+)
 from discord_bot.utils.format import generate_calendar_message
 from discord_bot.utils.games import async_add_discord_member_to_game, async_remove_discord_member_from_game
 from core.models.game import Game
@@ -255,6 +260,8 @@ class GameControlView(View):
             return False
         games_remaining_text = await async_get_player_credit_text(interaction.user)
         if not player.standby:
+            channel = await async_get_channel_for_game(self.game)
+            await async_channel_add_user(channel, interaction.user)
             message = f"You're playing in {self.game.name} `({games_remaining_text})`"
         else:
             message = f"Added you to to the waitlist for {self.game.name} `({games_remaining_text})`"
@@ -273,6 +280,10 @@ class GameControlView(View):
     async def game_listing_view_dropout(self, interaction):
         """Callback for dropout button pressed"""
         await interaction.response.defer(ephemeral=True)
+
+        channel = await async_get_channel_for_game(self.game)
+        await async_channel_remove_user(channel, interaction.user)
+
         removed = await async_remove_discord_member_from_game(interaction.user, self.game)
 
         if removed:

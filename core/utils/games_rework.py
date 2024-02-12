@@ -52,6 +52,8 @@ def remove_player_by_discord_id(game: Game, discord_id: str) -> bool:
         player = game.players.all().filter(discord_id=discord_id).first()
         player.delete()
         return True
+    except Player.DoesNotExist:
+        pass
     except Exception as e:
-        log.error(f"[!] Exception occured removing player with discord ID {discord_id}: {e.message}")
+        log.error(f"[!] Exception occured removing player with discord ID {discord_id}: {str(e)}")
     return False

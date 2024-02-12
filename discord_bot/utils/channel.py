@@ -152,6 +152,8 @@ async def async_channel_add_user(channel: TextChannel, user: DiscordUser, admin=
 
 async def async_channel_add_player(channel: TextChannel, player: Player):
     """Add a user to channel by reference from a player object"""
+    if not channel:
+        return False
     try:
         log.debug(f"Adding player [{player.discord_name}] to channel [{channel.name}]")
         discord_user = await bot.fetch_user(player.discord_id)
@@ -174,6 +176,8 @@ async def async_channel_add_dm(channel: TextChannel, dm: DM):
 
 async def async_channel_remove_user(channel: TextChannel, user: DiscordUser):
     """Remove a specific player from a game channel"""
+    if not channel:
+        return False
     try:
         log.debug(f"Removing player [{user.display_name}] from channel [{channel.name}]")
         await channel.set_permissions(
