@@ -15,7 +15,7 @@ def add_user_to_game(user: CustomUser, game: Game, force: bool = False) -> bool:
             # Add player to end of waitlist
             waitlist = current_players.filter(standby=True).order_by("-waitlist")
             if waitlist.last():
-                last_waitlist_position = waitlist.last().waitlist
+                last_waitlist_position = waitlist.last().waitlist or 0
             else:
                 last_waitlist_position = 0
             player = Player.objects.create(game=game, user=user, waitlist=last_waitlist_position + 1, standby=True)
