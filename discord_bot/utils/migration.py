@@ -33,7 +33,11 @@ def update_player_objects(discord_user):
         log.debug(f"[..] Existing user found, using this")
     except CustomUser.DoesNotExist:
         user = create_user_from_discord_member(discord_user)
-        log.debug(f"[..] Created new user")
+        if user:
+            log.debug(f"[..] Created new user")
+        else:
+            log.debug(f"[.!] Skipping due to user creation failure")
+            return
     references = Player.objects.filter(discord_id=user.discord_id)
     references.update(user=user)
     log.debug(f"[-] Update complete!")
