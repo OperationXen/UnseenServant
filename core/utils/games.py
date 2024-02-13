@@ -228,16 +228,16 @@ def async_db_force_add_player_to_game(game: Game, user: CustomUser):
     return player
 
 
-def sanity_check_new_game_player(game: Game, discord_id: str) -> bool:
+def user_can_join_game(user: CustomUser, game: Game) -> bool:
     """perform a go / no go check for adding a given player to a game (by discord ID)"""
     # If use is DM, already playing or waitlisted they can't join
-    if discord_id == game.dm.discord_id:
+    if user == game.dm.user:
         return False
-    if game_has_player_by_discord_id(game, discord_id):
+    if Player.objects.filter(game=game).filter(user=user).exists():
         return False
 
     # If user is banned they can't join
-    if get_current_user_bans(discord_id):
+    if get_current_user_bans(user.discord_id):
         return False
     return True
 
@@ -260,49 +260,6 @@ def check_discord_user_available_credit(user: DiscordUser) -> int:
     pending_games = get_player_game_count(discord_id)
     max_games = get_player_max_games(user)
     return pending_games < max_games
-
-
-def handle_game_player_add(game: Game, discord_id: str, discord_name: str) -> Player | None:
-    """Handle the process of verifying and adding a player to a game"""
-    game = refetch_game_data(game)
-    try:
-        if not sanity_check_new_game_player(game, discord_id):
-            return None
-
-        # Add player to game, either on waitlist or party
-        current_players = game.players.filter(standby=False).count()
-        if current_players >= game.max_players:
-            waitlist_position = get_last_waitlist_position(game) + 1
-            player = Player.objects.create(
-                game=game,
-                discord_id=discord_id,
-                discord_name=discord_name,
-                standby=True,
-                waitlist=waitlist_position,
-            )
-        else:
-            player = Player.objects.create(
-                game=game,
-                discord_id=discord_id,
-                discord_name=discord_name,
-                standby=False,
-            )
-        return player
-    except Exception as e:
-        log.debug(f"Exception occured adding {discord_name} to {game.name}")
-        return None
-
-
-@sync_to_async
-def async_db_add_player_to_game(game: Game, user: DiscordUser):
-    """Add a new player to an existing game"""
-    discord_id = str(user.id)
-    credit_available = check_discord_user_available_credit(user)
-    if not credit_available:
-        log.debug(f"{user.name} attempted to sign up for {game.name}, but has insufficient credit")
-        return False
-    player = handle_game_player_add(game, discord_id, user.name)
-    return player
 
 
 # ########################################################################## #

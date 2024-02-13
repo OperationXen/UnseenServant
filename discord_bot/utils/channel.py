@@ -19,6 +19,11 @@ def get_discord_channel(game_channel: GameChannel) -> TextChannel:
     return channel
 
 
+async def refresh_discord_channel(game_channel: GameChannel) -> TextChannel:
+    channel = await bot.fetch_channel(int(game_channel.discord_id))
+    return channel
+
+
 async def get_discord_user_by_id(discord_id):
     """retrieve a discord user object from the server by its ID"""
     try:
