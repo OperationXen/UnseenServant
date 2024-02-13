@@ -186,7 +186,12 @@ async def async_channel_remove_user(channel: TextChannel, user: DiscordUser):
     try:
         log.debug(f"Removing player [{user.display_name}] from channel [{channel.name}]")
         await channel.set_permissions(
-            user, read_messages=False, send_messages=False, read_message_history=False, use_slash_commands=False
+            user,
+            read_messages=False,
+            send_messages=False,
+            read_message_history=False,
+            use_slash_commands=False,
+            manage_messages=False,
         )
         return True
     except Exception as e:
@@ -249,7 +254,9 @@ async def async_get_channel_current_members(channel: TextChannel):
         if type(member) != Member or member.bot:
             pass
         else:
-            current_members.append(member)
+            allowed = channel.overwrites_for(member)
+            if allowed.read_messages:
+                current_members.append(member)
 
     return current_members
 
@@ -263,6 +270,7 @@ async def async_add_discord_ids_to_channel(discord_ids, channel: TextChannel) ->
     for discord_id in discord_ids:
         discord_user = await get_discord_user_by_id(discord_id)
         if not discord_user:
+            log.error(f"[!] Unable to find discord user id: {discord_id}")
             continue
         success = await async_channel_add_user(channel, discord_user)
         if success:
@@ -276,6 +284,7 @@ async def async_remove_discord_ids_from_channel(discord_ids, channel: TextChanne
     for discord_id in discord_ids:
         discord_user = await get_discord_user_by_id(discord_id)
         if not discord_user:
+            log.error(f"[!] Unable to find discord user id: {discord_id}")
             continue
         success = await async_channel_remove_user(channel, discord_user)
         if success:
