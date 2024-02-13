@@ -42,7 +42,9 @@ class ChannelMembershipController:
 
         await async_set_default_channel_membership(game_channel)
         expected_members = await async_get_game_channel_members(game_channel)
+        log.debug(f"database members = {expected_members}")
         expected_member_ids = self.get_discord_ids(expected_members)
+        log.debug(f"ids = {expected_member_ids}")
         actual_members = await async_get_channel_current_members(discord_channel)
         actual_member_ids = self.get_discord_ids(actual_members)
 
@@ -55,8 +57,8 @@ class ChannelMembershipController:
         excess_users = list(set(actual_member_ids) - set(expected_member_ids))
         if excess_users:
             log.debug(f"[-] Channel {game_channel.name} has excess players {excess_users}")
-            num_removed = await async_remove_discord_ids_from_channel(excess_users, discord_channel)
-            log.debug(f"[-] removed {num_removed} users from channel")
+        # num_removed = await async_remove_discord_ids_from_channel(excess_users, discord_channel)
+        # log.debug(f"[-] removed {num_removed} users from channel")
 
     @tasks.loop(seconds=42)
     async def channel_event_loop(self):

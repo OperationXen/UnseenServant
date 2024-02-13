@@ -8,8 +8,6 @@ from discord_bot.schedule.games import GamesPoster
 from discord_bot.schedule.channels.manager import ChannelController
 from discord_bot.schedule.channels.membership import ChannelMembershipController
 
-from discord_bot.utils.migration import create_missing_users
-
 
 def start_bot():
     """bot startup routine"""
