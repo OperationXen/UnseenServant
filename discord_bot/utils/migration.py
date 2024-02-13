@@ -46,5 +46,8 @@ def update_player_objects(discord_user):
 async def create_missing_users():
     to_process = await get_players_to_update()
     for player in to_process:
-        discord_member = await get_discord_member_by_id(player.discord_id)
-        await update_player_objects(discord_member)
+        try:
+            discord_member = await get_discord_member_by_id(player.discord_id)
+            await update_player_objects(discord_member)
+        except Exception as e:
+            log.error(f"[!] Exception occured during update process: {str(e)}")
