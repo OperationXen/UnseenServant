@@ -42,7 +42,9 @@ class ChannelMembershipController:
 
         await async_set_default_channel_membership(game_channel)
         expected_members = await async_get_game_channel_members(game_channel)
+        log.debug(f"database members = {expected_members}")
         expected_member_ids = self.get_discord_ids(expected_members)
+        log.debug(f"ids = {expected_member_ids}")
         actual_members = await async_get_channel_current_members(discord_channel)
         actual_member_ids = self.get_discord_ids(actual_members)
 
