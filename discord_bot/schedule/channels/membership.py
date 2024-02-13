@@ -46,13 +46,15 @@ class ChannelMembershipController:
         expected_member_ids = self.get_discord_ids(expected_members)
         log.debug(f"ids = {expected_member_ids}")
         actual_members = await async_get_channel_current_members(discord_channel)
+        log.debug(f"actual members = {actual_members}")
         actual_member_ids = self.get_discord_ids(actual_members)
+        log.debug(f"actual ids = {actual_member_ids}")
 
         missing_users = list(set(expected_member_ids) - set(actual_member_ids))
         if missing_users:
             log.debug(f"[-] Channel {game_channel.name} is missing players {missing_users}")
-            num_added = await async_add_discord_ids_to_channel(missing_users, discord_channel)
-            log.debug(f"[-] added {num_added} users to channel")
+        #    num_added = await async_add_discord_ids_to_channel(missing_users, discord_channel)
+        #    log.debug(f"[-] added {num_added} users to channel")
 
         excess_users = list(set(actual_member_ids) - set(expected_member_ids))
         if excess_users:
