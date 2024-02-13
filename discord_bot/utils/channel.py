@@ -246,6 +246,9 @@ async def async_add_channel_users(channel: TextChannel, game: Game):
         await async_channel_add_player(channel, player)
 
 
+# ################################################################################### #
+#               Channel membership detection logic                                    #
+# ################################################################################### #
 async def async_get_channel_current_members(channel: TextChannel):
     """Get all the current members of the channel on discord"""
     current_members = []
