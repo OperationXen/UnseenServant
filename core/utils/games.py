@@ -10,7 +10,7 @@ from discord_bot.logs import logger as log
 from core.utils.players import get_player_max_games, get_player_game_count
 from core.utils.players import get_user_highest_rank
 from core.utils.players import get_last_waitlist_position
-from core.utils.user import get_user_by_discord_id
+from core.utils.user import get_user_by_discord_id, get_user_available_credit
 from core.utils.sanctions import get_current_user_bans
 
 
@@ -235,21 +235,13 @@ def user_can_join_game(user: CustomUser, game: Game) -> bool:
         return False
     if Player.objects.filter(game=game).filter(user=user).exists():
         return False
+    if not get_user_available_credit(user):
+        return False
 
     # If user is banned they can't join
     if get_current_user_bans(user.discord_id):
         return False
     return True
-
-
-def check_user_available_credit(discord_id: str) -> int:
-    """Check a logged in users' available credit"""
-    user = get_user_by_discord_id(discord_id)
-    if not user:
-        return False
-    if not get_user_highest_rank(user.roles):
-        return False
-    return get_player_game_count(discord_id) < get_player_max_games(user)
 
 
 def check_discord_user_available_credit(user: DiscordUser) -> int:
