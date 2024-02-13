@@ -6,7 +6,7 @@ from discord_bot.bot import bot
 from discord import Member as DiscordMember
 from discord.ui import Button
 
-from core.utils.games import async_get_game_by_id
+from core.utils.games import async_get_game_by_id, user_can_join_game
 from core.utils.games_rework import add_user_to_game, remove_user_from_game, remove_player_by_discord_id
 from core.utils.user import get_user_by_discord_id
 from core.models import Game, Player
@@ -74,12 +74,16 @@ async def async_update_game_listing_embed(game):
 def add_discord_member_to_game(member: DiscordMember, game: Game, force: bool = False) -> Player | None:
     """2024 Rework - Wrapper to facilitate adding a member/user to a game by their discord id"""
     user = get_user_by_discord_id(member.id)
+    game.refresh_from_db()
     if not user:
         try:
             user = create_user_from_discord_member(member)
         except Exception as e:
             return None
-    return add_user_to_game(user, game, force)
+    if user_can_join_game(user, game):
+        return add_user_to_game(user, game, force)
+    log.debug(f"{user} unsuccessful attempted signup to {game}")
+    return False
 
 
 @sync_to_async

@@ -50,10 +50,9 @@ def remove_player_by_discord_id(game: Game, discord_id: str) -> bool:
     """Syncronous worker to remove the player from the game"""
     try:
         player = game.players.all().filter(discord_id=discord_id).first()
-        player.delete()
-        return True
-    except Player.DoesNotExist:
-        pass
+        if player:
+            player.delete()
+            return True
     except Exception as e:
         log.error(f"[!] Exception occured removing player with discord ID {discord_id}: {str(e)}")
     return False
