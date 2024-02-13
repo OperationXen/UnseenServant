@@ -122,8 +122,9 @@ def async_set_default_channel_membership(channel: GameChannel) -> bool:
     """Attempt to set a default membership list for a game channel"""
     try:
         game = channel.game
+        channel.members.set([game.dm.user])
+
         players = game.players.filter(standby=False)
-        channel.members.set([])
         for player in players:
             channel.members.add(player.user)
 
