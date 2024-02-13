@@ -24,5 +24,5 @@ def create_user_from_discord_member(discord_member: DiscordMember) -> CustomUser
 
         return user
     except Exception as e:
-        log.error(f"[!] Exception occured creating new user: {e.message}")
+        log.error(f"[!] Exception occured creating new user: {str(e)}")
         return None
