@@ -7,18 +7,17 @@ from config.settings import DISCORD_GUILDS, DISCORD_DM_ROLES, DISCORD_ADMIN_ROLE
 from discord_bot.logs import logger as log
 from core.utils.games import async_get_wait_list
 from discord_bot.utils.time import discord_countdown
-from discord_bot.utils.games import async_update_game_listing_embed
 from discord_bot.utils.channel import (
     async_get_game_for_channel,
     async_update_mustering_embed,
     async_notify_game_channel,
 )
 from discord_bot.utils.players import (
-    async_remove_player_from_game,
-    async_add_player_to_game,
     async_do_waitlist_updates,
     async_get_party_for_game,
 )
+from discord_bot.utils.games import async_add_discord_member_to_game, async_remove_discord_member_from_game
+from discord_bot.utils.games import async_update_game_listing_embed
 from discord_bot.utils.roles import do_dm_permissions_check
 
 
@@ -36,7 +35,7 @@ async def remove_player(ctx, user: Option(Member, "Player to remove from the gam
     if not do_dm_permissions_check(ctx.author, game):
         return await ctx.followup.send("You are not the DM for this game", ephemeral=True)
 
-    removed = await async_remove_player_from_game(game, user)
+    removed = await async_remove_discord_member_from_game(game, user)
     if removed:
         await async_do_waitlist_updates(game)
         await async_update_mustering_embed(game)
@@ -60,24 +59,24 @@ async def remove_player(ctx, user: Option(Member, "Player to remove from the gam
 async def add_player(ctx, user: Option(Member, "Player to add to the game", required=True)):
     """add a player to a game - should only be run in a game channel"""
     await ctx.response.defer(ephemeral=True)
-    log.info(f"{ctx.author.name} used command /add_player {user.name} in channel {ctx.channel.name}")
+    log.info(f"[-] {ctx.author.name} used command /add_player {user.name} in channel {ctx.channel.name}")
     game = await async_get_game_for_channel(ctx.channel)
     if not game:
-        log.error(f"Channel {ctx.channel.name} has no associated game, command failed")
+        log.error(f"[!] Channel {ctx.channel.name} has no associated game, command failed")
         return await ctx.followup.send("This channel is not linked to a game", ephemeral=True)
 
     if not do_dm_permissions_check(ctx.author, game):
         return await ctx.followup.send("You are not the DM for this game", ephemeral=True)
 
-    added = await async_add_player_to_game(game, user, force=True)
+    added = await async_add_discord_member_to_game(user, game, force=True)
     if added:
         await async_do_waitlist_updates(game)
         await async_update_mustering_embed(game)
         await async_update_game_listing_embed(game)
-        log.info(f"Added player {user.name} to game {game.name}")
+        log.info(f"[-] Added player {user.name} to game {game.name}")
 
         return await ctx.followup.send("Player added to game", ephemeral=True)
-    log.info(f"Unable to add player {user.name} to game {game.name}")
+    log.info(f"[-] Unable to add player {user.name} to game {game.name}")
     return await ctx.followup.send(f"Unable to add {user.name} to {game.name}")
 
 
@@ -89,13 +88,13 @@ async def add_waitlist(ctx, user: Option(Member, "Player to add to the waitlist"
     log.info(f"{ctx.author.name} used command /add_waitlist {user.name} in channel {ctx.channel.name}")
     game = await async_get_game_for_channel(ctx.channel)
     if not game:
-        log.error(f"Channel {ctx.channel.name} has no associated game, command failed")
+        log.error(f"[!] Channel {ctx.channel.name} has no associated game, command failed")
         return await ctx.followup.send("This channel is not linked to a game", ephemeral=True)
 
     if not do_dm_permissions_check(ctx.author, game):
         return await ctx.followup.send("You are not the DM for this game", ephemeral=True)
 
-    added = await async_add_player_to_game(game, user, force=False)
+    added = await async_add_discord_member_to_game(user, game, force=False)
     if added:
         await async_do_waitlist_updates(game)
         await async_update_mustering_embed(game)
@@ -104,10 +103,10 @@ async def add_waitlist(ctx, user: Option(Member, "Player to add to the waitlist"
             log.info(f"Added {user.name} to game {game.name} waitlist")
             message = "Player added to waitlist"
         else:
-            log.info(f"Added {user.name} to game {game.name}")
+            log.info(f"[-] Added {user.name} to game {game.name}")
             message = "Player added to game, as there was a space"
         return await ctx.followup.send(message, ephemeral=True)
-    log.info(f"Unable to add player {user.name} to waitlist {game.name}")
+    log.info(f"[-] Unable to add player {user.name} to waitlist {game.name}")
     return await ctx.followup.send(f"Unable to add {user.name} to waitlist for {game.name}")
 
 

@@ -3,22 +3,9 @@ from discord_bot.utils.messaging import async_send_dm
 from discord_bot.utils.time import discord_countdown
 from core.utils.games import check_game_pending, async_get_player_list, async_get_wait_list
 
-from discord_bot.utils.channel import (
-    async_game_channel_tag_promoted_user,
-    async_game_channel_tag_removed_user,
-    async_game_channel_tag_promoted_player,
-)
-from discord_bot.utils.channel import (
-    async_channel_add_player,
-    async_channel_remove_user,
-    async_get_channel_for_game,
-)
+from discord_bot.utils.channel import async_game_channel_tag_promoted_player
+from discord_bot.utils.channel import async_channel_add_player, async_get_channel_for_game
 from core.utils.players import async_populate_game_from_waitlist
-from core.utils.games import (
-    async_db_add_player_to_game,
-    async_db_force_add_player_to_game,
-    async_db_remove_discord_user_from_game,
-)
 
 
 async def async_do_waitlist_updates(game):
@@ -37,33 +24,6 @@ async def async_do_waitlist_updates(game):
                 player.discord_id,
                 f"You have been promoted from the waitlist for {game.name} {discord_countdown(game.datetime)}!",
             )
-
-
-async def async_remove_player_from_game(game, discord_user):
-    """Remove a player from a given game"""
-    removed_from_party = await async_db_remove_discord_user_from_game(game, str(discord_user.id))
-    if removed_from_party is None:
-        return False
-    elif removed_from_party:
-        channel = await async_get_channel_for_game(game)
-        if channel:
-            await async_channel_remove_user(channel, discord_user)
-            await async_game_channel_tag_removed_user(game, discord_user)
-    return True
-
-
-async def async_add_player_to_game(game, discord_user, force=False):
-    """Add a discord user to a game"""
-    if force:
-        player = await async_db_force_add_player_to_game(game, discord_user)
-    else:
-        player = await async_db_add_player_to_game(game, discord_user)
-    if player and not player.standby:
-        channel = await async_get_channel_for_game(game)
-        if channel:
-            await async_channel_add_player(channel, discord_user)
-            await async_game_channel_tag_promoted_user(game, discord_user)
-    return player
 
 
 async def async_get_party_for_game(game, include_waitlist=False):

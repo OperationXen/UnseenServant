@@ -12,7 +12,7 @@ from discord_bot.components.channels import MusteringBanner, MusteringView
 from core.utils.games import async_get_dm, async_get_player_list
 from core.utils.channels import async_get_game_channels_pending_creation, async_set_game_channel_created
 from core.utils.channels import async_get_game_channels_pending_destruction, async_destroy_game_channel
-from core.utils.channels import async_get_game_channels_pending_reminder, _async_set_game_channel_reminded
+from core.utils.channels import async_get_game_channels_pending_reminder, async_set_game_channel_reminded
 from core.utils.channels import async_get_game_channels_pending_warning, async_set_game_channel_warned
 from core.utils.channels import async_get_game_channel_for_game
 
@@ -118,8 +118,10 @@ class ChannelController:
                 log.info(f"Sending game reminder to channel: {game_channel.name}")
                 channel = self.guild.get_channel(int(game_channel.discord_id))
                 ping_text = await self.get_ping_text(game)
-                await channel.send(f"Reminder: this game is coming up {discord_countdown(game.datetime)}!\n{ping_text}")
-                await _async_set_game_channel_reminded(game_channel)
+                await channel.send(
+                    f"Reminder: this game is coming up {discord_countdown(game.datetime)}!\n{ping_text}"
+                )
+                await async_set_game_channel_reminded(game_channel)
         except Exception as e:
             log.error(e)
 

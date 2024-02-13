@@ -8,8 +8,7 @@ from core.utils.players import async_get_player_credit_text
 from core.utils.games import calc_game_tier
 from discord_bot.components.games import BaseGameEmbed
 
-from discord_bot.utils.players import async_remove_player_from_game
-from discord_bot.utils.games import async_update_game_listing_embed
+from discord_bot.utils.games import async_update_game_listing_embed, async_remove_discord_member_from_game
 from discord_bot.logs import logger as log
 
 
@@ -47,9 +46,7 @@ class MusteringBanner(BaseGameEmbed):
         if self.dm.muster_text:
             return self.dm.muster_text[:1024]
         else:
-            return (
-                f"Greetings! Please submit the character you are bringing to this adventure at the earliest opportunity"
-            )
+            return f"Greetings! Please submit the character you are bringing to this adventure at the earliest opportunity"
 
     async def build(self):
         """Get data from database and populate the embed"""
@@ -135,7 +132,7 @@ class MusteringView(View):
     async def muster_view_dropout(self, interaction):
         """Callback for dropout button pressed"""
         await interaction.response.defer(ephemeral=True)
-        removed = await async_remove_player_from_game(self.game, interaction.user)
+        removed = await async_remove_discord_member_from_game(interaction.user, self.game)
         if removed:
             log.info(f"Player {interaction.user.name} dropped from game {self.game.name}")
             games_remaining_text = await async_get_player_credit_text(interaction.user)
@@ -145,10 +142,6 @@ class MusteringView(View):
             await async_update_game_listing_embed(self.game)
             await interaction.user.send(message)
             return True
-        await interaction.followup.send(
-            "Unable to remove you from this game, please consult the fates. It would appear to be your destiny.",
-            ephemeral=True,
-        )
         return False
 
     async def muster_view_msc(self, interaction):

@@ -8,6 +8,8 @@ from discord_bot.schedule.games import GamesPoster
 from discord_bot.schedule.channels.manager import ChannelController
 from discord_bot.schedule.channels.membership import ChannelMembershipController
 
+from discord_bot.utils.migration import create_missing_users
+
 
 def start_bot():
     """bot startup routine"""
@@ -23,11 +25,15 @@ async def on_ready():
         guild_id = int(DISCORD_GUILDS[0])
         discord_bot.core.guild = bot.get_guild(guild_id)
 
+        log.debug("[.] Checking for missing user entries in current player objects ...")
+        await create_missing_users()
+        log.debug("[-] ... completed checking existing player objects")
+
         discord_bot.core.game_controller = GamesPoster()
-        log.info("[+] Games service")
+        log.info("[+] Started service: Games poster")
         discord_bot.core.channel_controller = ChannelController(discord_bot.core.guild)
-        log.info("[+] Channel creation/deletion service")
-        # discord_bot.core.channel_membership_controller = ChannelMembershipController(discord_bot.core.guild)
-        # log.info("[+] Channel membership service")
+        log.info("[+] Started service: Channel creation/deletion")
+        discord_bot.core.channel_membership_controller = ChannelMembershipController(discord_bot.core.guild)
+        log.info("[+] Started service: Channel membership manager")
     except IndexError:
         log.info("Unable to find the specified guild")

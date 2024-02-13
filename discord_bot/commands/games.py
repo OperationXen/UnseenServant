@@ -25,7 +25,7 @@ async def games(ctx, send_dm: Option(bool, "Send information in a DM instead of 
     dming = await async_get_upcoming_games_for_dm_discord_id(ctx.author.id)
 
     log.debug(
-        f"Command: [/games] used by User [{ctx.author.name}], PM requested [{send_dm}], DMing [{len(dming)}], Playing [{len(games)}], Waitlist [{len(waitlist)}]"
+        f"[ ] Command: [/games] used by User [{ctx.author.name}], PM requested [{send_dm}], DMing [{len(dming)}], Playing [{len(games)}], Waitlist [{len(waitlist)}]"
     )
 
     if send_dm:
@@ -71,7 +71,9 @@ async def games(ctx, send_dm: Option(bool, "Send information in a DM instead of 
             await ctx.respond(message, embeds=embeds, ephemeral=True)
 
 
-@bot.slash_command(guild_ids=DISCORD_GUILDS, description="All upcoming games within a time period (default is 30 days)")
+@bot.slash_command(
+    guild_ids=DISCORD_GUILDS, description="All upcoming games within a time period (default is 30 days)"
+)
 async def games_summary(ctx, days: Option(int, "Number of days", required=False) = 30):
     """Find all upcoming games for the next N days and list them as a summary print"""
     embeds = []

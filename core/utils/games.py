@@ -306,24 +306,6 @@ def async_db_add_player_to_game(game: Game, user: DiscordUser):
 
 
 # ########################################################################## #
-def remove_user_from_game_by_discord_id(game: Game, discord_id: str) -> bool:
-    """Syncronous worker to remove the player from the game"""
-    player = game.players.filter(discord_id=discord_id).first()
-    if player:
-        removed_from_party = not player.waitlist
-        player.delete()
-        return removed_from_party
-    return None
-
-
-@sync_to_async
-def async_db_remove_discord_user_from_game(game: Game, discord_id: str):
-    """Remove a player from a game by their discord ID"""
-    result = remove_user_from_game_by_discord_id(game, discord_id)
-    return result
-
-
-# ########################################################################## #
 def check_game_expired(game: Game) -> bool:
     """See if a game object has reached expiry"""
     game = get_game_by_id(game.id)
