@@ -123,8 +123,10 @@ def async_set_default_channel_membership(channel: GameChannel) -> bool:
     try:
         game = channel.game
         players = game.players.filter(standby=False)
-        users = list(CustomUser.objects.filter(playing__in=players))
-        channel.members.set(users)
+        channel.members.set([])
+        for player in players:
+            channel.members.add(player.user)
+
         return True
     except Exception as e:
         return False
