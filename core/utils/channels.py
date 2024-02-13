@@ -113,21 +113,28 @@ def async_get_all_current_game_channels():
 @sync_to_async
 def async_get_game_channel_members(channel: GameChannel) -> List[CustomUser]:
     """Given a game channel object retrieve its expected membership list"""
+    channel.refresh_from_db()
     queryset = channel.members.all()
     return list(queryset)  # force evaluation before leaving this sync context
+
+
+def get_baseline_channel_membership(channel: GameChannel) -> List[CustomUser]:
+    game = channel.game
+
+    users = [game.dm.user]
+    party = game.players.filter(standby=False)
+    for player in party:
+        users.append(player.user)
+    return users
 
 
 @sync_to_async
 def async_set_default_channel_membership(channel: GameChannel) -> bool:
     """Attempt to set a default membership list for a game channel"""
     try:
-        game = channel.game
-        channel.members.set([game.dm.user])
-
-        players = game.players.filter(standby=False)
-        for player in players:
-            channel.members.add(player.user)
-
+        users = get_baseline_channel_membership(channel)
+        print(f"User list for {channel.game.name}: {users}")
+        channel.members.set(users)
         return True
     except Exception as e:
         return False
