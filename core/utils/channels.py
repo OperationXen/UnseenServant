@@ -133,7 +133,6 @@ def async_set_default_channel_membership(channel: GameChannel) -> bool:
     """Attempt to set a default membership list for a game channel"""
     try:
         users = get_baseline_channel_membership(channel)
-        print(f"User list for {channel.game.name}: {users}")
         channel.members.set(users)
         return True
     except Exception as e:

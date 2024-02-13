@@ -33,7 +33,6 @@ class GamesPoster:
 
     async def recover_message_state(self):
         """Pull game postings from posting history and reconstruct a game/message status from it"""
-        log.debug("Rebuilding internal message state")
         for channel in [self.channel_priority, self.channel_general]:
             messages = await async_get_bot_game_postings(channel)
             for message in messages:
