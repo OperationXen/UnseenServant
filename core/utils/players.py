@@ -72,7 +72,7 @@ def get_user_signups_remaining(user) -> int:
     max_games = get_player_max_games(user)
     game_count = get_user_pending_games_count(str(user.id))
 
-    log.info(f"{user} is signed up for {game_count}")
+    log.debug(f"{user.display_name} is signed up for {game_count}")
     return max_games - game_count
 
 
