@@ -54,7 +54,7 @@ class ChannelMembershipController:
 
         excess_users = list(set(actual_member_ids) - set(expected_member_ids))
         if excess_users:
-            log.debug(f"[-] Channel {game_channel.name} has excess players {missing_users}")
+            log.debug(f"[-] Channel {game_channel.name} has excess players {excess_users}")
             num_removed = await async_remove_discord_ids_from_channel(excess_users, discord_channel)
             log.debug(f"[-] removed {num_removed} users from channel")
 
