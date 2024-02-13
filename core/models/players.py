@@ -40,6 +40,7 @@ class Player(models.Model):
     user = models.ForeignKey(
         CustomUser,
         null=True,
+        blank=True,
         related_name="playing",
         on_delete=models.CASCADE,
         help_text="User playing in game",
