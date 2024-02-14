@@ -25,7 +25,7 @@ def add_user_to_game(user: CustomUser, game: Game, force: bool = False) -> bool:
 
         # Discord data currently still stored on player object for transition
         player.discord_id = user.discord_id
-        player.discord_name = user.discord_name
+        player.discord_name = user.discord_name or "Masked stranger"
         player.save()
         # Remove above lines when no longer required
         return player
