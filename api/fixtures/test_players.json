@@ -4,10 +4,9 @@
     "pk": 1,
     "fields": {
       "game": 1,
+      "user": 7,
       "standby": false,
       "waitlist": null,
-      "discord_id": "12345678900987654321",
-      "discord_name": "TheGreatAndPowerfulOz",
       "character": null
     }
   },
@@ -16,10 +15,9 @@
     "pk": 2,
     "fields": {
       "game": 1,
+      "user": 8,
       "standby": true,
       "waitlist": null,
-      "discord_id": "123123123123123123",
-      "discord_name": "Waitlister",
       "character": null
     }
   }

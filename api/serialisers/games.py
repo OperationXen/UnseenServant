@@ -1,25 +1,42 @@
 from rest_framework.serializers import ModelSerializer, ReadOnlyField, SerializerMethodField
 
 from core.models import Game, Player
-from core.utils.user import user_is_player_in_game, user_is_waitlisted_in_game
+from core.utils.user import user_in_game
 
 
 class PlayerSummarySerialiser(ModelSerializer):
     """Serialise a player (basic, no personal data)"""
 
+    def get_discord_id(self, player):
+        return player.user.discord_id
+
+    def get_discord_name(self, player):
+        return player.user.discord_name
+
+    discord_id = SerializerMethodField()
+    discord_name = SerializerMethodField()
+
     class Meta:
         model = Player
-        fields = ["discord_id", "discord_name", "standby"]
+        fields = ["standby", "discord_id", "discord_name"]
 
 
 class PlayerSerialiser(ModelSerializer):
     """Serialise a player (include related fields)"""
 
+    def get_discord_id(self, player):
+        return player.user.discord_id
+
+    def get_discord_name(self, player):
+        return player.user.discord_name
+
     game_name = ReadOnlyField(source="game.name")
+    discord_id = SerializerMethodField()
+    discord_name = SerializerMethodField()
 
     class Meta:
         model = Player
-        fields = ["game", "game_name", "discord_id", "discord_name", "standby", "waitlist"]
+        fields = ["game", "game_name", "standby", "waitlist", "discord_id", "discord_name"]
 
 
 class GameSerialiser(ModelSerializer):
@@ -37,7 +54,7 @@ class GameSerialiser(ModelSerializer):
         """check to see if the current user is a player in the game"""
         try:
             requesting_user = self.context["request"].user
-            return user_is_player_in_game(requesting_user, game)
+            return user_in_game(requesting_user, game, standby=False)
         except:
             return False
 
@@ -45,7 +62,7 @@ class GameSerialiser(ModelSerializer):
         """check to see if the current user is a player in the game"""
         try:
             requesting_user = self.context["request"].user
-            return user_is_waitlisted_in_game(requesting_user, game)
+            return user_in_game(requesting_user, game, standby=True)
         except:
             return False
 

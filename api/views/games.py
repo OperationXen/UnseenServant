@@ -10,8 +10,7 @@ from rest_framework.viewsets import ViewSet
 from api.serialisers.games import GameCreationSerialiser, GameSerialiser, PlayerSerialiser
 from core.models import DM, Game, Player
 from core.utils.sanctions import check_discord_user_good_standing
-from core.utils.user import get_user_available_credit, user_in_game
-from core.utils.games import game_has_player_by_discord_id
+from core.utils.user import get_user_credit_balance, user_in_game
 from core.utils.games_rework import add_user_to_game, remove_user_from_game
 
 
@@ -30,12 +29,12 @@ class GamesViewSet(ViewSet):
 
         if game.dm.user == request.user:
             return Response({"message": "You cannot play in your own game"}, HTTP_400_BAD_REQUEST)
-        if game_has_player_by_discord_id(game, request.user.discord_id):
+        if user_in_game(request.user, game):
             return Response({"message": "You are already in this game"}, HTTP_400_BAD_REQUEST)
         if not check_discord_user_good_standing(request.user.discord_id):
             return Response({"message": "You are currently banned from using this system"}, HTTP_403_FORBIDDEN)
 
-        available_credit = get_user_available_credit(request.user)
+        available_credit = get_user_credit_balance(request.user)
         if not available_credit > 0:
             return Response({"message": "You do not have any available credits"}, HTTP_401_UNAUTHORIZED)
         player = add_user_to_game(request.user, game)

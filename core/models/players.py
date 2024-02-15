@@ -45,17 +45,12 @@ class Player(models.Model):
         on_delete=models.CASCADE,
         help_text="User playing in game",
     )
-    discord_id = models.CharField(null=True, blank=True, max_length=32, help_text="Discord ID of player")
-    discord_name = models.CharField(blank=True, max_length=32, help_text="Discord username")
     character = models.ForeignKey(
         Character, null=True, blank=True, on_delete=models.SET_NULL, help_text="Character info"
     )
 
     def __str__(self):
         return f"{self.game.datetime.date()} | {self.game.name} - {self.discord_name}"
-
-    class Meta:
-        indexes = [models.Index(fields=["discord_id", "game"])]
 
 
 class Strike(models.Model):

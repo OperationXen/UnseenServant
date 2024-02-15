@@ -1,12 +1,11 @@
+from asgiref.sync import sync_to_async
 from datetime import timedelta
 
-from asgiref.sync import sync_to_async
 from django.db.models import Q, Sum, QuerySet
 from django.utils import timezone
 
 from core.models.players import BonusCredit, Player
 from discord_bot.logs import logger as log
-from core.utils.ranks import get_user_highest_rank
 
 
 @sync_to_async
@@ -46,51 +45,6 @@ def get_bonus_credits(discord_id: str) -> int:
     queryset = queryset.filter(not_expired)
     total = queryset.aggregate(Sum("credits"))
     return total["credits__sum"] or 0
-
-
-def get_player_max_games(discord_user) -> int:
-    """get the total number of games a user can sign up for"""
-    max_games = 0
-    rank = get_user_highest_rank(discord_user.roles)
-    if rank:
-        max_games = max_games + rank.max_games
-    bonuses = get_bonus_credits(str(discord_user.id))
-    return max_games + bonuses
-
-
-def get_user_pending_games_count(discord_id: str) -> int:
-    now = timezone.now()
-
-    queryset = Player.objects.filter(discord_id=discord_id)
-    queryset = queryset.filter(game__datetime__gte=now)
-    pending_games = queryset.count()
-    return pending_games
-
-
-def get_user_signups_remaining(user) -> int:
-    """Get the total number of signups the user has availble to them"""
-    max_games = get_player_max_games(user)
-    game_count = get_user_pending_games_count(str(user.id))
-
-    log.debug(f"{user.display_name} is signed up for {game_count}")
-    return max_games - game_count
-
-
-@sync_to_async
-def async_get_user_signups_remaining(user) -> int:
-    """Async wrapper to get signups remaining from async context"""
-    return get_user_signups_remaining(user)
-
-
-@sync_to_async
-def async_get_player_credit_text(user):
-    """Get a text string explaining to the user how many game credits they have"""
-    credits = get_user_signups_remaining(user)
-    max_games = get_player_max_games(user)
-    if credits:
-        return f"{credits} / {max_games} game credits available"
-    else:
-        return f"You have no game credits available from your [{max_games}] total"
 
 
 @sync_to_async
@@ -134,7 +88,7 @@ def get_historic_users(days: int = 31) -> QuerySet:
     now = timezone.now()
     start = now - timedelta(days=days)
     queryset = Player.objects.filter(game__datetime__gte=start).filter(game__datetime__lte=now)
-    queryset = queryset.order_by("discord_id")
+    queryset = queryset.order_by("user__pk")
     return queryset
 
 

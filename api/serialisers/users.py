@@ -1,34 +1,31 @@
 from rest_framework.serializers import ModelSerializer, SerializerMethodField
 
-from django.contrib.auth import get_user_model
-
+from core.models import CustomUser
 from core.serialisers import RankSerialiser
-from core.utils.user import get_user_max_credit, get_user_available_credit
-
-UserModel = get_user_model()
+from core.utils.user import get_user_credit_balance, get_user_credits_max
 
 
 class UserSerialiser(ModelSerializer):
     ranks = RankSerialiser(many=True, read_only=True)
 
     class Meta:
-        model = UserModel
-        fields = ["username", "email", "discord_name", "ranks"]
+        model = CustomUser
+        fields = ["username", "email", "discord_id", "discord_name", "ranks"]
 
 
 class UserDetailsSerialiser(ModelSerializer):
     """Get user details"""
 
-    def get_credit_max(self, user: UserModel):
-        return get_user_max_credit(user)
+    def get_credit_max(self, user: CustomUser):
+        return get_user_credits_max(user)
 
-    def get_credit_available(self, user: UserModel):
-        return get_user_available_credit(user)
+    def get_credit_available(self, user: CustomUser):
+        return get_user_credit_balance(user)
 
     ranks = RankSerialiser(many=True, read_only=True)
     credit_max = SerializerMethodField()
     credit_available = SerializerMethodField()
 
     class Meta:
-        model = UserModel
+        model = CustomUser
         fields = ["username", "email", "discord_name", "credit_max", "credit_available", "ranks"]

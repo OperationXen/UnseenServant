@@ -7,10 +7,7 @@ from discord import User as DiscordUser
 
 from core.models import Game, Player, CustomUser
 from discord_bot.logs import logger as log
-from core.utils.players import get_player_max_games, get_player_game_count
-from core.utils.players import get_user_highest_rank
-from core.utils.players import get_last_waitlist_position
-from core.utils.user import get_user_by_discord_id, get_user_available_credit
+from core.utils.user import get_user_credit_balance
 from core.utils.sanctions import get_current_user_bans
 
 
@@ -229,29 +226,19 @@ def async_db_force_add_player_to_game(game: Game, user: CustomUser):
 
 
 def user_can_join_game(user: CustomUser, game: Game) -> bool:
-    """perform a go / no go check for adding a given player to a game (by discord ID)"""
+    """perform a go / no go check for adding a given player to a game"""
     # If use is DM, already playing or waitlisted they can't join
     if user == game.dm.user:
         return False
     if Player.objects.filter(game=game).filter(user=user).exists():
         return False
-    if not get_user_available_credit(user):
+    if not get_user_credit_balance(user):
         return False
 
     # If user is banned they can't join
     if get_current_user_bans(user.discord_id):
         return False
     return True
-
-
-def check_discord_user_available_credit(user: DiscordUser) -> int:
-    """Check a discord user (not logged in to API) for available credit"""
-    if not get_user_highest_rank(user.roles):
-        return False
-    discord_id = str(user.id)
-    pending_games = get_player_game_count(discord_id)
-    max_games = get_player_max_games(user)
-    return pending_games < max_games
 
 
 # ########################################################################## #

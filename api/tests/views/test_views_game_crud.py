@@ -67,7 +67,7 @@ class TestGameViews(TestCase):
         self.assertIn("waitlist", response.data[0])
         self.assertIsInstance(response.data[0].get("waitlist"), list)
         self.assertIn("discord_name", response.data[0]["waitlist"][0])
-        self.assertEqual("Waitlister", response.data[0]["waitlist"][0]["discord_name"])
+        self.assertEqual("Illjustwaithere", response.data[0]["waitlist"][0]["discord_name"])
 
     def test_list_games_retrieves_players(self) -> None:
         """Part of the returned object should be a list of users playing in the game"""
