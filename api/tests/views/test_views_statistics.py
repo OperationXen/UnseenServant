@@ -4,7 +4,7 @@ from django.urls import reverse
 from datetime import timedelta
 from django.utils import timezone
 
-from core.models import Game, DM, Player
+from core.models import Game, DM, Player, CustomUser
 
 
 class TestStatisticView(TestCase):
@@ -71,36 +71,35 @@ class TestStatisticPlayerView(TestStatisticView):
     def test_player_statistics_sane(self) -> None:
         """Check that the active users statistic is sane"""
         game = self.create_game_yesterday()
-        Player.objects.create(game=game, standby=False, discord_id="0001", discord_name="player1")
-        Player.objects.create(game=game, standby=False, discord_id="0002", discord_name="player2")
-        Player.objects.create(game=game, standby=False, discord_id="0003", discord_name="player3")
-        Player.objects.create(game=game, standby=False, discord_id="0004", discord_name="player4")
-        Player.objects.create(game=game, standby=False, discord_id="0005", discord_name="player5")
-        Player.objects.create(game=game, standby=True, discord_id="1001", discord_name="waitlist1", waitlist=1)
-        Player.objects.create(game=game, standby=True, discord_id="1002", discord_name="waitlist2", waitlist=2)
-        Player.objects.create(game=game, standby=True, discord_id="1003", discord_name="waitlist3", waitlist=3)
+        Player.objects.create(game=game, standby=False, user=CustomUser.objects.get(username="testuser1"))
+        Player.objects.create(game=game, standby=False, user=CustomUser.objects.get(username="testuser2"))
+        Player.objects.create(game=game, standby=True, waitlist=2, user=CustomUser.objects.get(username="playeruser"))
 
         response = self.client.get(reverse("stats"))
         self.assertEqual(response.status_code, HTTP_200_OK)
         self.assertIn("active_users", response.data)
-        self.assertEqual(response.data["active_users"], 8)
+        self.assertEqual(response.data["active_users"], 3)
         self.assertIn("total_players", response.data)
-        self.assertEqual(response.data["total_players"], 5)
+        self.assertEqual(response.data["total_players"], 2)
         self.assertIn("unique_players", response.data)
-        self.assertEqual(response.data["unique_players"], 5)
+        self.assertEqual(response.data["unique_players"], 2)
 
     def test_player_statistics_unselected(self) -> None:
         """Check that the calculation for unselected player numbers is sane"""
         game1 = self.create_game_yesterday()
         game2 = self.create_game_yesterday()
         # Each game has one player
-        Player.objects.create(game=game1, standby=False, discord_id="0001", discord_name="player1")
-        Player.objects.create(game=game2, standby=False, discord_id="0002", discord_name="player2")
+        Player.objects.create(game=game1, standby=False, user=CustomUser.objects.get(username="testuser1"))
+        Player.objects.create(game=game2, standby=False, user=CustomUser.objects.get(username="testuser2"))
         # One user is waitlisted for both games
-        Player.objects.create(game=game1, standby=True, discord_id="1001", discord_name="waitlist1", waitlist=1)
-        Player.objects.create(game=game2, standby=True, discord_id="1001", discord_name="waitlist1", waitlist=1)
+        Player.objects.create(
+            game=game1, standby=True, waitlist=1, user=CustomUser.objects.get(username="waitlistuser")
+        )
+        Player.objects.create(
+            game=game2, standby=True, waitlist=1, user=CustomUser.objects.get(username="waitlistuser")
+        )
         # Player 1 is also waitlisted for game 2
-        Player.objects.create(game=game2, standby=True, discord_id="0001", discord_name="player1", waitlist=2)
+        Player.objects.create(game=game2, standby=True, waitlist=2, user=CustomUser.objects.get(username="testuser1"))
 
         response = self.client.get(reverse("stats"))
         self.assertEqual(response.status_code, HTTP_200_OK)
@@ -178,20 +177,24 @@ class TestStatisticDetailedView(TestStatisticView):
         """Ensure that the detailed statistics are sane"""
         game1 = self.create_game_yesterday()
         game2 = self.create_game_yesterday()
+        user1 = CustomUser.objects.get(username="testuser1")
+        user2 = CustomUser.objects.get(username="testuser2")
+        waitlist_user = CustomUser.objects.get(username="waitlistuser")
+
         # Each game has one player
-        Player.objects.create(game=game1, standby=False, discord_id="0001", discord_name="player1")
-        Player.objects.create(game=game2, standby=False, discord_id="0002", discord_name="player2")
+        Player.objects.create(game=game1, standby=False, user=user1)
+        Player.objects.create(game=game2, standby=False, user=user2)
         # One user is waitlisted for both games
-        Player.objects.create(game=game1, standby=True, discord_id="1001", discord_name="waitlist1", waitlist=1)
-        Player.objects.create(game=game2, standby=True, discord_id="1001", discord_name="waitlist1", waitlist=1)
+        Player.objects.create(game=game1, standby=True, user=waitlist_user, waitlist=1)
+        Player.objects.create(game=game2, standby=True, user=waitlist_user, waitlist=1)
         # Player 1 is also waitlisted for game 2
-        Player.objects.create(game=game2, standby=True, discord_id="0001", discord_name="player1", waitlist=2)
+        Player.objects.create(game=game2, standby=True, user=user1, waitlist=2)
 
         self.client.login(username="admin", password="testpassword")
         response = self.client.get(reverse("stats-detailed"))
         self.assertEqual(response.status_code, HTTP_200_OK)
         self.assertIn("user_details", response.data)
         user_details = response.data["user_details"]
-        self.assertIn("waitlist1", user_details)
-        self.assertEqual(user_details["waitlist1"], 2)
+        self.assertIn("waitlistuser", user_details)
+        self.assertEqual(user_details["waitlistuser"], 2)
         self.assertEqual(len(user_details), 1)
