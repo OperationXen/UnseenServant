@@ -18,7 +18,7 @@
       "datetime_release": null,
       "datetime_open_release": "2022-06-11T12:02:09Z",
       "datetime": "2022-07-07T22:50:05Z",
-      "length": "4 hours",
+      "duration": 4,
       "ready": true
     }
   },
@@ -41,7 +41,7 @@
       "datetime_release": null,
       "datetime_open_release": "2022-06-11T12:02:09Z",
       "datetime": "2022-07-07T22:50:05Z",
-      "length": "4 hours",
+      "duration": 4,
       "ready": true
     }
   },
@@ -63,7 +63,7 @@
       "datetime_release": null,
       "datetime_open_release": "2022-06-11T12:02:09Z",
       "datetime": "2022-07-07T22:50:05Z",
-      "length": "4 hours",
+      "duration": 4,
       "ready": true
     }
   }

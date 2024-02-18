@@ -58,11 +58,8 @@ class Game(models.Model):
         verbose_name="General Release Time",
     )
     datetime = models.DateTimeField(help_text="Date/Time game is starting (UTC)", verbose_name="Game Time")
-    length = models.CharField(max_length=48, default="4 hours", blank=True, help_text="Planned duration of game")
-
-    ready = models.BooleanField(
-        default=True, help_text="Unset this if the game is not yet ready for release (i.e. still in draft)"
-    )
+    duration = models.IntegerField(default=None, null=True, blank=True, help_text="Planned duration of game (hours)")
+    ready = models.BooleanField(default=True, help_text="Game is ready for release")
 
     def __str__(self):
         return f"{self.datetime.date()} | {self.dm.discord_name} - {self.name}"
