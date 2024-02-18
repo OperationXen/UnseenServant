@@ -58,8 +58,8 @@ class BaseGameEmbed(Embed):
     def get_game_time(self):
         """Helper function to get the game time string"""
         time_info = f"{discord_time(self.game.datetime)} ({discord_countdown(self.game.datetime)})"
-        if self.game.length:
-            time_info = time_info + f"\nDuration: {self.game.length}"
+        if self.game.duration:
+            time_info = time_info + f"\nDuration: {self.game.duration}"
         return time_info
 
     def waitlist_count(self):
