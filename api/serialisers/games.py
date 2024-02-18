@@ -86,7 +86,7 @@ class GameSerialiser(ModelSerializer):
             "datetime_release",
             "datetime_open_release",
             "datetime",
-            "length",
+            "duration",
             "user_is_dm",
             "user_is_player",
             "user_is_waitlisted",
@@ -113,7 +113,7 @@ class GameCreationSerialiser(ModelSerializer):
             "datetime_release",
             "datetime_open_release",
             "datetime",
-            "length",
+            "duration",
             "ready",
         ]
         read_only_fields = ["dm"]

@@ -46,6 +46,8 @@ class TestGameViews(TestCase):
         self.assertGreaterEqual(len(response.data), 1)
         self.assertIn("name", response.data[0])
         self.assertEqual("Test", response.data[0].get("name"))
+        self.assertIn("duration", response.data[0])
+        self.assertEqual(4, response.data[0].get("duration"))
         self.assertIn("players", response.data[0])
         self.assertIn("user_is_dm", response.data[0])
         self.assertFalse(response.data[0].get("user_is_dm"))
