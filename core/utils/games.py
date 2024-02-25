@@ -235,7 +235,7 @@ def user_can_join_game(user: CustomUser, game: Game) -> bool:
         return False
     if Player.objects.filter(game=game).filter(user=user).exists():
         return False
-    if not get_user_available_credit(user):
+    if get_user_available_credit(user) <= 0:
         return False
 
     # If user is banned they can't join
