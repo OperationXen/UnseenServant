@@ -1,17 +1,20 @@
 import urllib.parse
 
 from config.settings import SERVER_URI
+from discord_bot.utils.time import calculate_endtime
 
 
 def create_google_calendar_link(game):
     """build a google calendar link for an event"""
+    end_time = calculate_endtime(game.datetime, game.duration)
+
     link = f"https://www.google.com/calendar/render?"
     params = {}
     params["action"] = "TEMPLATE"
     params["text"] = game.name
     params["details"] = f"Triden%20games%20DMed%20by%20{game.dm.name}"
     params["location"] = f"Triden Games"
-    params["dates"] = f"{game.datetime.strftime('%Y%m%dT%H%M')}Z/{game.datetime.strftime('%Y%m%dT%H%M')}Z"
+    params["dates"] = f"{game.datetime.strftime('%Y%m%dT%H%M')}Z/{end_time.strftime('%Y%m%dT%H%M')}Z"
     params["sf"] = "true"
 
     return link + urllib.parse.urlencode(params)
