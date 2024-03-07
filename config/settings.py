@@ -64,7 +64,7 @@ DISCORD_DM_ROLES = ["Dungeon Master"]
 
 # Event role management configuration
 EVENT_PLAYER_ROLE_NAME = "Event Participant"
-EVENT_MANAGEMENT_ROLE_NAMES = ["Event DM", "Event Table Captain"]
+EVENT_MANAGEMENT_ROLE_NAMES = ["Event DM", "Event Table Captain", "Event Staff"]
 DISCORD_EVENT_COORDINATOR_ROLES = ["Event Coordinator"]
 DISCORD_EVENT_USER_ROLES = [EVENT_PLAYER_ROLE_NAME, *EVENT_MANAGEMENT_ROLE_NAMES]
 
