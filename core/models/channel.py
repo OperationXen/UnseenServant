@@ -25,7 +25,6 @@ class GameChannel(models.Model):
         default=ChannelStatuses.READY,
         help_text="Status of the channel",
     )
-    members = models.ManyToManyField(CustomUser, related_name="game_channels")
 
     class Meta:
         indexes = [
