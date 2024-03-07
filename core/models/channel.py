@@ -20,7 +20,10 @@ class GameChannel(models.Model):
     link = models.URLField(null=True, blank=True, help_text="Link to the channel on discord")
     name = models.CharField(blank=False, max_length=64, default="Unnamed game")
     status = models.TextField(
-        choices=ChannelStatuses.choices, max_length=32, default=ChannelStatuses.READY, help_text="Status of the channel"
+        choices=ChannelStatuses.choices,
+        max_length=32,
+        default=ChannelStatuses.READY,
+        help_text="Status of the channel",
     )
     members = models.ManyToManyField(CustomUser, related_name="game_channels")
 
@@ -32,3 +35,17 @@ class GameChannel(models.Model):
 
     def __str__(self):
         return f"{self.name} [{self.status}]"
+
+
+class ChannelMember(models.Model):
+    """Object describing a member of a channel, a many-to-many linking object with metadata for permissions"""
+
+    # Foreign keys to relevant entities
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name="channels_membership")
+    channel = models.ForeignKey(GameChannel, on_delete=models.CASCADE, related_name="channel_members")
+    # Metadata about membership
+    is_admin = models.BooleanField(default=False, help_text="Give channel member management permissions")
+    is_readonly = models.BooleanField(default=False, help_text="Limit user to read only access")
+
+    def __str__(self):
+        return f"{self.channel.name} / {self.user.discord_name}"
