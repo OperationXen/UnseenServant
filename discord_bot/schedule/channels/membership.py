@@ -1,18 +1,15 @@
 from typing import List
 
-from django.contrib.auth import get_user_model
 from discord.ext import tasks
 from discord.member import Member
 
 from discord_bot.logs import logger as log
-from core.models.channel import GameChannel
+from core.models.channel import GameChannel, CustomUser
 
 from core.utils.channels import async_set_default_channel_membership
 from core.utils.channels import async_get_all_current_game_channels, async_get_game_channel_members
 from discord_bot.utils.channel import async_get_channel_current_members, refresh_discord_channel
 from discord_bot.utils.channel import async_add_discord_ids_to_channel, async_remove_discord_ids_from_channel
-
-UserModel = get_user_model()
 
 
 class ChannelMembershipController:
@@ -25,14 +22,14 @@ class ChannelMembershipController:
         self.guild = guild
         self.channel_event_loop.start()
 
-    def get_discord_ids(self, data: Member | UserModel) -> List[str]:
+    def get_discord_ids(self, data: Member | CustomUser) -> List[str]:
         """Return a list of discord IDs"""
         discord_ids = []
 
         for element in data:
             if type(element) == Member:
                 discord_ids.append(str(element.id))
-            if type(element) == UserModel and element.discord_id:
+            if type(element) == CustomUser and element.discord_id:
                 discord_ids.append(element.discord_id)
         return discord_ids
 
