@@ -13,19 +13,19 @@ from discord_bot.utils.roles import get_role_by_name
 async def join_event(ctx):
     """Sign the player up for the upcoming event"""
     await ctx.response.defer(ephemeral=True)
-    log.info(f"{ctx.author.name} used command /join_event")
+    log.info(f"[/] {ctx.author.name} used command /join_event")
 
     try:
         event_role = get_role_by_name(discord_bot.core.guild.roles, EVENT_PLAYER_ROLE_NAME)
         await ctx.author.add_roles(event_role, reason="User signed up for event")
     except ValueError:
-        log.error(f"Could not find a role named '{EVENT_PLAYER_ROLE_NAME}'")
+        log.error(f"[!] Could not find a role named '{EVENT_PLAYER_ROLE_NAME}'")
         await ctx.followup.send(f"Unable to find the appropriate role")
     except [Forbidden, HTTPException]:
-        log.error(f"Could not grant role {event_role.name} to user {ctx.author.name}")
+        log.error(f"[!] Could not grant role {event_role.name} to user {ctx.author.name}")
         await ctx.followup.send(f"Unable to grant role")
 
-    log.info(f"Role {event_role.name} granted to user {ctx.author.name}")
+    log.info(f"[-] Role {event_role.name} granted to user {ctx.author.name}")
     await ctx.followup.send(f"Added you to the event")
 
 
@@ -33,19 +33,19 @@ async def join_event(ctx):
 async def leave_event(ctx):
     """Remove the player from the upcoming event"""
     await ctx.response.defer(ephemeral=True)
-    log.info(f"{ctx.author.name} used command /leave_event")
+    log.info(f"[/] {ctx.author.name} used command /leave_event")
 
     try:
         event_role = get_role_by_name(discord_bot.core.guild.roles, EVENT_PLAYER_ROLE_NAME)
         await ctx.author.remove_roles(event_role, reason="User dropped out of event")
     except ValueError:
-        log.error(f"Could not find a role named '{EVENT_PLAYER_ROLE_NAME}'")
+        log.error(f"[!] Could not find a role named '{EVENT_PLAYER_ROLE_NAME}'")
         await ctx.followup.send(f"Unable to find the appropriate role")
     except [Forbidden, HTTPException]:
-        log.error(f"Could not remove role {event_role.name} from user {ctx.author.name}")
+        log.error(f"[!] Could not remove role {event_role.name} from user {ctx.author.name}")
         await ctx.followup.send(f"Unable to revoke role")
 
-    log.info(f"Role {event_role.name} removed from user {ctx.author.name}")
+    log.info(f"[-] Role {event_role.name} removed from user {ctx.author.name}")
     await ctx.followup.send(f"Removed you from the event")
 
 
@@ -54,7 +54,7 @@ async def leave_event(ctx):
 async def reset_event_roles(ctx):
     """Remove all event roles for users"""
     await ctx.response.defer(ephemeral=True)
-    log.info(f"{ctx.author.name} used command /reset_event_roles")
+    log.info(f"[/] {ctx.author.name} used command /reset_event_roles")
     affected_members: list[str] = []
 
     try:
@@ -65,9 +65,9 @@ async def reset_event_roles(ctx):
                 affected_members.append(member.display_name)
 
     except ValueError:
-        log.error(f"Could not find a role named '{role_name}'")
+        log.error(f"[!] Could not find a role named '{role_name}'")
     except [Forbidden, HTTPException]:
-        log.error(f"Could not remove role {event_role.name} from user {member.name}")
+        log.error(f"[!] Could not remove role {event_role.name} from user {member.name}")
 
-    log.info(f"User event roles removed from all users")
+    log.info(f"[-] User event roles removed from all users")
     await ctx.followup.send(f"Role removal process finished, affected members: {','.join(affected_members)}")
