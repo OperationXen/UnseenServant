@@ -4,8 +4,7 @@ from asgiref.sync import sync_to_async
 from typing import List
 
 from config.settings import CHANNEL_CREATION_DAYS, CHANNEL_REMIND_HOURS, CHANNEL_WARN_MINUTES, CHANNEL_DESTROY_HOURS
-from core.models.channel import GameChannel
-from core.models.game import Game
+from core.models import GameChannel, ChannelMember, Player, Game
 from core.models.auth import CustomUser
 
 
@@ -118,22 +117,65 @@ def async_get_game_channel_members(channel: GameChannel) -> List[CustomUser]:
     return list(queryset)  # force evaluation before leaving this sync context
 
 
-def get_baseline_channel_membership(channel: GameChannel) -> List[CustomUser]:
-    game = channel.game
+def add_user_to_channel(user: CustomUser, channel: GameChannel, admin=False, readonly=False) -> bool:
+    """Add a user to a channel (or update an existing channel member) with a given set of permissions"""
+    channel_member = None
+    try:
+        channel_member = ChannelMember.objects.get(user=user, channel=channel)
+    except ChannelMember.DoesNotExist:
+        channel_member = ChannelMember(user=user, channel=channel)
+    channel_member.is_admin = admin
+    channel_member.is_readonly = readonly
+    try:
+        channel_member.save()
+        return True
+    except Exception as e:
+        return False
 
-    users = [game.dm.user]
-    party = game.players.filter(standby=False)
+
+def remove_user_from_channel(user: CustomUser, channel: GameChannel) -> bool:
+    """Remove a user from a channel membership"""
+    channel_member = None
+    try:
+        channel_member = ChannelMember.objects.get(user=user, channel=channel)
+        channel_member.delete()
+        return True
+    except ChannelMember.DoesNotExist:
+        return False
+
+
+def populate_channel(channel: GameChannel) -> int:
+    """Add expected ChannelMember entries"""
+    # Add DM with admin permissions
+    add_user_to_channel(channel.game.dm.user, channel, admin=True, readonly=False)
+    # Add players with read/write permissions
+    all_players = Player.objects.filter(game=channel.game)
+    party = all_players.filter(standby=False)
     for player in party:
-        users.append(player.user)
-    return users
+        add_user_to_channel(player.user, channel, admin=False, readonly=False)
+    waitlist = all_players.filter(standby=True)
+    for player in waitlist:
+        add_user_to_channel(player.user, channel, admin=False, readonly=True)
+
+
+def remove_excess_members_from_channel(channel: GameChannel) -> int:
+    """remove any unexpected Channelmember entries for a given game channel"""
+    channel_members = ChannelMember.objects.filter(channel=channel)
+    players = Player.objects.filter(game=channel.game).values_list("user")
+
+    for member in channel_members:
+        if member.user not in players and member.user is not channel.game.dm.user:
+            member.delete()
+
+
+def set_default_channel_membership(channel: GameChannel) -> bool:
+    """Set a standard set of membership permissions"""
+    populate_channel(channel)
+    remove_excess_members_from_channel(channel)
+    return True
 
 
 @sync_to_async
 def async_set_default_channel_membership(channel: GameChannel) -> bool:
-    """Attempt to set a default membership list for a game channel"""
-    try:
-        users = get_baseline_channel_membership(channel)
-        channel.members.set(users)
-        return True
-    except Exception as e:
-        return False
+    """Async wrapper for setting channel membership"""
+    return set_default_channel_membership(channel)

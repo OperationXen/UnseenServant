@@ -1,5 +1,4 @@
 from django.db import models
-from django.utils import timezone
 
 from .game import Game
 from .auth import CustomUser
@@ -40,8 +39,8 @@ class ChannelMember(models.Model):
     """Object describing a member of a channel, a many-to-many linking object with metadata for permissions"""
 
     # Foreign keys to relevant entities
-    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name="channels_membership")
-    channel = models.ForeignKey(GameChannel, on_delete=models.CASCADE, related_name="channel_members")
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name="channels")
+    channel = models.ForeignKey(GameChannel, on_delete=models.CASCADE, related_name="members")
     # Metadata about membership
     is_admin = models.BooleanField(default=False, help_text="Give channel member management permissions")
     is_readonly = models.BooleanField(default=False, help_text="Limit user to read only access")
