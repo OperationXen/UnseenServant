@@ -110,11 +110,12 @@ def async_get_all_current_game_channels():
 
 
 @sync_to_async
-def async_get_game_channel_members(channel: GameChannel) -> List[CustomUser]:
+def async_get_game_channel_members(channel: GameChannel) -> List[ChannelMember]:
     """Given a game channel object retrieve its expected membership list"""
     channel.refresh_from_db()
     queryset = channel.members.all()
-    return list(queryset)  # force evaluation before leaving this sync context
+    retval = list(queryset)  # force evaluation before leaving this sync context
+    return retval
 
 
 def add_user_to_channel(user: CustomUser, channel: GameChannel, admin=False, readonly=False) -> bool:
@@ -171,7 +172,7 @@ def remove_excess_members_from_channel(channel: GameChannel) -> int:
 def set_default_channel_membership(channel: GameChannel) -> bool:
     """Set a standard set of membership permissions"""
     populate_channel(channel)
-    remove_excess_members_from_channel(channel)
+    # remove_excess_members_from_channel(channel)
     return True
 
 

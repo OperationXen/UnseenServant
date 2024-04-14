@@ -9,7 +9,7 @@ from discord_bot.utils.channel import (
     async_update_mustering_embed,
     async_get_channel_for_game,
     async_channel_remove_user,
-    async_channel_add_user,
+    async_set_channel_member_permissions,
 )
 from discord_bot.utils.format import generate_calendar_message
 from discord_bot.utils.games import async_add_discord_member_to_game, async_remove_discord_member_from_game
@@ -261,7 +261,7 @@ class GameControlView(View):
         games_remaining_text = await async_get_player_credit_text(interaction.user)
         if not player.standby:
             channel = await async_get_channel_for_game(self.game)
-            await async_channel_add_user(channel, interaction.user)
+            await async_set_channel_member_permissions(channel, interaction.user)
             message = f"You're playing in {self.game.name} `({games_remaining_text})`"
         else:
             message = f"Added you to to the waitlist for {self.game.name} `({games_remaining_text})`"

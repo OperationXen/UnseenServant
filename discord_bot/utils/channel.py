@@ -1,3 +1,5 @@
+from typing import List
+
 import random
 from discord import PermissionOverwrite
 from discord import User as DiscordUser
@@ -138,20 +140,20 @@ async def async_game_channel_tag_removed_user(game: Game, user: DiscordUser):
     message = await async_notify_game_channel(game, message)
 
 
-async def async_channel_add_user(channel: TextChannel, user: DiscordUser, admin=False):
+async def async_set_channel_member_permissions(channel: TextChannel, user: DiscordUser, admin=False, readonly=False):
     """Give a specific user permission to view and post in the channel for an upcoming game"""
     try:
         await channel.set_permissions(
             user,
             read_messages=True,
-            send_messages=True,
+            send_messages=not readonly,
             read_message_history=True,
             use_slash_commands=True,
             manage_messages=admin,
         )
         return True
     except Exception as e:
-        log.error(f"Exception occured adding discord user {user.display_name} to channel")
+        log.error(f"[!] Exception occured adding discord user {user.display_name} to channel")
     return False
 
 
@@ -162,7 +164,7 @@ async def async_channel_add_player(channel: TextChannel, player: Player):
     try:
         log.debug(f"Adding player [{player.discord_name}] to channel [{channel.name}]")
         discord_user = await bot.fetch_user(player.discord_id)
-        return await async_channel_add_user(channel, discord_user)
+        return await async_set_channel_member_permissions(channel, discord_user)
     except:
         log.error(f"Unable to add this player to the channel")
     return None
@@ -173,7 +175,7 @@ async def async_channel_add_dm(channel: TextChannel, dm: DM):
     try:
         log.debug(f"Adding Dungeon Master [{dm.discord_name}] to channel [{channel.name}]")
         discord_user = await bot.fetch_user(dm.discord_id)
-        return await async_channel_add_user(channel, discord_user, admin=True)
+        return await async_set_channel_member_permissions(channel, discord_user, admin=True)
     except Exception as e:
         log.error(f"Unable to add this DM to the channel")
     return None
@@ -249,7 +251,7 @@ async def async_add_channel_users(channel: TextChannel, game: Game):
 # ################################################################################### #
 #               Channel membership detection logic                                    #
 # ################################################################################### #
-async def async_get_channel_current_members(channel: TextChannel):
+async def async_get_channel_current_members(channel: TextChannel) -> List[Member]:
     """Get all the current members of the channel on discord"""
     current_members = []
 
@@ -267,18 +269,15 @@ async def async_get_channel_current_members(channel: TextChannel):
 # ################################################################################### #
 #               Channel Membership Manager add / remove functions                     #
 # ################################################################################### #
-async def async_add_discord_ids_to_channel(discord_ids, channel: TextChannel) -> int:
-    """Add the users refered to by their discord IDs in the list to the channel"""
-    num_added = 0
-    for discord_id in discord_ids:
-        discord_user = await get_discord_user_by_id(discord_id)
-        if not discord_user:
-            log.error(f"[!] Unable to find discord user id: {discord_id}")
-            continue
-        success = await async_channel_add_user(channel, discord_user)
-        if success:
-            num_added = num_added + 1
-    return num_added
+async def async_set_discord_id_channel_overrides(discord_id, channel: TextChannel, admin=False, readonly=False):
+    """Update channel permission overrides for a given discord ID"""
+    discord_user = await get_discord_user_by_id(discord_id)
+    if not discord_user:
+        log.error(f"[!] Unable to find discord user id: {discord_id}")
+        return False
+
+    retval = await async_set_channel_member_permissions(channel, discord_user, admin, readonly)
+    return retval
 
 
 async def async_remove_discord_ids_from_channel(discord_ids, channel: TextChannel) -> int:
