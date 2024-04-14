@@ -23,7 +23,7 @@ def add_user_to_game(user: CustomUser, game: Game, force: bool = False) -> bool:
             try:
                 # check to see if player is in the waitlist, and being force-added by the DM
                 player = Player.objects.get(game=game, user=user)
-                player.waitlist = False
+                player.standby = False
             except Player.DoesNotExist:
                 # User not already in waitlist, add a new player object to party
                 player = Player.objects.create(game=game, user=user, waitlist=0, standby=False)
