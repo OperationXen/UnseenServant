@@ -36,8 +36,9 @@ def add_user_to_game(user: CustomUser, game: Game, force: bool = False) -> bool:
 def remove_user_from_game(user: CustomUser, game: Game) -> bool:
     """Remove a user from a game completely"""
     try:
-        player = game.players.all().get(user=user)
-        player.delete()
+        player_objects = game.players.all().filter(user=user)
+        for player in player_objects:
+            player.delete()
         return True
     except Player.DoesNotExist:
         # Replace this when all players have an associated user object
