@@ -35,7 +35,7 @@ async def remove_player(ctx, user: Option(Member, "Player to remove from the gam
     if not do_dm_permissions_check(ctx.author, game):
         return await ctx.followup.send("You are not the DM for this game", ephemeral=True)
 
-    removed = await async_remove_discord_member_from_game(game, user)
+    removed = await async_remove_discord_member_from_game(user, game)
     if removed:
         await async_do_waitlist_updates(game)
         await async_update_mustering_embed(game)
