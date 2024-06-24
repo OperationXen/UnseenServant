@@ -148,12 +148,12 @@ class MusteringView(View):
         """Force refresh button callback"""
         await interaction.response.defer(ephemeral=True, invisible=False)
 
-        discord_name = str(interaction.user).split("#")[0]
+        discord_name = str(interaction.user.name)
         characters = get_msc_characters(discord_id=discord_name)
         if characters:
             view = MSCCharacterList(interaction.user, characters)
             view.message = await interaction.followup.send(
-                f"Characters for {discord_name} from the Moonsea Codex:", view=view, ephemeral=True
+                f"Characters for discord user {discord_name} from the Moonsea Codex:", view=view, ephemeral=True
             )
         else:
             error_text = f"Cannot find any characters for you on Moonsea Codex, have you set your discord profile ID?"
