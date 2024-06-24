@@ -7,7 +7,7 @@ from discord.member import Member
 from discord_bot.bot import bot
 from discord_bot.logs import logger as log
 from config.settings import CHANNEL_SEND_PINGS
-from core.models import Game, CustomUser, DM, Player, GameChannel
+from core.models import Game, CustomUser, DM, Player, GameChannel, GameChannelMember
 from core.utils.games import async_get_dm, async_get_player_list
 from core.utils.channels import async_get_game_channel_for_game
 from discord_bot.utils.games import async_get_game_from_message
@@ -138,16 +138,16 @@ async def async_game_channel_tag_removed_user(game: Game, user: DiscordUser):
     message = await async_notify_game_channel(game, message)
 
 
-async def async_channel_add_user(channel: TextChannel, user: DiscordUser, admin=False):
+async def async_channel_add_user(channel: TextChannel, user: DiscordUser, read_messages=True, send_messages=True, read_message_history=True, use_slash_commands=True, manage_messages=False):
     """Give a specific user permission to view and post in the channel for an upcoming game"""
     try:
         await channel.set_permissions(
             user,
-            read_messages=True,
-            send_messages=True,
-            read_message_history=True,
-            use_slash_commands=True,
-            manage_messages=admin,
+            read_messages=read_messages,
+            send_messages=send_messages,
+            read_message_history=read_message_history,
+            use_slash_commands=use_slash_commands,
+            manage_messages=manage_messages,
         )
         return True
     except Exception as e:
@@ -214,7 +214,7 @@ async def async_get_all_game_channels_for_guild(guild):
     """List all existing game channels"""
     all_channels = guild.by_category()
     for channel_group in all_channels:
-        if channel_group[0].name == "Your Upcoming Games":
+        if channel_group[0] != None and channel_group[0].name == "Your Upcoming Games":
             return channel_group[1]
     return []
 
@@ -279,7 +279,17 @@ async def async_add_discord_ids_to_channel(discord_ids, channel: TextChannel) ->
         if success:
             num_added = num_added + 1
     return num_added
-
+    
+async def async_add_member_to_channel(membership: GameChannelMember, channel: TextChannel) -> int:
+    """Add the users refered to by their discord ID in the list to the channel"""
+    discord_user = await get_discord_user_by_id(membership.user.discord_id)
+    if not discord_user:
+        log.error(f"[!] Unable to find discord user id: {membership.user.discord_id}")
+        return False
+    
+    success = await async_channel_add_user(channel, discord_user, membership.read_messages, membership.send_messages, membership.read_message_history, membership.use_slash_commands, membership.manage_messages)
+    return success
+        
 
 async def async_remove_discord_ids_from_channel(discord_ids, channel: TextChannel) -> int:
     """remove the users refered to in the list of discord IDs from the channel"""

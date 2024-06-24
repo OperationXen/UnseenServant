@@ -11,7 +11,7 @@ from core.models.auth import CustomUser
 from core.utils.channels import async_set_default_channel_membership
 from core.utils.channels import async_get_all_current_game_channels, async_get_game_channel_members
 from discord_bot.utils.channel import async_get_channel_current_members, refresh_discord_channel
-from discord_bot.utils.channel import async_add_discord_ids_to_channel, async_remove_discord_ids_from_channel
+from discord_bot.utils.channel import async_add_discord_ids_to_channel, async_remove_discord_ids_from_channel, async_add_member_to_channel
 
 
 class ChannelMembershipController:
@@ -24,17 +24,6 @@ class ChannelMembershipController:
         self.guild = guild
         self.channel_event_loop.start()
 
-    def get_discord_ids(self, data: Member | CustomUser) -> List[str]:
-        """Return a list of discord IDs"""
-        discord_ids = []
-
-        for element in data:
-            if type(element) == Member:
-                discord_ids.append(str(element.id))
-            if type(element) == CustomUser and element.discord_id:
-                discord_ids.append(element.discord_id)
-        return discord_ids
-
     async def sync_channel_membership(self, game_channel: GameChannel):
         """Update the channel membership to match that expected in the database state"""
         try:
@@ -44,20 +33,24 @@ class ChannelMembershipController:
 
         await async_set_default_channel_membership(game_channel)
         expected_members = await async_get_game_channel_members(game_channel)
-        expected_member_ids = self.get_discord_ids(expected_members)
+        expected_member_ids = set(map(lambda x: x.user.discord_id, expected_members))
         actual_members = await async_get_channel_current_members(discord_channel)
-        actual_member_ids = self.get_discord_ids(actual_members)
+        actual_member_ids = set(map(lambda x: str(x.id), actual_members))
+        missing_users = list(filter(lambda m: m.user.discord_id != None and not actual_member_ids.__contains__(m.user.discord_id), expected_members))
+        missing_user_ids = list(map(lambda m: m.user.id, missing_users))
 
-        missing_users = list(set(expected_member_ids) - set(actual_member_ids))
-        if missing_users:
-            log.debug(f"[-] Channel {game_channel.name} is missing players {missing_users}")
-            num_added = await async_add_discord_ids_to_channel(missing_users, discord_channel)
-            log.debug(f"[-] added {num_added} users to channel")
+        if len(missing_user_ids):
+            log.debug(f"[-] Channel {game_channel.name} is missing players {missing_user_ids}")
+            for missing_user in missing_users:
+                if await async_add_member_to_channel(missing_user, discord_channel):
+                    log.debug(f"[-] added user to channel")
+                else:
+                    log.debug(f"[-] failed to add user to channel")
 
-        excess_users = list(set(actual_member_ids) - set(expected_member_ids))
-        if excess_users:
-            log.debug(f"[-] Channel {game_channel.name} has excess players {excess_users}")
-            num_removed = await async_remove_discord_ids_from_channel(excess_users, discord_channel)
+        excess_user_ids = list(actual_member_ids - expected_member_ids)
+        if excess_user_ids:
+            log.debug(f"[-] Channel {game_channel.name} has excess players {excess_user_ids}")
+            num_removed = await async_remove_discord_ids_from_channel(excess_user_ids, discord_channel)
             log.debug(f"[-] removed {num_removed} users from channel")
 
     @tasks.loop(seconds=60)
@@ -71,5 +64,5 @@ class ChannelMembershipController:
             for channel in channels:
                 await self.sync_channel_membership(channel)
         except Exception as e:
-            log.error(f"[!] An unhandled exception has occured in the Channel Membership Controller Loop")
+            log.error(f"[!] An unhandled exception has occured in the Channel Membership Controller Loop: " + str(e))
             self.initialised = False

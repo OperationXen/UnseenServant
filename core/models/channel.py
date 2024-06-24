@@ -4,7 +4,6 @@ from django.utils import timezone
 from .game import Game
 from .auth import CustomUser
 
-
 class GameChannel(models.Model):
     """Object that defines a game channel"""
 
@@ -22,7 +21,8 @@ class GameChannel(models.Model):
     status = models.TextField(
         choices=ChannelStatuses.choices, max_length=32, default=ChannelStatuses.READY, help_text="Status of the channel"
     )
-    members = models.ManyToManyField(CustomUser, related_name="game_channels")
+    
+    members = models.ManyToManyField(CustomUser, related_name="game_channels", through='gamechannelmember')
 
     class Meta:
         indexes = [
@@ -32,3 +32,18 @@ class GameChannel(models.Model):
 
     def __str__(self):
         return f"{self.name} [{self.status}]"
+    
+class GameChannelMember(models.Model):
+    """Object that defines membership in a channel"""
+
+    read_messages = models.BooleanField(null=False, default=True)
+    send_messages = models.BooleanField(null=False, default=True)
+    read_message_history = models.BooleanField(null=False, default=True)
+    use_slash_commands = models.BooleanField(null=False, default=True)
+    manage_messages = models.BooleanField(null=False, default=False)
+
+    channel = models.ForeignKey(GameChannel, on_delete=models.CASCADE, related_name="text_channel")
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name="text_channel")
+    
+    def __str__(self):
+        return f"{self.channel} - {self.user}"
