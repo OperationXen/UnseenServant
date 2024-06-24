@@ -1,12 +1,13 @@
 from django.contrib import admin
 
-from core.models import DM, CustomUser, Game, GameChannel
+from core.models import DM, CustomUser, Game, GameChannel, GameChannelMember
 from core.models import BonusCredit, Rank, Player, Strike, Ban
 
 admin.site.register(CustomUser)
 admin.site.register(DM)
 admin.site.register(Game)
 admin.site.register(GameChannel)
+admin.site.register(GameChannelMember)
 
 admin.site.register(Player)
 admin.site.register(BonusCredit)

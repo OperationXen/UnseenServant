@@ -4,7 +4,7 @@ from asgiref.sync import sync_to_async
 from typing import List
 
 from config.settings import CHANNEL_CREATION_DAYS, CHANNEL_REMIND_HOURS, CHANNEL_WARN_MINUTES, CHANNEL_DESTROY_HOURS
-from core.models.channel import GameChannel
+from core.models.channel import GameChannel, GameChannelMember
 from core.models.game import Game
 from core.models.auth import CustomUser
 
@@ -111,29 +111,24 @@ def async_get_all_current_game_channels():
 
 
 @sync_to_async
-def async_get_game_channel_members(channel: GameChannel) -> List[CustomUser]:
+def async_get_game_channel_members(channel: GameChannel) -> List[GameChannelMember]:
     """Given a game channel object retrieve its expected membership list"""
-    channel.refresh_from_db()
-    queryset = channel.members.all()
-    return list(queryset)  # force evaluation before leaving this sync context
-
-
-def get_baseline_channel_membership(channel: GameChannel) -> List[CustomUser]:
-    game = channel.game
-
-    users = [game.dm.user]
-    party = game.players.filter(standby=False)
-    for player in party:
-        users.append(player.user)
-    return users
-
+    queryset = channel.members.through.objects.filter(channel=channel).prefetch_related("user")
+    result = list(queryset)  # force evaluation before leaving this sync context
+    return result
 
 @sync_to_async
 def async_set_default_channel_membership(channel: GameChannel) -> bool:
     """Attempt to set a default membership list for a game channel"""
+
     try:
-        users = get_baseline_channel_membership(channel)
-        channel.members.set(users)
+        game = channel.game
+        channel.members.set([])
+        channel.members.add(game.dm.user, through_defaults={"manage_messages": True})
+        party = game.players.filter(standby=False)
+        for player in party:
+            channel.members.add(player.user)
+        channel.save()
         return True
     except Exception as e:
         return False
