@@ -12,12 +12,12 @@ async def character(ctx):
     """Show a user their moonsea codex characters"""
     await ctx.defer(ephemeral=True)
 
-    discord_username = str(ctx.author).split("#")[0]
-    characters = get_msc_characters(discord_id=discord_username)
+    discord_name = str(ctx.author.name)
+    characters = get_msc_characters(discord_id=discord_name)
     if characters:
         view = MSCCharacterList(ctx.author, characters)
         view.message = await ctx.followup.send(
-            f"Characters for {discord_username} from the Moonsea Codex:", view=view, ephemeral=True
+            f"Characters for discord user {discord_name} from the Moonsea Codex:", view=view, ephemeral=True
         )
     else:
         message = await ctx.followup.send(
