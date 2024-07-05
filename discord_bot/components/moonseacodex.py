@@ -46,7 +46,7 @@ class MSCCharacterEmbed(Embed):
         if sheet:
             links += f" | [Character sheet]({sheet})"
         if token:
-            links += f" | [Token download](https://digitialdemiplane.com{token})"
+            links += f" | [Token download](https://digitaldemiplane.com{token})"
         return links
 
     def __init__(self, character):
