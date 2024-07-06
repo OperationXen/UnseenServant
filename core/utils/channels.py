@@ -4,8 +4,9 @@ from asgiref.sync import sync_to_async
 from typing import List
 
 from config.settings import CHANNEL_CREATION_DAYS, CHANNEL_REMIND_HOURS, CHANNEL_WARN_MINUTES, CHANNEL_DESTROY_HOURS
-from core.models.channel import GameChannel
+from core.models.channel import GameChannel, GameChannelMember
 from core.models.game import Game
+from core.models.players import Player
 from core.models.auth import CustomUser
 
 
@@ -84,7 +85,7 @@ def async_get_game_channels_pending_warning():
 
 
 @sync_to_async
-def async_get_game_channels_pending_creation():
+def async_get_games_pending_channel_creation():
     """Retrieve all game objects that need a channel posting"""
     queryset = get_games_pending(days=CHANNEL_CREATION_DAYS)
     queryset = queryset.filter(text_channel=None)  # Only interested in games which don't yet have a channel
@@ -103,37 +104,75 @@ def async_get_game_channel_for_game(game: Game) -> GameChannel | None:
     return get_channel_for_game(game)
 
 
-@sync_to_async
-def async_get_all_current_game_channels():
+# ################################################################################ #
+def get_all_current_game_channels():
     """Retrieve all current game channels"""
     queryset = GameChannel.objects.all()
     return list(queryset)  # force evaluation before leaving this sync context
 
 
 @sync_to_async
-def async_get_game_channel_members(channel: GameChannel) -> List[CustomUser]:
+def async_get_all_current_game_channels():
+    return get_all_current_game_channels()
+
+
+# ################################################################################ #
+def get_game_channel_members(channel: GameChannel) -> List[GameChannelMember]:
+    """Get a list of all of the channel member objects for a given game channel"""
+    queryset = channel.members.through.objects.filter(channel=channel).prefetch_related("user")
+    result = list(queryset)  # force evaluation before leaving this sync context
+    return result
+
+
+@sync_to_async
+def async_get_game_channel_members(channel: GameChannel) -> List[GameChannelMember]:
     """Given a game channel object retrieve its expected membership list"""
-    channel.refresh_from_db()
-    queryset = channel.members.all()
-    return list(queryset)  # force evaluation before leaving this sync context
+    return get_game_channel_members(channel)
 
 
-def get_baseline_channel_membership(channel: GameChannel) -> List[CustomUser]:
-    game = channel.game
-
-    users = [game.dm.user]
-    party = game.players.filter(standby=False)
-    for player in party:
-        users.append(player.user)
-    return users
+# ################################################################################ #
+def set_default_channel_membership(channel: GameChannel) -> bool:
+    """Attempt to set a default membership list for a game channel"""
+    try:
+        game = channel.game
+        # clear the channel members
+        channel.members.set([])
+        # add the DM with the additional "manage messages" permission
+        channel.members.add(game.dm.user, through_defaults={"manage_messages": True})
+        # get the party and set them all as read/write users
+        party = game.players.filter(standby=False)
+        for player in party:
+            channel.members.add(player.user)
+        # commit changes to DB
+        channel.save()
+        return True
+    except Exception as e:
+        return False
 
 
 @sync_to_async
 def async_set_default_channel_membership(channel: GameChannel) -> bool:
-    """Attempt to set a default membership list for a game channel"""
-    try:
-        users = get_baseline_channel_membership(channel)
-        channel.members.set(users)
-        return True
-    except Exception as e:
-        return False
+    """async wrapper to allow channel membership to be set from discord bot"""
+    return set_default_channel_membership(channel)
+
+
+def add_user_to_channel(user: CustomUser, channel: GameChannel) -> bool:
+    """Add a user to a specified game channel"""
+    channel.members.add(user)
+    channel.save()
+
+
+@sync_to_async
+def async_add_user_to_channel(user: CustomUser, channel: GameChannel) -> bool:
+    return add_user_to_channel(user, channel)
+
+
+def remove_user_from_channel(user: CustomUser, channel: GameChannel) -> bool:
+    """Remove a user from a game channel"""
+    channel.members.remove(user)
+    channel.save()
+
+
+@sync_to_async
+def async_remove_user_from_channel(user: CustomUser, channel: GameChannel) -> bool:
+    return remove_user_from_channel(user, channel)

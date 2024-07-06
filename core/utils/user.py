@@ -1,3 +1,5 @@
+from asgiref.sync import sync_to_async
+
 from core.utils.players import get_bonus_credits, get_user_pending_games_count
 from core.utils.ranks import get_highest_rank
 from core.models.auth import CustomUser
@@ -26,6 +28,7 @@ def get_user_available_credit(user: CustomUser) -> int:
     return total_credits - used_credits
 
 
+# ###################################################################### #
 def get_user_by_discord_id(discord_id: str) -> CustomUser:
     try:
         return CustomUser.objects.get(discord_id=discord_id)
@@ -33,6 +36,13 @@ def get_user_by_discord_id(discord_id: str) -> CustomUser:
         return None
 
 
+@sync_to_async
+def async_get_user_by_discord_id(discord_id: str) -> CustomUser:
+    """Async wrapper for getting a discord user"""
+    return get_user_by_discord_id(discord_id)
+
+
+# ###################################################################### #
 def user_in_game(user: CustomUser, game: Game) -> bool:
     """Checks if a user is in a given game or not"""
     queryset = Player.objects.filter(game=game)

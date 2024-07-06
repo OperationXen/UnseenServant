@@ -6,15 +6,15 @@ from discord_bot.logs import logger as log
 from discord_bot.utils.time import get_hammertime, discord_countdown
 from discord_bot.utils.views import add_persistent_view
 from discord_bot.utils.games import async_get_game_from_message, get_game_id_from_message
-from discord_bot.utils.channel import async_create_channel_hidden, async_channel_add_player, async_channel_add_dm
+from discord_bot.utils.channel import async_create_channel_hidden
 from discord_bot.utils.channel import async_get_all_game_channels_for_guild, async_get_channel_first_message
 from discord_bot.components.channels import MusteringBanner, MusteringView
 from core.utils.games import async_get_dm, async_get_player_list
-from core.utils.channels import async_get_game_channels_pending_creation, async_set_game_channel_created
+from core.utils.channels import async_get_games_pending_channel_creation, async_set_game_channel_created
 from core.utils.channels import async_get_game_channels_pending_destruction, async_destroy_game_channel
 from core.utils.channels import async_get_game_channels_pending_reminder, async_set_game_channel_reminded
 from core.utils.channels import async_get_game_channels_pending_warning, async_set_game_channel_warned
-from core.utils.channels import async_get_game_channel_for_game
+from core.utils.channels import async_get_game_channel_for_game, async_set_default_channel_membership
 
 
 class ChannelController:
@@ -55,35 +55,31 @@ class ChannelController:
         text += ",".join(f"{p.discord_name}" for p in players if not p.standby)
         return text
 
-    async def add_channel_users(self, channel, game):
-        """Add the DM and players to the newly created channel"""
-        dm = await async_get_dm(game)
-        await async_channel_add_dm(channel, dm)
-
-        players = await async_get_player_list(game)
-        for player in players:
-            await async_channel_add_player(channel, player)
-
     async def send_banner_message(self, channel, game):
         """send the welcome banner"""
-        control_view = MusteringView(game)
-        banner = MusteringBanner(game)
-        await banner.build()
+        try:
+            control_view = MusteringView(game)
+            banner = MusteringBanner(game)
+            await banner.build()
 
-        if CHANNEL_SEND_PINGS:
-            ping_text = await self.get_ping_text(game)
-            message = await channel.send(ping_text, embed=banner, view=control_view)
-        else:
-            flat_text = await self.get_flat_message_list(game)
-            message = await channel.send(flat_text, embed=banner, view=control_view)
-        control_view.message = message
-        add_persistent_view(control_view)
+            if CHANNEL_SEND_PINGS:
+                ping_text = await self.get_ping_text(game)
+                message = await channel.send(ping_text, embed=banner, view=control_view)
+            else:
+                flat_text = await self.get_flat_message_list(game)
+                message = await channel.send(flat_text, embed=banner, view=control_view)
+            control_view.message = message
+            add_persistent_view(control_view)
+            return True
+        except Exception as e:
+            log.error(f"Failed to send banner message to channel {channel.name}")
+            return False
 
     async def check_and_create_channels(self):
         """Get outstanding channels needed and create them where missing"""
-        pending_games = await async_get_game_channels_pending_creation()
+        pending_games = await async_get_games_pending_channel_creation()
         for upcoming_game in pending_games:
-            log.info(f"Creating channel for game: {upcoming_game.name}")
+            log.info(f"[-] Creating channel for game: {upcoming_game.name}")
             channel_name = upcoming_game.datetime.strftime("%Y%m%d-") + upcoming_game.module
             channel_topic = await self.get_topic_text(upcoming_game)
             channel = await async_create_channel_hidden(self.guild, self.parent_category, channel_name, channel_topic)
@@ -91,8 +87,13 @@ class ChannelController:
                 game_channel = await async_set_game_channel_created(
                     upcoming_game, channel.id, channel.jump_url, channel.name
                 )
-                await self.add_channel_users(channel, upcoming_game)
                 await self.send_banner_message(channel, upcoming_game)
+                log.debug(f"[-] GameChannel created OK")
+
+                # now the channel has been created we can populate its membership list with the party
+                set_members = await async_set_default_channel_membership(game_channel)
+                if set_members:
+                    log.debug(f"[-] Set channel membership list to default")
 
     async def check_and_delete_channels(self):
         """Go through any outstanding channels and delete anything older than 3 days"""
@@ -155,7 +156,9 @@ class ChannelController:
                 log.info(f"Reconnected mustering view for {game.name}")
             else:
                 game_id = get_game_id_from_message(message)
-                log.info(f"Identified potentially ophaned mustering channel (no game to match) for game ID: {game_id}")
+                log.error(
+                    f"[!] Identified potentially ophaned mustering channel (no game to match) for game ID: {game_id}"
+                )
                 continue
 
     @tasks.loop(seconds=120)

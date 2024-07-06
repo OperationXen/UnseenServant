@@ -9,8 +9,7 @@ from core.models import Game, Player, CustomUser
 from discord_bot.logs import logger as log
 from core.utils.players import get_player_max_games, get_player_game_count
 from core.utils.players import get_user_highest_rank
-from core.utils.players import get_last_waitlist_position
-from core.utils.user import get_user_by_discord_id, get_user_available_credit
+from core.utils.user import get_user_available_credit
 from core.utils.sanctions import get_current_user_bans
 
 
