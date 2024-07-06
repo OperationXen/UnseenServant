@@ -156,28 +156,23 @@ def async_set_default_channel_membership(channel: GameChannel) -> bool:
     return set_default_channel_membership(channel)
 
 
-def add_player_to_channel(player: Player, channel: GameChannel) -> bool:
-    """Add a player to a specified game channel"""
-    channel.members.add(player.user)
+def add_user_to_channel(user: CustomUser, channel: GameChannel) -> bool:
+    """Add a user to a specified game channel"""
+    channel.members.add(user)
     channel.save()
-    return True
 
 
 @sync_to_async
-def async_add_player_to_channel(player: Player, channel: GameChannel) -> bool:
-    return add_player_to_channel(player, channel)
+def async_add_user_to_channel(user: CustomUser, channel: GameChannel) -> bool:
+    return add_user_to_channel(user, channel)
 
 
-def remove_player_from_channel(player: Player, channel: GameChannel) -> bool:
-    """Remove a player from a game channel"""
-    try:
-        channel.members.remove(player.user)
-        channel.save()
-        return True
-    except CustomUser.DoesNotExist:
-        return True
+def remove_user_from_channel(user: CustomUser, channel: GameChannel) -> bool:
+    """Remove a user from a game channel"""
+    channel.members.remove(user)
+    channel.save()
 
 
 @sync_to_async
-def async_remove_player_from_channel(player: Player, channel: GameChannel) -> bool:
-    return remove_player_from_channel(player, channel)
+def async_remove_user_from_channel(user: CustomUser, channel: GameChannel) -> bool:
+    return remove_user_from_channel(user, channel)
