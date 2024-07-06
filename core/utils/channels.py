@@ -110,12 +110,18 @@ def async_get_all_current_game_channels():
     return list(queryset)  # force evaluation before leaving this sync context
 
 
-@sync_to_async
-def async_get_game_channel_members(channel: GameChannel) -> List[GameChannelMember]:
-    """Given a game channel object retrieve its expected membership list"""
+def get_game_channel_members(channel: GameChannel) -> List[GameChannelMember]:
+    """Get a list of all of the channel member objects for a given game channel"""
     queryset = channel.members.through.objects.filter(channel=channel).prefetch_related("user")
     result = list(queryset)  # force evaluation before leaving this sync context
     return result
+
+
+@sync_to_async
+def async_get_game_channel_members(channel: GameChannel) -> List[GameChannelMember]:
+    """Given a game channel object retrieve its expected membership list"""
+    return get_game_channel_members(channel)
+
 
 @sync_to_async
 def async_set_default_channel_membership(channel: GameChannel) -> bool:
