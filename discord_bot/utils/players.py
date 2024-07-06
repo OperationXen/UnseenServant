@@ -4,8 +4,9 @@ from discord_bot.utils.time import discord_countdown
 from core.utils.games import check_game_pending, async_get_player_list, async_get_wait_list
 
 from discord_bot.utils.channel import async_game_channel_tag_promoted_player
-from discord_bot.utils.channel import async_channel_add_player, async_get_channel_for_game
+from discord_bot.utils.channel import async_get_channel_for_game
 from core.utils.players import async_populate_game_from_waitlist
+from core.utils.channels import async_add_player_to_channel
 
 
 async def async_do_waitlist_updates(game):
@@ -15,8 +16,7 @@ async def async_do_waitlist_updates(game):
     for player in promoted:
         log.info(f"Player {player.discord_name} promoted from waitlist for game {game.name}")
         channel = await async_get_channel_for_game(game)
-
-        await async_channel_add_player(channel, player)
+        await async_add_player_to_channel(player, channel)
         # Only ping players if they're being promoted into a game that hasn't started
         if game_outstanding:
             await async_game_channel_tag_promoted_player(game, player)

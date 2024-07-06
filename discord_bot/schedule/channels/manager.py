@@ -89,7 +89,9 @@ class ChannelController:
                 )
                 set_members = await async_set_default_channel_membership(channel)
                 banner_sent = await self.send_banner_message(channel, upcoming_game)
-                log.debug(f"[-] GameChannel created OK | Membership: {"OK" if set_members else "Error"} | Banner: {"OK" if banner_sent else "Error"}")
+                log.debug(
+                    f"[-] GameChannel created OK | Membership: {'OK' if set_members else 'Error'} | Banner: {'OK' if banner_sent else 'Error'}"
+                )
 
     async def check_and_delete_channels(self):
         """Go through any outstanding channels and delete anything older than 3 days"""
@@ -152,7 +154,9 @@ class ChannelController:
                 log.info(f"Reconnected mustering view for {game.name}")
             else:
                 game_id = get_game_id_from_message(message)
-                log.error(f"[!] Identified potentially ophaned mustering channel (no game to match) for game ID: {game_id}")
+                log.error(
+                    f"[!] Identified potentially ophaned mustering channel (no game to match) for game ID: {game_id}"
+                )
                 continue
 
     @tasks.loop(seconds=120)
