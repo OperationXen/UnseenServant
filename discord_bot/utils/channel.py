@@ -138,7 +138,15 @@ async def async_game_channel_tag_removed_user(game: Game, user: DiscordUser):
     message = await async_notify_game_channel(game, message)
 
 
-async def async_channel_add_user(channel: TextChannel, user: DiscordUser, read_messages=True, send_messages=True, read_message_history=True, use_slash_commands=True, manage_messages=False):
+async def async_channel_add_user(
+    channel: TextChannel,
+    user: DiscordUser,
+    read_messages=True,
+    send_messages=True,
+    read_message_history=True,
+    use_slash_commands=True,
+    manage_messages=False,
+):
     """Give a specific user permission to view and post in the channel for an upcoming game"""
     try:
         await channel.set_permissions(
@@ -153,30 +161,6 @@ async def async_channel_add_user(channel: TextChannel, user: DiscordUser, read_m
     except Exception as e:
         log.error(f"Exception occured adding discord user {user.display_name} to channel")
     return False
-
-
-async def async_channel_add_player(channel: TextChannel, player: Player):
-    """Add a user to channel by reference from a player object"""
-    if not channel:
-        return False
-    try:
-        log.debug(f"Adding player [{player.discord_name}] to channel [{channel.name}]")
-        discord_user = await bot.fetch_user(player.discord_id)
-        return await async_channel_add_user(channel, discord_user)
-    except:
-        log.error(f"Unable to add this player to the channel")
-    return None
-
-
-async def async_channel_add_dm(channel: TextChannel, dm: DM):
-    """Add a DM to channel by reference from a player object"""
-    try:
-        log.debug(f"Adding Dungeon Master [{dm.discord_name}] to channel [{channel.name}]")
-        discord_user = await bot.fetch_user(dm.discord_id)
-        return await async_channel_add_user(channel, discord_user, admin=True)
-    except Exception as e:
-        log.error(f"Unable to add this DM to the channel")
-    return None
 
 
 async def async_channel_remove_user(channel: TextChannel, user: DiscordUser):
@@ -236,16 +220,6 @@ async def async_remove_all_channel_members(channel: TextChannel) -> bool:
     return True
 
 
-async def async_add_channel_users(channel: TextChannel, game: Game):
-    """Add the DM and players to a specific channel"""
-    dm = await async_get_dm(game)
-    await async_channel_add_dm(channel, dm)
-
-    players = await async_get_player_list(game)
-    for player in players:
-        await async_channel_add_player(channel, player)
-
-
 # ################################################################################### #
 #               Channel membership detection logic                                    #
 # ################################################################################### #
@@ -279,17 +253,26 @@ async def async_add_discord_ids_to_channel(discord_ids, channel: TextChannel) ->
         if success:
             num_added = num_added + 1
     return num_added
-    
+
+
 async def async_add_member_to_channel(membership: GameChannelMember, channel: TextChannel) -> int:
     """Add the users refered to by their discord ID in the list to the channel"""
     discord_user = await get_discord_user_by_id(membership.user.discord_id)
     if not discord_user:
         log.error(f"[!] Unable to find discord user id: {membership.user.discord_id}")
         return False
-    
-    success = await async_channel_add_user(channel, discord_user, membership.read_messages, membership.send_messages, membership.read_message_history, membership.use_slash_commands, membership.manage_messages)
+
+    success = await async_channel_add_user(
+        channel,
+        discord_user,
+        membership.read_messages,
+        membership.send_messages,
+        membership.read_message_history,
+        membership.use_slash_commands,
+        membership.manage_messages,
+    )
     return success
-        
+
 
 async def async_remove_discord_ids_from_channel(discord_ids, channel: TextChannel) -> int:
     """remove the users refered to in the list of discord IDs from the channel"""

@@ -1,7 +1,6 @@
 from typing import List
 
 from discord.ext import tasks
-from discord.member import Member
 from discord.errors import NotFound
 
 from discord_bot.logs import logger as log
@@ -11,7 +10,7 @@ from core.models.auth import CustomUser
 from core.utils.channels import async_set_default_channel_membership
 from core.utils.channels import async_get_all_current_game_channels, async_get_game_channel_members
 from discord_bot.utils.channel import async_get_channel_current_members, refresh_discord_channel
-from discord_bot.utils.channel import async_add_discord_ids_to_channel, async_remove_discord_ids_from_channel, async_add_member_to_channel
+from discord_bot.utils.channel import async_remove_discord_ids_from_channel, async_add_member_to_channel
 
 
 class ChannelMembershipController:
@@ -29,14 +28,20 @@ class ChannelMembershipController:
         try:
             discord_channel = await refresh_discord_channel(game_channel)
         except NotFound:
+            log.warn(f"Unable to retrieve a channel from discord for {game_channel.name}")
             return
 
-        await async_set_default_channel_membership(game_channel)
+        # await async_set_default_channel_membership(game_channel)
         expected_members = await async_get_game_channel_members(game_channel)
         expected_member_ids = set(map(lambda x: x.user.discord_id, expected_members))
         actual_members = await async_get_channel_current_members(discord_channel)
         actual_member_ids = set(map(lambda x: str(x.id), actual_members))
-        missing_users = list(filter(lambda m: m.user.discord_id != None and not actual_member_ids.__contains__(m.user.discord_id), expected_members))
+        missing_users = list(
+            filter(
+                lambda m: m.user.discord_id != None and not actual_member_ids.__contains__(m.user.discord_id),
+                expected_members,
+            )
+        )
         missing_user_ids = list(map(lambda m: m.user.id, missing_users))
 
         if len(missing_user_ids):
