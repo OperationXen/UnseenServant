@@ -103,13 +103,19 @@ def async_get_game_channel_for_game(game: Game) -> GameChannel | None:
     return get_channel_for_game(game)
 
 
-@sync_to_async
-def async_get_all_current_game_channels():
+# ################################################################################ #
+def get_all_current_game_channels():
     """Retrieve all current game channels"""
     queryset = GameChannel.objects.all()
     return list(queryset)  # force evaluation before leaving this sync context
 
 
+@sync_to_async
+def async_get_all_current_game_channels():
+    return get_all_current_game_channels()
+
+
+# ################################################################################ #
 def get_game_channel_members(channel: GameChannel) -> List[GameChannelMember]:
     """Get a list of all of the channel member objects for a given game channel"""
     queryset = channel.members.through.objects.filter(channel=channel).prefetch_related("user")
@@ -123,18 +129,27 @@ def async_get_game_channel_members(channel: GameChannel) -> List[GameChannelMemb
     return get_game_channel_members(channel)
 
 
-@sync_to_async
-def async_set_default_channel_membership(channel: GameChannel) -> bool:
+# ################################################################################ #
+def set_default_channel_membership(channel: GameChannel) -> bool:
     """Attempt to set a default membership list for a game channel"""
-
     try:
         game = channel.game
+        # clear the channel members
         channel.members.set([])
+        # add the DM with the additional "manage messages" permission
         channel.members.add(game.dm.user, through_defaults={"manage_messages": True})
+        # get the party and set them all as read/write users
         party = game.players.filter(standby=False)
         for player in party:
             channel.members.add(player.user)
+        # commit changes to DB
         channel.save()
         return True
     except Exception as e:
         return False
+
+
+@sync_to_async
+def async_set_default_channel_membership(channel: GameChannel) -> bool:
+    """async wrapper to allow channel membership to be set from discord bot"""
+    return set_default_channel_membership(channel)
