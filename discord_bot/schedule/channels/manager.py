@@ -10,7 +10,7 @@ from discord_bot.utils.channel import async_create_channel_hidden
 from discord_bot.utils.channel import async_get_all_game_channels_for_guild, async_get_channel_first_message
 from discord_bot.components.channels import MusteringBanner, MusteringView
 from core.utils.games import async_get_dm, async_get_player_list
-from core.utils.channels import async_get_game_channels_pending_creation, async_set_game_channel_created
+from core.utils.channels import async_get_games_pending_channel_creation, async_set_game_channel_created
 from core.utils.channels import async_get_game_channels_pending_destruction, async_destroy_game_channel
 from core.utils.channels import async_get_game_channels_pending_reminder, async_set_game_channel_reminded
 from core.utils.channels import async_get_game_channels_pending_warning, async_set_game_channel_warned
@@ -77,9 +77,9 @@ class ChannelController:
 
     async def check_and_create_channels(self):
         """Get outstanding channels needed and create them where missing"""
-        pending_games = await async_get_game_channels_pending_creation()
+        pending_games = await async_get_games_pending_channel_creation()
         for upcoming_game in pending_games:
-            log.info(f"Creating channel for game: {upcoming_game.name}")
+            log.info(f"[-] Creating channel for game: {upcoming_game.name}")
             channel_name = upcoming_game.datetime.strftime("%Y%m%d-") + upcoming_game.module
             channel_topic = await self.get_topic_text(upcoming_game)
             channel = await async_create_channel_hidden(self.guild, self.parent_category, channel_name, channel_topic)
@@ -87,11 +87,13 @@ class ChannelController:
                 game_channel = await async_set_game_channel_created(
                     upcoming_game, channel.id, channel.jump_url, channel.name
                 )
-                set_members = await async_set_default_channel_membership(channel)
-                banner_sent = await self.send_banner_message(channel, upcoming_game)
-                log.debug(
-                    f"[-] GameChannel created OK | Membership: {'OK' if set_members else 'Error'} | Banner: {'OK' if banner_sent else 'Error'}"
-                )
+                await self.send_banner_message(channel, upcoming_game)
+                log.debug(f"[-] GameChannel created OK")
+
+                # now the channel has been created we can populate its membership list with the party
+                set_members = await async_set_default_channel_membership(game_channel)
+                if set_members:
+                    log.debug(f"[-] Set channel membership list to default")
 
     async def check_and_delete_channels(self):
         """Go through any outstanding channels and delete anything older than 3 days"""

@@ -206,8 +206,12 @@ async def async_get_all_game_channels_for_guild(guild):
 
 async def async_get_channel_first_message(channel: TextChannel):
     """Get the first message in a specified channel"""
-    message = await channel.history(limit=1, oldest_first=True).flatten()
-    return message[0]
+    try:
+        message = await channel.history(limit=1, oldest_first=True).flatten()
+        return message[0]
+    except Exception as e:
+        log.error(f"[!] Exception occured finding first message in channel {channel.name}")
+        return Non
 
 
 async def async_remove_all_channel_members(channel: TextChannel) -> bool:

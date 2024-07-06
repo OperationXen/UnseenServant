@@ -85,7 +85,7 @@ def async_get_game_channels_pending_warning():
 
 
 @sync_to_async
-def async_get_game_channels_pending_creation():
+def async_get_games_pending_channel_creation():
     """Retrieve all game objects that need a channel posting"""
     queryset = get_games_pending(days=CHANNEL_CREATION_DAYS)
     queryset = queryset.filter(text_channel=None)  # Only interested in games which don't yet have a channel
