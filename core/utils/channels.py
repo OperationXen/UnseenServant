@@ -6,6 +6,7 @@ from typing import List
 from config.settings import CHANNEL_CREATION_DAYS, CHANNEL_REMIND_HOURS, CHANNEL_WARN_MINUTES, CHANNEL_DESTROY_HOURS
 from core.models.channel import GameChannel, GameChannelMember
 from core.models.game import Game
+from core.models.players import Player
 from core.models.auth import CustomUser
 
 
@@ -153,3 +154,30 @@ def set_default_channel_membership(channel: GameChannel) -> bool:
 def async_set_default_channel_membership(channel: GameChannel) -> bool:
     """async wrapper to allow channel membership to be set from discord bot"""
     return set_default_channel_membership(channel)
+
+
+def add_player_to_channel(player: Player, channel: GameChannel) -> bool:
+    """Add a player to a specified game channel"""
+    channel.members.add(player.user)
+    channel.save()
+    return True
+
+
+@sync_to_async
+def async_add_player_to_channel(player: Player, channel: GameChannel) -> bool:
+    return add_player_to_channel(player, channel)
+
+
+def remove_player_from_channel(player: Player, channel: GameChannel) -> bool:
+    """Remove a player from a game channel"""
+    try:
+        channel.members.remove(player.user)
+        channel.save()
+        return True
+    except CustomUser.DoesNotExist:
+        return True
+
+
+@sync_to_async
+def async_remove_player_from_channel(player: Player, channel: GameChannel) -> bool:
+    return remove_player_from_channel(player, channel)
