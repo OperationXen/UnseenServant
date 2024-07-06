@@ -82,7 +82,7 @@ def add_discord_member_to_game(member: DiscordMember, game: Game, force: bool = 
             return None
     if force or user_can_join_game(user, game):
         return add_user_to_game(user, game, force)
-    log.debug(f"{user} unsuccessful attempted signup to {game}")
+    log.debug(f"[!] {user} unsuccessful attempted signup to {game}")
     return False
 
 

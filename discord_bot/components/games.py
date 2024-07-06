@@ -5,14 +5,13 @@ import discord_bot.core
 from discord_bot.logs import logger as log
 from discord_bot.utils.players import async_do_waitlist_updates
 from discord_bot.utils.time import discord_time, discord_countdown
-from discord_bot.utils.channel import (
-    async_update_mustering_embed,
-    async_get_channel_for_game,
-)
+from discord_bot.utils.channel import async_update_mustering_embed
+from discord_bot.utils.channel import async_add_discord_member_to_game_channel
+from discord_bot.utils.channel import async_remove_discord_member_from_game_channel
 from discord_bot.utils.format import generate_calendar_message
 from discord_bot.utils.games import async_add_discord_member_to_game, async_remove_discord_member_from_game
 from core.models.game import Game
-from core.utils.channels import async_add_user_to_channel, async_remove_user_from_channel
+from core.utils.channels import async_get_game_channel_for_game
 from core.utils.games import (
     async_get_player_list,
     async_get_wait_list,
@@ -254,13 +253,13 @@ class GameControlView(View):
         if not player:
             credits = await async_get_user_signups_remaining(interaction.user)
             await interaction.followup.send(
-                f"Unable to add you to this game - {credits} signup credits available", ephemeral=True
+                f"Unable to add you to this game - {credits} signup credits available", ephemeral=True, delete_after=10
             )
             return False
         games_remaining_text = await async_get_player_credit_text(interaction.user)
         if not player.standby:
-            channel = await async_get_channel_for_game(self.game)
-            await async_add_user_to_channel(interaction.user, channel)
+            channel = await async_get_game_channel_for_game(self.game)
+            await async_add_discord_member_to_game_channel(interaction.user, channel)
             message = f"You're playing in {self.game.name} `({games_remaining_text})`"
         else:
             message = f"Added you to to the waitlist for {self.game.name} `({games_remaining_text})`"
@@ -280,8 +279,8 @@ class GameControlView(View):
         """Callback for dropout button pressed"""
         await interaction.response.defer(ephemeral=True)
 
-        channel = await async_get_channel_for_game(self.game)
-        await async_remove_user_from_channel(channel, interaction.user)
+        channel = await async_get_game_channel_for_game(self.game)
+        await async_remove_discord_member_from_game_channel(interaction.user, channel)
         removed = await async_remove_discord_member_from_game(interaction.user, self.game)
         if removed:
             log.info(f"[>]Player {interaction.user.name} dropped from game {self.game.name}")

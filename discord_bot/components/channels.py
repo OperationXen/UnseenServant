@@ -4,6 +4,7 @@ from discord.ui import View, Button
 from discord_bot.components.moonseacodex import MSCCharacterList
 from discord_bot.utils.moonseacodex import get_msc_characters
 from discord_bot.utils.players import async_do_waitlist_updates
+from discord_bot.utils.channel import async_get_channel_for_game
 from core.utils.players import async_get_player_credit_text
 from core.utils.games import calc_game_tier
 from discord_bot.components.games import BaseGameEmbed

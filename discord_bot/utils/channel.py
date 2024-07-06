@@ -7,8 +7,9 @@ from discord.member import Member
 from discord_bot.bot import bot
 from discord_bot.logs import logger as log
 from config.settings import CHANNEL_SEND_PINGS
-from core.models import Game, CustomUser, DM, Player, GameChannel, GameChannelMember
-from core.utils.games import async_get_dm, async_get_player_list
+from core.models import Game, CustomUser, GameChannel, GameChannelMember
+from core.utils.user import async_get_user_by_discord_id
+from core.utils.channels import async_add_user_to_channel, async_remove_user_from_channel
 from core.utils.channels import async_get_game_channel_for_game
 from discord_bot.utils.games import async_get_game_from_message
 
@@ -241,18 +242,24 @@ async def async_get_channel_current_members(channel: TextChannel):
 # ################################################################################### #
 #               Channel Membership Manager add / remove functions                     #
 # ################################################################################### #
-async def async_add_discord_ids_to_channel(discord_ids, channel: TextChannel) -> int:
-    """Add the users refered to by their discord IDs in the list to the channel"""
-    num_added = 0
-    for discord_id in discord_ids:
-        discord_user = await get_discord_user_by_id(discord_id)
-        if not discord_user:
-            log.error(f"[!] Unable to find discord user id: {discord_id}")
-            continue
-        success = await async_channel_add_user(channel, discord_user)
-        if success:
-            num_added = num_added + 1
-    return num_added
+async def async_add_discord_member_to_game_channel(discord_user: DiscordUser, channel: GameChannel) -> bool:
+    """Get the user from a discord user and add it as a channel member"""
+    try:
+        user = await async_get_user_by_discord_id(discord_user.id)
+        added = await async_add_user_to_channel(user, channel)
+        return added
+    except Exception as e:
+        return False
+
+
+async def async_remove_discord_member_from_game_channel(discord_user: DiscordUser, channel: GameChannel) -> bool:
+    """get the user from a discord user and remove it as a channel member"""
+    try:
+        user = await async_get_user_by_discord_id(discord_user.id)
+        removed = await async_remove_user_from_channel(user, channel)
+        return removed
+    except Exception as e:
+        return False
 
 
 async def async_add_member_to_channel(membership: GameChannelMember, channel: TextChannel) -> int:
