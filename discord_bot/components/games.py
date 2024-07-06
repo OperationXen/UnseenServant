@@ -260,7 +260,7 @@ class GameControlView(View):
         games_remaining_text = await async_get_player_credit_text(interaction.user)
         if not player.standby:
             channel = await async_get_channel_for_game(self.game)
-            await async_channel_add_user(channel, interaction.user)
+            await async_add_user_to_channel(interaction.user, channel)
             message = f"You're playing in {self.game.name} `({games_remaining_text})`"
         else:
             message = f"Added you to to the waitlist for {self.game.name} `({games_remaining_text})`"
@@ -282,9 +282,7 @@ class GameControlView(View):
 
         channel = await async_get_channel_for_game(self.game)
         await async_remove_user_from_channel(channel, interaction.user)
-
         removed = await async_remove_discord_member_from_game(interaction.user, self.game)
-
         if removed:
             log.info(f"[>]Player {interaction.user.name} dropped from game {self.game.name}")
             games_remaining_text = await async_get_player_credit_text(interaction.user)

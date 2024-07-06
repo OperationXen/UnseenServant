@@ -10,6 +10,7 @@ from discord_bot.components.games import BaseGameEmbed
 
 from discord_bot.utils.games import async_update_game_listing_embed, async_remove_discord_member_from_game
 from discord_bot.logs import logger as log
+from core.utils.channels import async_remove_user_from_channel
 
 
 class MusteringBanner(BaseGameEmbed):
@@ -132,9 +133,12 @@ class MusteringView(View):
     async def muster_view_dropout(self, interaction):
         """Callback for dropout button pressed"""
         await interaction.response.defer(ephemeral=True)
+
+        channel = await async_get_channel_for_game(self.game)
+        await async_remove_user_from_channel(interaction.user, channel)
         removed = await async_remove_discord_member_from_game(interaction.user, self.game)
         if removed:
-            log.info(f"Player {interaction.user.name} dropped from game {self.game.name}")
+            log.info(f"[>] Player {interaction.user.name} dropped from game {self.game.name}")
             games_remaining_text = await async_get_player_credit_text(interaction.user)
             message = f"Removed you from {self.game.name} `({games_remaining_text})`"
             await async_do_waitlist_updates(self.game)
