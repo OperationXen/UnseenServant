@@ -32,15 +32,14 @@ async def character(ctx):
 async def trade_search(ctx, search: Option(str, "Search term to use", required=True)):
     """Query moonsea codex for items available for trading"""
     await ctx.defer(ephemeral=True)
+    results_embeds = []
 
     log.info(f"[/] {ctx.author.name} used MSC /trade_search [{search}] command")
     items = get_msc_trade_search(search)
-    log.info(f"[-] {len(items or [])} items found for {ctx.author.name}")
-
-    results_embeds = []
-    num_results = len(items)
+    num_results = len(items or [])
+    log.info(f"[-] {num_results} items found for {ctx.author.name}")
     if not num_results:
-        return await ctx.followup.send(f"No matches for '{search}'.", ephemeral=True)
+        return await ctx.followup.send(f"No matches for '{search}'.", ephemeral=True, delete_after=10)
     else:
         for item in items[:10]:
             embed = MSCTradeSearchResultsEmbed(item)
