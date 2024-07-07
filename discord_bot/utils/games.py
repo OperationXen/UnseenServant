@@ -84,7 +84,7 @@ def add_discord_member_to_game(member: DiscordMember, game: Game, force: bool = 
             return None
     if force or user_can_join_game(user, game):
         return add_user_to_game(user, game, force)
-    log.debug(f"[!] {user} unsuccessful attempted signup to {game}")
+    log.debug(f"[>] {user} unsuccessful attempted signup to {game}")
     return False
 
 
@@ -99,6 +99,7 @@ def remove_discord_member_from_game(member: DiscordMember, game: Game) -> bool:
     """Remove a discord member from a game"""
     user = get_user_by_discord_id(member.id)
     if not user:
+        log.warning(f"[!] Error removing {member.name} from {game.name} - no user found")
         return False
     return remove_user_from_game(user, game)
 

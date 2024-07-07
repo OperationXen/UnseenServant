@@ -58,7 +58,7 @@ class ChannelMembershipController:
             num_removed = await async_remove_discord_ids_from_channel(excess_user_ids, discord_channel)
             log.debug(f"[-] removed {num_removed} users from channel")
 
-    @tasks.loop(seconds=60)
+    @tasks.loop(seconds=30)
     async def channel_event_loop(self):
         try:
             if not self.initialised:
