@@ -4,6 +4,7 @@ from discord_bot.components.moonseacodex import MSCCharacterList, MSCTradeSearch
 
 from config.settings import DISCORD_GUILDS
 from discord_bot.bot import bot
+from discord_bot.logs import logger as log
 from discord_bot.utils.moonseacodex import get_msc_characters, get_msc_trade_search
 
 
@@ -12,8 +13,10 @@ async def character(ctx):
     """Show a user their moonsea codex characters"""
     await ctx.defer(ephemeral=True)
 
+    log.info(f"[/] {ctx.author.name} used MSC /character command")
     discord_name = str(ctx.author.name)
     characters = get_msc_characters(discord_id=discord_name)
+    log.info(f"[-] {len(characters or [])} characters found for {ctx.author.name}")
     if characters:
         view = MSCCharacterList(ctx.author, characters)
         view.message = await ctx.followup.send(
@@ -30,7 +33,9 @@ async def trade_search(ctx, search: Option(str, "Search term to use", required=T
     """Query moonsea codex for items available for trading"""
     await ctx.defer(ephemeral=True)
 
+    log.info(f"[/] {ctx.author.name} used MSC /trade_search [{search}] command")
     items = get_msc_trade_search(search)
+    log.info(f"[-] {len(items or [])} items found for {ctx.author.name}")
 
     results_embeds = []
     num_results = len(items)
