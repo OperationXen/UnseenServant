@@ -64,7 +64,7 @@ class MusteringBanner(BaseGameEmbed):
             value=f"Character levels {self.game.level_min} - {self.game.level_max}\n DMed by <@{self.dm.discord_id}>",
             inline=True,
         )
-        self.add_field(name="Content Warnings", value=f"{self.game.warnings or 'None'}", inline=False)
+        self.add_field(name="Content Warnings", value=f"{self.game.warnings[:1024] or 'None'}", inline=False)
         self.add_field(
             name=f"Players ({self.player_count()} / {self.game.max_players})",
             value=self.player_details_list(),

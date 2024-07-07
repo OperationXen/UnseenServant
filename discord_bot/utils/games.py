@@ -41,12 +41,14 @@ def get_game_id_from_message(message) -> int | None:
 async def async_get_game_from_message(message) -> Game | None:
     """Given a generic message, attempt to get the game instance it refers to [if any]"""
     try:
+        if not message:
+            return None
         game_id = get_game_id_from_message(message)
         if game_id:
             game = await async_get_game_by_id(game_id)
             return game
     except Exception as e:
-        log.error(e)
+        log.error(f"[!] Unable to get game from message")
     return None
 
 
