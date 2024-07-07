@@ -211,7 +211,7 @@ async def async_get_channel_first_message(channel: TextChannel):
         return message[0]
     except Exception as e:
         log.error(f"[!] Exception occured finding first message in channel {channel.name}")
-        return Non
+        return None
 
 
 async def async_remove_all_channel_members(channel: TextChannel) -> bool:

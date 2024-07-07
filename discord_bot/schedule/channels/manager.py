@@ -154,22 +154,27 @@ class ChannelController:
                 control_view.message = message
                 add_persistent_view(control_view)
                 log.info(f"Reconnected mustering view for {game.name}")
-            else:
+            elif message:
                 game_id = get_game_id_from_message(message)
                 log.error(
                     f"[!] Identified potentially ophaned mustering channel (no game to match) for game ID: {game_id}"
                 )
+            else:
                 continue
 
     @tasks.loop(seconds=120)
     async def channel_event_loop(self):
-        if not self.initialised:
-            log.debug("[++] Starting up the Channel Controller loop")
-            self.parent_category = get(self.guild.categories, name="Your Upcoming Games")
-            await self.recover_channel_state()
-            self.initialised = True
+        try:
+            if not self.initialised:
+                log.debug("[++] Starting up the Channel Controller loop")
+                self.parent_category = get(self.guild.categories, name="Your Upcoming Games")
+                await self.recover_channel_state()
+                self.initialised = True
 
-        await self.check_and_create_channels()
-        await self.check_and_delete_channels()
-        await self.check_and_remind_channels()
-        await self.check_and_warn_channels()
+            await self.check_and_create_channels()
+            await self.check_and_delete_channels()
+            await self.check_and_remind_channels()
+            await self.check_and_warn_channels()
+        except Exception as e:
+            log.error(f"[!] An unhandled exception has occured in the Channel Manager Loop: " + str(e))
+            self.initialised = False
