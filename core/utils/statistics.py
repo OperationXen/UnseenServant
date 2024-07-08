@@ -1,7 +1,7 @@
-from django.db.models import QuerySet
+from django.db.models import QuerySet, Sum
 
 
-def get_gamestats(game_data: QuerySet) -> dict:
+def get_game_stats(game_data: QuerySet) -> dict:
     """build a game statistics object"""
     unique_dms = game_data.values_list("dm__discord_id").distinct().count()
 
@@ -9,7 +9,7 @@ def get_gamestats(game_data: QuerySet) -> dict:
     return stats
 
 
-def get_playerstats(player_data: QuerySet) -> dict:
+def get_player_stats(player_data: QuerySet) -> dict:
     """build a player statistic object"""
     user_count = player_data.values_list("discord_id").distinct().count()
     all_players = player_data.filter(standby=False)
@@ -36,6 +36,32 @@ def get_playerstats(player_data: QuerySet) -> dict:
         "total_unselected_players": not_selected_count,
     }
     return playerstats
+
+
+def get_waitlist_stats(player_data: QuerySet) -> dict:
+    """Calculate some useful statistics about waitlists"""
+    all_players = player_data.filter(standby=False).count() or 1
+    num_direct_entry = player_data.filter(standby=False, waitlist=None).count()
+    num_players_waitlist = player_data.exclude(waitlist=None).count()
+
+    # Find the player who came from furthest down the waitlist
+    try:
+        deepest_waitlist_position = player_data.exclude(waitlist=None).order_by("-waitlist").first().waitlist
+    except AttributeError:
+        deepest_waitlist_position = 0
+
+    # find the average waitlist position amongst all players
+    aggregate_waitlist_positions = player_data.aggregate(Sum("waitlist"))
+    sum_waitlist_positions = aggregate_waitlist_positions["waitlist__sum"] or 0
+
+    waitlist_stats = {
+        "players_direct_entry": num_direct_entry,
+        "players_waitlist": num_players_waitlist,
+        "percent_waitlist_players": int((num_players_waitlist / all_players) * 100),
+        "deepest_waitlist_position": deepest_waitlist_position,
+        "average_waitlist_position": sum_waitlist_positions / all_players,
+    }
+    return waitlist_stats
 
 
 def get_unsuccessful_player_details(player_data: QuerySet) -> dict:

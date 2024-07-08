@@ -3,7 +3,8 @@ from rest_framework.status import *
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAdminUser
 
-from core.utils.statistics import get_gamestats, get_playerstats, get_unsuccessful_player_details
+from core.utils.statistics import get_game_stats, get_player_stats, get_unsuccessful_player_details
+from core.utils.statistics import get_waitlist_stats
 
 from core.utils.games import get_historic_games
 from core.utils.players import get_historic_users
@@ -19,7 +20,7 @@ class GameStatsViewSet(APIView):
             days = int(request.GET.get("days", 31))
 
         game_data = get_historic_games(days=days)
-        game_stats = get_gamestats(game_data)
+        game_stats = get_game_stats(game_data)
         general_stats = {"days_of_data": days}
         return Response(general_stats | game_stats)
 
@@ -34,9 +35,10 @@ class PlayerStatsViewSet(APIView):
             days = int(request.GET.get("days", 31))
 
         player_data = get_historic_users(days=days)
-        player_stats = get_playerstats(player_data)
+        player_stats = get_player_stats(player_data)
+        waitlist_stats = get_waitlist_stats(player_data)
         general_stats = {"days_of_data": days}
-        return Response(general_stats | player_stats)
+        return Response(general_stats | player_stats | waitlist_stats)
 
 
 class GeneralStatsViewSet(APIView):
@@ -52,9 +54,10 @@ class GeneralStatsViewSet(APIView):
         game_data = get_historic_games(days=days)
 
         general_stats = {"days_of_data": days}
-        game_stats = get_gamestats(game_data)
-        player_stats = get_playerstats(player_data)
-        return Response(general_stats | game_stats | player_stats)
+        game_stats = get_game_stats(game_data)
+        player_stats = get_player_stats(player_data)
+        waitlist_stats = get_waitlist_stats(player_data)
+        return Response(general_stats | game_stats | player_stats | waitlist_stats)
 
 
 class DetailedStatsViewSet(APIView):
