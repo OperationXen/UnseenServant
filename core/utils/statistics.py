@@ -41,8 +41,8 @@ def get_player_stats(player_data: QuerySet) -> dict:
 def get_waitlist_stats(player_data: QuerySet) -> dict:
     """Calculate some useful statistics about waitlists"""
     all_players = player_data.filter(standby=False).count() or 1
-    num_direct_entry = player_data.filter(standby=False, waitlist=None).count()
-    num_players_waitlist = player_data.filter(standby=False).exclude(waitlist=None).count()
+    num_direct_entry = player_data.filter(standby=False).exclude(waitlist__gte=1).count()
+    num_players_waitlist = player_data.filter(standby=False).filter(waitlist__gte=1).count()
 
     # Find the player who came from furthest down the waitlist
     try:
