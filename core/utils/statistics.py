@@ -30,7 +30,7 @@ def get_player_stats(player_data: QuerySet) -> dict:
 
     playerstats = {
         "active_users": user_count,
-        "total_players": all_players_count,
+        "total_seats": all_players_count,
         "unique_players": unique_players_count,
         "games_per_player": average_games_per_player,
         "total_unselected_players": not_selected_count,
@@ -42,7 +42,7 @@ def get_waitlist_stats(player_data: QuerySet) -> dict:
     """Calculate some useful statistics about waitlists"""
     all_players = player_data.filter(standby=False).count() or 1
     num_direct_entry = player_data.filter(standby=False, waitlist=None).count()
-    num_players_waitlist = player_data.exclude(waitlist=None).count()
+    num_players_waitlist = player_data.filter(standby=False).exclude(waitlist=None).count()
 
     # Find the player who came from furthest down the waitlist
     try:
@@ -56,7 +56,7 @@ def get_waitlist_stats(player_data: QuerySet) -> dict:
 
     waitlist_stats = {
         "players_direct_entry": num_direct_entry,
-        "players_waitlist": num_players_waitlist,
+        "players_from_waitlist": num_players_waitlist,
         "percent_waitlist_players": int((num_players_waitlist / all_players) * 100),
         "deepest_waitlist_position": deepest_waitlist_position,
         "average_waitlist_position": sum_waitlist_positions / all_players,
