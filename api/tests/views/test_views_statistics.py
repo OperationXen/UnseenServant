@@ -84,8 +84,8 @@ class TestStatisticPlayerView(TestStatisticView):
         self.assertEqual(response.status_code, HTTP_200_OK)
         self.assertIn("active_users", response.data)
         self.assertEqual(response.data["active_users"], 8)
-        self.assertIn("total_players", response.data)
-        self.assertEqual(response.data["total_players"], 5)
+        self.assertIn("total_seats", response.data)
+        self.assertEqual(response.data["total_seats"], 5)
         self.assertIn("unique_players", response.data)
         self.assertEqual(response.data["unique_players"], 5)
 
