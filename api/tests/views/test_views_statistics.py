@@ -1,7 +1,8 @@
+from datetime import timedelta, datetime
+
 from rest_framework.status import *
 from django.test import TestCase
 from django.urls import reverse
-from datetime import timedelta
 from django.utils import timezone
 
 from core.models import Game, DM, Player
@@ -17,6 +18,13 @@ class TestStatisticView(TestCase):
         yesterday = now - timedelta(days=1)
         dm = DM.objects.get(pk=1)
         new_game = Game.objects.create(datetime=yesterday, name="Yesterdays game", dm=dm)
+        return new_game
+
+    def create_game_on_date(self, date) -> Game:
+        """Create a game on an arbitrary date"""
+        dt = datetime.strptime(date, "%Y-%m-%d")
+        dm = DM.objects.get(pk=1)
+        new_game = Game.objects.create(datetime=dt, name="Arbitrary game", dm=dm)
         return new_game
 
 
@@ -41,6 +49,7 @@ class TestStatisticGameView(TestStatisticView):
     def test_get_game_statistics_parameters(self) -> None:
         """check the statistics endpoint handles day parameters"""
         self.client.login(username="admin", password="testpassword")
+
         response = self.client.get(reverse("stats-games"), {"days": 42})
         self.assertEqual(response.status_code, HTTP_200_OK)
         self.assertIn("days_of_data", response.data)
@@ -154,6 +163,21 @@ class TestStatisticGenericView(TestStatisticView):
         self.assertEqual(response.status_code, HTTP_200_OK)
         self.assertIn("days_of_data", response.data)
         self.assertEqual(response.data["days_of_data"], 31)
+
+    def test_superuser_can_set_arbitrary_start_date(self) -> None:
+        """A super user can specify a parameter "start_date" in the query to set the start of the timeperiod"""
+        self.client.login(username="admin", password="testpassword")
+        game1 = self.create_game_on_date("1970-01-02")
+        game2 = self.create_game_on_date("1970-01-10")
+        Player.objects.create(game=game1, standby=False, discord_id="0001", discord_name="player1")
+        Player.objects.create(game=game2, standby=False, discord_id="0001", discord_name="player1")
+
+        response = self.client.get(reverse("stats"), {"days:": 3, "start_date": "1970-01-01"})
+        self.assertEqual(response.status_code, HTTP_200_OK)
+        self.assertIn("start_date", response.data)
+        self.assertEqual(str(response.data["start_date"]), "1970-01-01 00:00:00")
+        self.assertIn("unique_players", response.data)
+        self.assertEqual(response.data["unique_players"], 1)
 
 
 class TestStatisticDetailedView(TestStatisticView):

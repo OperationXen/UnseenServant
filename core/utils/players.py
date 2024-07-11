@@ -1,4 +1,4 @@
-from datetime import timedelta
+from datetime import timedelta, datetime
 
 from asgiref.sync import sync_to_async
 from django.db.models import Q, Sum, QuerySet
@@ -129,11 +129,17 @@ def get_last_waitlist_position(game):
 
 
 # ########################################################################## #
-def get_historic_users(days: int = 31) -> QuerySet:
+def get_historic_users(days: int = 31, start_date: datetime | None = None) -> QuerySet:
     """Get all players who have played in the last X days"""
-    now = timezone.now()
-    start = now - timedelta(days=days)
-    queryset = Player.objects.filter(game__datetime__gte=start).filter(game__datetime__lte=now)
+    if start_date:
+        start = start_date
+        end = start + timedelta(days=days)
+    else:
+        now = timezone.now()
+        start = now - timedelta(days=days)
+        end = now
+
+    queryset = Player.objects.filter(game__datetime__gte=start).filter(game__datetime__lte=end)
     queryset = queryset.order_by("discord_id")
     return queryset
 

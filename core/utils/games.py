@@ -1,4 +1,4 @@
-from datetime import timedelta
+from datetime import timedelta, datetime
 from django.utils import timezone
 from django.db.models import Q, QuerySet
 from asgiref.sync import sync_to_async
@@ -91,11 +91,16 @@ def async_get_wait_list(game: Game) -> list[Player]:
 
 
 # ########################################################################## #
-def get_historic_games(days: int = 30) -> QuerySet:
+def get_historic_games(days: int = 30, start_date: datetime | None = None) -> QuerySet:
     """Get games which have been played over the last X days"""
-    now = timezone.now()
-    start = now - timedelta(days=days)
-    queryset = Game.objects.filter(datetime__gte=start).filter(datetime__lte=now)
+    if start_date:
+        start = start_date
+        end = start + timedelta(days=days)
+    else:
+        now = timezone.now()
+        start = now - timedelta(days=days)
+        end = now
+    queryset = Game.objects.filter(datetime__gte=start).filter(datetime__lte=end)
     queryset = queryset.order_by("datetime")
     return queryset
 
