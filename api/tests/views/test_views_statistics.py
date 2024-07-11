@@ -49,6 +49,7 @@ class TestStatisticGameView(TestStatisticView):
     def test_get_game_statistics_parameters(self) -> None:
         """check the statistics endpoint handles day parameters"""
         self.client.login(username="admin", password="testpassword")
+
         response = self.client.get(reverse("stats-games"), {"days": 42})
         self.assertEqual(response.status_code, HTTP_200_OK)
         self.assertIn("days_of_data", response.data)

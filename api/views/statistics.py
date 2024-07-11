@@ -22,7 +22,7 @@ class StatsView(APIView):
             try:
                 start_date = datetime.strptime(request.GET.get("start_date"), "%Y-%m-%d")
             except Exception:
-                pass
+                return (days, None)
             return (days, start_date)
         return (31, None)
 
