@@ -77,7 +77,7 @@ class GeneralStatsViewSet(StatsView):
         return Response(general_stats | game_stats | player_stats | waitlist_stats)
 
 
-class DetailedStatsViewSet(APIView):
+class DetailedStatsViewSet(StatsView):
     """Authenticated endpoint for admin users"""
 
     permission_classes = [
