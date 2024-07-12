@@ -93,15 +93,16 @@ def async_get_games_pending_channel_creation():
 
 
 # ################################################################## #
-def get_channel_for_game(game: Game) -> GameChannel | None:
+def get_game_channel_for_game(game: Game) -> GameChannel | None:
     """Get the channel for the specified game if it exists"""
-    return game.text_channel.first()
+    game_channel = game.text_channel.all().first()
+    return game_channel
 
 
 @sync_to_async
 def async_get_game_channel_for_game(game: Game) -> GameChannel | None:
     """Get the game channel object related to a game"""
-    return get_channel_for_game(game)
+    return get_game_channel_for_game(game)
 
 
 # ################################################################################ #
