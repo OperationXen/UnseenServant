@@ -82,7 +82,7 @@ async def async_notify_game_channel(game: Game, message: str):
     """Send a notification to a game channel"""
     channel = await async_get_channel_for_game(game)
     if channel:
-        log.info(f"Sending message to channel [{channel.name}]: {message}")
+        log.debug(f"[.] Sending message to channel [{channel.name}]: {message}")
         status = await channel.send(message)
         return status
     else:
@@ -118,22 +118,25 @@ async def async_notify_game_channel(game: Game, message: str):
 
 
 # ################################################################ #
-async def async_game_channel_tag_promoted_player(game: Game, user: CustomUser):
+async def async_game_channel_tag_promoted_discord_id(game_channel: GameChannel, discord_id: str):
     """Tag a user in a channel from a player object"""
-    discord_user = await bot.fetch_user(user.discord_id)
+    discord_user = await bot.fetch_user(discord_id)
     if CHANNEL_SEND_PINGS:
         user_text = discord_user.mention
     else:
         user_text = discord_user.display_name
+    user = await async_get_user_by_discord_id(discord_id)
     text = get_player_announce_text(user, user_text)
-    message = await async_notify_game_channel(game, text)
+    message = await game_channel.send(text)
+    return message
 
 
-async def async_game_channel_tag_removed_user(game: Game, user: CustomUser):
+async def async_game_channel_tag_removed_discord_id(game_channel: GameChannel, discord_id: str):
     """Send a message to the game channel notifying the DM that a player has dropped"""
-    discord_user = await bot.fetch_user(user.discord_id)
-    message = f"{discord_user.display_name} dropped out"
-    message = await async_notify_game_channel(game, message)
+    discord_user = await bot.fetch_user(discord_id)
+    text = f"{discord_user.display_name} dropped out"
+    message = await game_channel.send(text)
+    return message
 
 
 # ################################################################ #

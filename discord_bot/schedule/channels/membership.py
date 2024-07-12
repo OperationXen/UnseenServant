@@ -7,10 +7,13 @@ from discord_bot.logs import logger as log
 from core.models.channel import GameChannel
 from core.models.auth import CustomUser
 
-from core.utils.channels import async_set_default_channel_membership
 from core.utils.channels import async_get_all_current_game_channels, async_get_game_channel_members
 from discord_bot.utils.channel import async_get_channel_current_members, refresh_discord_channel
 from discord_bot.utils.channel import async_remove_discord_ids_from_channel, async_add_member_to_channel
+from discord_bot.utils.channel import (
+    async_game_channel_tag_promoted_discord_id,
+    async_game_channel_tag_removed_discord_id,
+)
 
 
 class ChannelMembershipController:
@@ -45,18 +48,18 @@ class ChannelMembershipController:
         missing_user_ids = list(map(lambda m: m.user.id, missing_users))
 
         if len(missing_user_ids):
-            log.debug(f"[-] Channel {game_channel.name} is missing players {missing_user_ids}")
             for missing_user in missing_users:
                 if await async_add_member_to_channel(missing_user, discord_channel):
-                    log.debug(f"[-] added user to channel")
+                    await async_game_channel_tag_promoted_discord_id(discord_channel, missing_user)
+                    log.debug(f"[.] added user to channel")
                 else:
-                    log.debug(f"[-] failed to add user to channel")
+                    log.debug(f"[.] failed to add user to channel")
 
         excess_user_ids = list(actual_member_ids - expected_member_ids)
         if excess_user_ids:
-            log.debug(f"[-] Channel {game_channel.name} has excess players {excess_user_ids}")
+            log.debug(f"[.] Channel {game_channel.name} has excess players {excess_user_ids}")
             num_removed = await async_remove_discord_ids_from_channel(excess_user_ids, discord_channel)
-            log.debug(f"[-] removed {num_removed} users from channel")
+            log.debug(f"[.] removed {num_removed} users from channel")
 
     @tasks.loop(seconds=30)
     async def channel_event_loop(self):
