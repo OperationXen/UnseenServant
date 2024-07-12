@@ -8,6 +8,7 @@ from discord_bot.bot import bot
 from discord_bot.logs import logger as log
 from config.settings import CHANNEL_SEND_PINGS
 from core.models import Game, CustomUser, GameChannel, GameChannelMember
+from core.utils.announcements import get_player_announce_text
 from core.utils.user import async_get_user_by_discord_id
 from core.utils.channels import async_add_user_to_channel, async_remove_user_from_channel
 from core.utils.channels import async_get_game_channel_for_game
@@ -88,57 +89,54 @@ async def async_notify_game_channel(game: Game, message: str):
         log.debug(f"Cannot send message to non-existant channel")
     return False
 
-
-async def async_game_channel_tag_promoted_user(game: Game, user: DiscordUser):
-    """Send a message to the game channel notifying the player that they've been promoted"""
-    if CHANNEL_SEND_PINGS:
-        user_text = user.mention
-    else:
-        user_text = user.display_name
-
-    choices = [
-        f"{user_text} joins the party",
-        f"Welcome to the party {user_text}",
-        f"A wild {user_text} appears!",
-        f"{user_text} emerges from the mists",
-        f"A rogue portal appears and deposits {user_text}",
-        f"Is that 3 kobolds in an overcoat? No! its {user_text}",
-        f"The ritual is complete, {user_text} walks amongst us",
-        f"{user_text} planeshifts in",
-        f"Congratulations {user_text}, you have been selected, please do not resist.",
-        f"{user_text} broods in the corner of the tavern",
-        f"Neither snow nor rain nor heat nor gloom of night could stop {user_text} from joining this party",
-        f"Neither snow nor rain nor heat nor glom of nit could stop {user_text} from joining this party",
-        f"It's not a doppelganger, it's {user_text}",
-        f"{user_text} teleports in with a shower of confetti",
-        f"I would like to cast summon Player Ally and summon {user_text}",
-        f"Everyone knows something is afoot when {user_text} arrives...",
-        f"{user_text} has been successfully planar bound to this session!",
-        f"BAM! A three point landing like that can only be {user_text}.",
-        f"After succeeding on a perception check, you find {user_text} has snuck into the game. ",
-        f"Yip yip, {user_text}",
-        f"{user_text} ponders their orb",
-        f"It's your round {user_text}!",
-        f"Daemons run when {user_text} goes to war",
-        f"Even in death, {user_text} still serves",
-    ]
-
-    message = random.choice(choices)
-    message = await async_notify_game_channel(game, message)
+    # choices = [
+    #     f"{user_text} joins the party",
+    #     f"Welcome to the party {user_text}",
+    #     f"A wild {user_text} appears!",
+    #     f"{user_text} emerges from the mists",
+    #     f"A rogue portal appears and deposits {user_text}",
+    #     f"Is that 3 kobolds in an overcoat? No! its {user_text}",
+    #     f"The ritual is complete, {user_text} walks amongst us",
+    #     f"{user_text} planeshifts in",
+    #     f"Congratulations {user_text}, you have been selected, please do not resist.",
+    #     f"{user_text} broods in the corner of the tavern",
+    #     f"Neither snow nor rain nor heat nor gloom of night could stop {user_text} from joining this party",
+    #     f"Neither snow nor rain nor heat nor glom of nit could stop {user_text} from joining this party",
+    #     f"It's not a doppelganger, it's {user_text}",
+    #     f"{user_text} teleports in with a shower of confetti",
+    #     f"I would like to cast summon Player Ally and summon {user_text}",
+    #     f"Everyone knows something is afoot when {user_text} arrives...",
+    #     f"{user_text} has been successfully planar bound to this session!",
+    #     f"BAM! A three point landing like that can only be {user_text}.",
+    #     f"After succeeding on a perception check, you find {user_text} has snuck into the game. ",
+    #     f"Yip yip, {user_text}",
+    #     f"{user_text} ponders their orb",
+    #     f"It's your round {user_text}!",
+    #     f"Daemons run when {user_text} goes to war",
+    #     f"Even in death, {user_text} still serves",
+    # ]
 
 
-async def async_game_channel_tag_promoted_player(game: Game, player: CustomUser):
+# ################################################################ #
+async def async_game_channel_tag_promoted_player(game: Game, user: CustomUser):
     """Tag a user in a channel from a player object"""
-    discord_user = await bot.fetch_user(player.discord_id)
-    return await async_game_channel_tag_promoted_user(game, discord_user)
+    discord_user = await bot.fetch_user(user.discord_id)
+    if CHANNEL_SEND_PINGS:
+        user_text = discord_user.mention
+    else:
+        user_text = discord_user.display_name
+    text = get_player_announce_text(user, user_text)
+    message = await async_notify_game_channel(game, text)
 
 
-async def async_game_channel_tag_removed_user(game: Game, user: DiscordUser):
+async def async_game_channel_tag_removed_user(game: Game, user: CustomUser):
     """Send a message to the game channel notifying the DM that a player has dropped"""
-    message = f"{user.display_name} dropped out"
+    discord_user = await bot.fetch_user(user.discord_id)
+    message = f"{discord_user.display_name} dropped out"
     message = await async_notify_game_channel(game, message)
 
 
+# ################################################################ #
 async def async_channel_add_user(
     channel: TextChannel,
     user: DiscordUser,

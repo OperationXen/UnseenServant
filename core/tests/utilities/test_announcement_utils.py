@@ -24,22 +24,21 @@ class TestUtilitiesAnnouncement(TestCase):
 
     def test_text_generation(self) -> None:
         """Ensure text replacement works as expected for user name"""
-        user = CustomUser.objects.get(pk=1)
         announcement = Announcement.objects.get(pk=1)
-        text = generate_announcement_text(announcement, user)
+        text = generate_announcement_text(announcement, "test text")
         self.assertIsInstance(text, str)
-        self.assertIn("Test generic announcement testuser", text)
+        self.assertIn("Test generic announcement test text", text)
 
     def test_announcement_generation_personal(self) -> None:
         """Check fetch logic for a user with a personal announcement"""
         user = CustomUser.objects.get(pk=1)
-        text = get_player_announce_text(user)
+        text = get_player_announce_text(user, "testuser1")
         self.assertIsInstance(text, str)
-        self.assertIn("Test personal announcement testuser", text)
+        self.assertIn("Test personal announcement testuser1", text)
 
     def test_announcement_generation_generic(self) -> None:
         """Check fetch logic for a user without a personal announcement"""
         user = CustomUser.objects.get(pk=2)
-        text = get_player_announce_text(user)
+        text = get_player_announce_text(user, "testuser2")
         self.assertIsInstance(text, str)
-        self.assertIn("Test generic announcement seconduser", text)
+        self.assertIn("Test generic announcement testuser2", text)

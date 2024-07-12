@@ -16,13 +16,13 @@ def get_generic_announcements() -> List[Announcement]:
     return list(announcements)  # force evaluation here
 
 
-def generate_announcement_text(announcement: Announcement, user: CustomUser) -> str:
+def generate_announcement_text(announcement: Announcement, user_text: str) -> str:
     """Combine an announcement and a user object"""
-    text = announcement.text.replace("%u", user.discord_name)
+    text = announcement.text.replace("%u", user_text)
     return text
 
 
-def get_player_announce_text(user: CustomUser) -> str:
+def get_player_announce_text(user: CustomUser, user_text: str) -> str:
     """
     Get an appropriate text string to use to announce the user
     Select randomly from custom lines if available, then randomly from generic lines
@@ -34,6 +34,6 @@ def get_player_announce_text(user: CustomUser) -> str:
     elif generic_announcements:
         selected = random_choice(generic_announcements)
     else:
-        return f"{user.name} joins the channel"
-    text = generate_announcement_text(selected, user)
+        return f"{user_text} joins the channel"
+    text = generate_announcement_text(selected, user_text)
     return text
