@@ -12,7 +12,7 @@ def get_user_custom_announcements(user: CustomUser) -> List[Announcement]:
 
 def get_generic_announcements() -> List[Announcement]:
     """Get all of the generic announcements"""
-    announcements = Announcement.objects.all()
+    announcements = Announcement.objects.filter(generic=True)
     return list(announcements)  # force evaluation here
 
 
