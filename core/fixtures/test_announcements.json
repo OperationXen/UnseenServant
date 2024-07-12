@@ -1,0 +1,20 @@
+[
+  {
+    "model": "core.announcement",
+    "pk": 1,
+    "fields": {
+      "generic": true,
+      "text": "Test generic announcement %u",
+      "users": []
+    }
+  },
+  {
+    "model": "core.announcement",
+    "pk": 2,
+    "fields": {
+      "generic": false,
+      "text": "Test personal announcement %u",
+      "users": [1]
+    }
+  }
+]

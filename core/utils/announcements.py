@@ -18,7 +18,7 @@ def get_generic_announcements() -> List[Announcement]:
 
 def generate_announcement_text(announcement: Announcement, user: CustomUser) -> str:
     """Combine an announcement and a user object"""
-    text = announcement.text.replace("%u", user.name)
+    text = announcement.text.replace("%u", user.discord_name)
     return text
 
 
