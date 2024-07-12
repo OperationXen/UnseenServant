@@ -7,10 +7,10 @@ from discord.member import Member
 from discord_bot.bot import bot
 from discord_bot.logs import logger as log
 from config.settings import CHANNEL_SEND_PINGS
-from core.models import Game, CustomUser, GameChannel, GameChannelMember
+from core.models import Game, GameChannel, GameChannelMember
 from core.utils.announcements import get_player_announce_text
 from core.utils.user import async_get_user_by_discord_id
-from core.utils.channels import async_add_user_to_channel, async_remove_user_from_channel
+from core.utils.channels import async_add_user_to_game_channel, async_remove_user_from_game_channel
 from core.utils.channels import async_get_game_channel_for_game
 from discord_bot.utils.games import async_get_game_from_message
 
@@ -247,21 +247,21 @@ async def async_get_channel_current_members(channel: TextChannel):
 # ################################################################################### #
 #               Channel Membership Manager add / remove functions                     #
 # ################################################################################### #
-async def async_add_discord_member_to_game_channel(discord_user: DiscordUser, channel: GameChannel) -> bool:
+async def async_add_discord_member_to_game_channel(discord_user: DiscordUser, game_channel: GameChannel) -> bool:
     """Get the user from a discord user and add it as a channel member"""
     try:
         user = await async_get_user_by_discord_id(discord_user.id)
-        added = await async_add_user_to_channel(user, channel)
+        added = await async_add_user_to_game_channel(user, game_channel)
         return added
     except Exception as e:
         return False
 
 
-async def async_remove_discord_member_from_game_channel(discord_user: DiscordUser, channel: GameChannel) -> bool:
+async def async_remove_discord_member_from_game_channel(discord_user: DiscordUser, game_channel: GameChannel) -> bool:
     """get the user from a discord user and remove it as a channel member"""
     try:
         user = await async_get_user_by_discord_id(discord_user.id)
-        removed = await async_remove_user_from_channel(user, channel)
+        removed = await async_remove_user_from_game_channel(user, game_channel)
         return removed
     except Exception as e:
         return False
