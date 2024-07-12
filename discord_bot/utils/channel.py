@@ -8,7 +8,7 @@ from discord_bot.bot import bot
 from discord_bot.logs import logger as log
 from config.settings import CHANNEL_SEND_PINGS
 from core.models import Game, GameChannel, GameChannelMember
-from core.utils.announcements import get_player_announce_text
+from core.utils.announcements import async_get_player_announce_text
 from core.utils.user import async_get_user_by_discord_id
 from core.utils.channels import async_add_user_to_game_channel, async_remove_user_from_game_channel
 from core.utils.channels import async_get_game_channel_for_game
@@ -126,7 +126,7 @@ async def async_game_channel_tag_promoted_discord_id(game_channel: GameChannel, 
     else:
         user_text = discord_user.display_name
     user = await async_get_user_by_discord_id(discord_id)
-    text = get_player_announce_text(user, user_text)
+    text = await async_get_player_announce_text(user, user_text)
     message = await game_channel.send(text)
     return message
 
