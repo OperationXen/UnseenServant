@@ -1,4 +1,4 @@
-from typing import List
+import traceback
 
 from discord.ext import tasks
 from discord.errors import NotFound
@@ -73,4 +73,5 @@ class ChannelMembershipController:
                 await self.sync_channel_membership(channel)
         except Exception as e:
             log.error(f"[!] An unhandled exception has occured in the Channel Membership Controller Loop: " + str(e))
+            log.debug(f"{traceback.format_exc()}")
             self.initialised = False
