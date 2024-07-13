@@ -89,33 +89,6 @@ async def async_notify_game_channel(game: Game, message: str):
         log.debug(f"Cannot send message to non-existant channel")
     return False
 
-    # choices = [
-    #     f"{user_text} joins the party",
-    #     f"Welcome to the party {user_text}",
-    #     f"A wild {user_text} appears!",
-    #     f"{user_text} emerges from the mists",
-    #     f"A rogue portal appears and deposits {user_text}",
-    #     f"Is that 3 kobolds in an overcoat? No! its {user_text}",
-    #     f"The ritual is complete, {user_text} walks amongst us",
-    #     f"{user_text} planeshifts in",
-    #     f"Congratulations {user_text}, you have been selected, please do not resist.",
-    #     f"{user_text} broods in the corner of the tavern",
-    #     f"Neither snow nor rain nor heat nor gloom of night could stop {user_text} from joining this party",
-    #     f"Neither snow nor rain nor heat nor glom of nit could stop {user_text} from joining this party",
-    #     f"It's not a doppelganger, it's {user_text}",
-    #     f"{user_text} teleports in with a shower of confetti",
-    #     f"I would like to cast summon Player Ally and summon {user_text}",
-    #     f"Everyone knows something is afoot when {user_text} arrives...",
-    #     f"{user_text} has been successfully planar bound to this session!",
-    #     f"BAM! A three point landing like that can only be {user_text}.",
-    #     f"After succeeding on a perception check, you find {user_text} has snuck into the game. ",
-    #     f"Yip yip, {user_text}",
-    #     f"{user_text} ponders their orb",
-    #     f"It's your round {user_text}!",
-    #     f"Daemons run when {user_text} goes to war",
-    #     f"Even in death, {user_text} still serves",
-    # ]
-
 
 # ################################################################ #
 async def async_game_channel_tag_promoted_discord_id(game_channel: GameChannel, discord_id: str):
