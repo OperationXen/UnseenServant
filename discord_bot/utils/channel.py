@@ -1,4 +1,3 @@
-import random
 from discord import PermissionOverwrite
 from discord import User as DiscordUser
 from discord.channel import TextChannel
@@ -91,22 +90,21 @@ async def async_notify_game_channel(game: Game, message: str):
 
 
 # ################################################################ #
-async def async_game_channel_tag_promoted_discord_id(game_channel: GameChannel, discord_id: str):
+async def async_game_channel_tag_promoted_discord_id(game_channel: GameChannel, member: GameChannelMember):
     """Tag a user in a channel from a player object"""
-    discord_user = await bot.fetch_user(discord_id)
+    discord_user = await get_discord_user_by_id(member.user.discord_id)
     if CHANNEL_SEND_PINGS:
         user_text = discord_user.mention
     else:
         user_text = discord_user.display_name
-    user = await async_get_user_by_discord_id(discord_id)
-    text = await async_get_player_announce_text(user, user_text)
+    text = await async_get_player_announce_text(member.user, user_text)
     message = await game_channel.send(text)
     return message
 
 
-async def async_game_channel_tag_removed_discord_id(game_channel: GameChannel, discord_id: str):
+async def async_game_channel_tag_removed_discord_id(game_channel: GameChannel, member: GameChannelMember):
     """Send a message to the game channel notifying the DM that a player has dropped"""
-    discord_user = await bot.fetch_user(discord_id)
+    discord_user = await get_discord_user_by_id(member.user.discord_id)
     text = f"{discord_user.display_name} dropped out"
     message = await game_channel.send(text)
     return message
