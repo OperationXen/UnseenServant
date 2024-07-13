@@ -6,7 +6,6 @@ from typing import List
 from config.settings import CHANNEL_CREATION_DAYS, CHANNEL_REMIND_HOURS, CHANNEL_WARN_MINUTES, CHANNEL_DESTROY_HOURS
 from core.models.channel import GameChannel, GameChannelMember
 from core.models.game import Game
-from core.models.players import Player
 from core.models.auth import CustomUser
 
 

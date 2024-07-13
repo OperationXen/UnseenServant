@@ -1,4 +1,5 @@
 from typing import List
+from asgiref.sync import sync_to_async
 from random import choice as random_choice
 
 from core.models import CustomUser, Announcement
@@ -37,3 +38,9 @@ def get_player_announce_text(user: CustomUser, user_text: str) -> str:
         return f"{user_text} joins the channel"
     text = generate_announcement_text(selected, user_text)
     return text
+
+
+@sync_to_async
+def async_get_player_announce_text(user: CustomUser, user_text: str) -> str:
+    """async wrapper to allow database access from async context"""
+    return get_player_announce_text(user, user_text)
