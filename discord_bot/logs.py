@@ -1,8 +1,7 @@
-import platform
 import logging
 
 logger = logging.getLogger("discord-bot")
-logger.setLevel(logging.INFO)
+logger.setLevel(logging.DEBUG)
 
 try:
     handler = logging.FileHandler("./database/discordbot.log")
