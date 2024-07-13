@@ -31,9 +31,12 @@ def get_user_available_credit(user: CustomUser) -> int:
 # ###################################################################### #
 def get_user_by_discord_id(discord_id: str) -> CustomUser:
     try:
-        return CustomUser.objects.get(discord_id=discord_id)
+        user = CustomUser.objects.get(discord_id=discord_id)
+        if user:  # force evaluation before leaving syncronous context
+            return user
     except CustomUser.DoesNotExist:
-        return None
+        pass
+    return None
 
 
 @sync_to_async
