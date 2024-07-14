@@ -28,6 +28,9 @@ async def refresh_discord_channel(game_channel: GameChannel) -> TextChannel:
 async def get_discord_user_by_id(discord_id):
     """retrieve a discord user object from the server by its ID"""
     try:
+        if not discord_id:
+            return None
+
         discord_user = await bot.fetch_user(discord_id)
         return discord_user
     except Exception as e:
@@ -111,7 +114,7 @@ async def async_game_channel_tag_removed_discord_id(game_channel: GameChannel, m
 
 
 # ################################################################ #
-async def async_channel_add_user(
+async def async_channel_add_discord_user(
     channel: TextChannel,
     user: DiscordUser,
     read_messages=True,
@@ -132,16 +135,14 @@ async def async_channel_add_user(
         )
         return True
     except Exception as e:
-        log.error(f"Exception occured adding discord user {user.name} to channel")
+        log.error(f"[!] Exception occured adding discord user {user.display_name} to channel")
     return False
 
 
-async def async_channel_remove_user(channel: TextChannel, user: DiscordUser):
+async def async_channel_remove_discord_user(channel: TextChannel, user: DiscordUser):
     """Remove a specific player from a game channel"""
-    if not channel:
-        return False
     try:
-        log.debug(f"[.] Removing player [{user.name}] from channel [{channel.name}]")
+        log.debug(f"[-] Removing discord user [{user.display_name}] from channel [{channel.name}]")
         await channel.set_permissions(
             user,
             read_messages=False,
@@ -152,10 +153,11 @@ async def async_channel_remove_user(channel: TextChannel, user: DiscordUser):
         )
         return True
     except Exception as e:
-        log.debug(f"Exception occured removing discord user {user.name} from channel")
+        log.error(f"[!] Exception occured removing discord user {user.display_name} from channel")
     return False
 
 
+# ################################################################ #
 async def async_create_channel_hidden(guild, parent, name, topic):
     """creates a channel which can only be seen and used by the bot"""
     log.info(f"Creating new game mustering channel: {name} ")
@@ -242,10 +244,10 @@ async def async_add_member_to_channel(membership: GameChannelMember, channel: Te
     """Add the users refered to by their discord ID in the list to the channel"""
     discord_user = await get_discord_user_by_id(membership.user.discord_id)
     if not discord_user:
-        log.error(f"[!] Unable to find discord user id: {membership.user.discord_id}")
+        log.error(f"[!] Unable to find discord user id for: {membership.user.username}")
         return False
 
-    success = await async_channel_add_user(
+    success = await async_channel_add_discord_user(
         channel,
         discord_user,
         membership.read_messages,
@@ -257,15 +259,12 @@ async def async_add_member_to_channel(membership: GameChannelMember, channel: Te
     return success
 
 
-async def async_remove_discord_ids_from_channel(discord_ids, channel: TextChannel) -> int:
-    """remove the users refered to in the list of discord IDs from the channel"""
-    num_removed = 0
-    for discord_id in discord_ids:
-        discord_user = await get_discord_user_by_id(discord_id)
-        if not discord_user:
-            log.error(f"[!] Unable to find discord user id: {discord_id}")
-            continue
-        success = await async_channel_remove_user(channel, discord_user)
-        if success:
-            num_removed = num_removed + 1
-    return num_removed
+async def async_remove_discord_id_from_channel(discord_id, channel: TextChannel) -> bool:
+    """remove a user from a channel by their discord ID"""
+    discord_user = await get_discord_user_by_id(discord_id)
+    if discord_user:
+        success = await async_channel_remove_discord_user(channel, discord_user)
+        return success
+    else:
+        log.error(f"[!] Unable to find discord user id: {discord_id}")
+        return False
