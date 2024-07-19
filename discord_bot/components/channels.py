@@ -3,13 +3,11 @@ from discord.ui import View, Button
 
 from discord_bot.components.moonseacodex import MSCCharacterList
 from discord_bot.utils.moonseacodex import get_msc_characters
-from discord_bot.utils.players import async_do_waitlist_updates
-from discord_bot.utils.channel import async_remove_discord_member_from_game_channel
-from core.utils.channels import async_get_game_channel_for_game
-from core.utils.players import async_get_player_credit_text
 from core.utils.games import calc_game_tier
 from discord_bot.components.games import BaseGameEmbed
-from discord_bot.utils.games import async_update_game_listing_embed, async_remove_discord_member_from_game
+from discord_bot.utils.games import async_update_game_listing_embed
+
+from discord_bot.components.common import handle_player_dropout_event
 from discord_bot.logs import logger as log
 
 
@@ -132,21 +130,13 @@ class MusteringView(View):
 
     async def muster_view_dropout(self, interaction):
         """Callback for dropout button pressed"""
-        await interaction.response.defer(ephemeral=True)
-
-        channel = await async_get_game_channel_for_game(self.game)
-        await async_remove_discord_member_from_game_channel(interaction.user, channel)
-        removed = await async_remove_discord_member_from_game(interaction.user, self.game)
-        if removed:
-            log.info(f"[>] Player {interaction.user.name} dropped from game {self.game.name}")
-            games_remaining_text = await async_get_player_credit_text(interaction.user)
-            message = f"Removed you from {self.game.name} `({games_remaining_text})`"
-            await async_do_waitlist_updates(self.game)
+        try:
+            await interaction.response.defer(ephemeral=True)
+            await handle_player_dropout_event(self.game, interaction.user)
             await self.update_message(followup_hook=interaction.followup)
             await async_update_game_listing_embed(self.game)
-            await interaction.user.send(message)
-            return True
-        return False
+        except Exception as e:
+            log.error(f"f[!] Exception occured in drop interaction {e}")
 
     async def muster_view_msc(self, interaction):
         """Force refresh button callback"""
