@@ -4,6 +4,7 @@ from asgiref.sync import sync_to_async
 from django.db.models import Q, Sum, QuerySet
 from django.utils import timezone
 
+from core.models.auth import CustomUser
 from core.models.players import BonusCredit, Player
 from discord_bot.logs import logger as log
 from core.utils.ranks import get_user_highest_rank
@@ -110,6 +111,19 @@ def async_populate_game_from_waitlist(game):
             log.info("Not enough waitlisted players to fill game")
             break
     return promoted
+
+
+def get_user_from_player(player: Player) -> CustomUser:
+    """Async wrapper to fetch the user"""
+    if player.user:
+        return player.user
+    return None
+
+
+@sync_to_async
+def async_get_user_from_player(player: Player) -> CustomUser:
+    """Get the user for a player object (need wrapper to do this to avoid unresolved foreign key)"""
+    return get_user_from_player(player)
 
 
 def get_waitlist_rank(player):
