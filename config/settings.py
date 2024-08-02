@@ -13,6 +13,7 @@ DJANGO_SECRET = getenv("DJANGO_SECRET")
 SECRET_KEY = DJANGO_SECRET or RANDOM_KEY
 
 # Database config
+DB_HOST = getenv("DB_HOST", "localhost")
 DB_NAME = getenv("DB_NAME", "database")
 DB_USER = getenv("DB_USER", "user")
 DB_PASS = getenv("DB_PASS", "password")
@@ -32,7 +33,7 @@ if DJANGO_SECRET:
     DATABASES = {
         "default": {
             "ENGINE": "django.db.backends.postgresql_psycopg2",
-            "HOST": "localhost",
+            "HOST": DB_HOST,
             "NAME": DB_NAME,
             "USERNAME": DB_USER,
             "PASSWORD": DB_PASS,
