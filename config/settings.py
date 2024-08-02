@@ -35,7 +35,7 @@ if DJANGO_SECRET:
             "ENGINE": "django.db.backends.postgresql_psycopg2",
             "HOST": DB_HOST,
             "NAME": DB_NAME,
-            "USERNAME": DB_USER,
+            "USER": DB_USER,
             "PASSWORD": DB_PASS,
         },
     }
