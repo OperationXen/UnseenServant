@@ -12,6 +12,11 @@ RANDOM_KEY = "".join(choices(ascii_letters + digits, k=128))
 DJANGO_SECRET = getenv("DJANGO_SECRET")
 SECRET_KEY = DJANGO_SECRET or RANDOM_KEY
 
+# Database config
+DB_NAME = getenv("DB_NAME", "database")
+DB_USER = getenv("DB_USER", "user")
+DB_PASS = getenv("DB_PASS", "password")
+
 if DJANGO_SECRET:
     DEBUG = False
     DEFAULT_CHANNEL_NAME = "general-game-signups"
@@ -23,6 +28,16 @@ if DJANGO_SECRET:
     SERVER_URI = f"https://unseen-servant.tridengames.com"
     CSRF_COOKIE_DOMAIN = ".tridengames.com"
     CSRF_TRUSTED_ORIGINS = ["https://*.tridengames.com"]
+
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.postgresql_psycopg2",
+            "HOST": "localhost",
+            "NAME": DB_NAME,
+            "USERNAME": DB_USER,
+            "PASSWORD": DB_PASS,
+        },
+    }
 else:
     DEBUG = True
     DEFAULT_CHANNEL_NAME = "bot-test-channel"
@@ -30,6 +45,13 @@ else:
     CALENDAR_CHANNEL_NAME = "bot-test-calendar-channel"
     SERVER_URI = "http://127.0.0.1:8000"
     CSRF_TRUSTED_ORIGINS = ["http://127.0.0.1:3000", "http://localhost:3000"]
+
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": BASE_DIR / "database" / "db.sqlite3",
+        },
+    }
 
 WEBAPP_URL = getenv("WEBAPP_URL", "http://127.0.0.1:3000")
 
@@ -125,13 +147,6 @@ WSGI_APPLICATION = "config.wsgi.application"
 
 # Database
 # https://docs.djangoproject.com/en/4.0/ref/settings/#databases
-
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "database" / "db.sqlite3",
-    }
-}
 
 
 # Password validation
