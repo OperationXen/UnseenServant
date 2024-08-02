@@ -51,7 +51,7 @@ jobs:
     needs: Build-Docker-Container
 
     steps:
-      - name: Predeployment backup
+      - name: Stop services
         uses: appleboy/ssh-action@v0.1.4
         with:
           host: ${{ secrets.SERVER }}
@@ -59,7 +59,6 @@ jobs:
           key: ${{ secrets.SSH_KEY }}
           script: |
             sudo service unseen_servant stop
-            sudo cp /var/opt/unseen_servant/db.sqlite3 /var/opt/unseen_servant/db.backup
 
       - name: Deploy new container
         uses: appleboy/ssh-action@v0.1.4
@@ -79,6 +78,8 @@ jobs:
               -e MOONSEACODEX_APIKEY=${{ secrets.MOONSEACODEX_APIKEY }} -e WEBAPP_URL=${{ secrets.WEBAPP_URL }} \
               -e CHANNEL_SEND_PINGS=${{ secrets.CHANNEL_SEND_PINGS }} -e OAUTH_COMPLETE_URL=${{ secrets.OAUTH_COMPLETE_URL }} \
               -e OAUTH_REDIRECT_URL=${{ secrets.OAUTH_REDIRECT_URL }} -e OAUTH_FAIL_URL=${{ secrets.OAUTH_FAIL_URL }} \
+              -e DB_HOST=${{ secrets.DB_HOST }} -e DB_NAME=${{ secrets.DB_NAME }} \
+              -e DB_USER=${{ secrets.DB_USER }} -e DB_PASS=${{ secrets.DB_PASS }} \
               -v /var/opt/unseen_servant:/unseen_servant/database \
               --restart always \
               operationxen/unseen_servant:main
