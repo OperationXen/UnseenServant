@@ -23,8 +23,6 @@ async def on_ready():
         guild_id = int(DISCORD_GUILDS[0])
         discord_bot.core.guild = bot.get_guild(guild_id)
 
-        return
-
         discord_bot.core.game_controller = GamesPoster()
         log.info("[+] Started service: Games poster")
         discord_bot.core.channel_controller = ChannelController(discord_bot.core.guild)
