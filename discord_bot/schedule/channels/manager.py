@@ -153,7 +153,7 @@ class ChannelController:
                 control_view = MusteringView(game)
                 control_view.message = message
                 add_persistent_view(control_view)
-                log.info(f"Reconnected mustering view for {game.name}")
+                log.info(f"[+] Reconnected mustering view for {game.name}")
             elif message:
                 game_id = get_game_id_from_message(message)
                 log.error(

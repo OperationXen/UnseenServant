@@ -141,7 +141,7 @@ async def async_channel_remove_user(channel: TextChannel, user: DiscordUser):
     if not channel:
         return False
     try:
-        log.debug(f"Removing player [{user.name}] from channel [{channel.name}]")
+        log.debug(f"[.] Removing player [{user.name}] from channel [{channel.name}]")
         await channel.set_permissions(
             user,
             read_messages=False,
