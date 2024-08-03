@@ -47,6 +47,7 @@ class Player(models.Model):
     )
     discord_id = models.CharField(null=True, blank=True, max_length=32, help_text="Discord ID of player")
     discord_name = models.CharField(blank=True, max_length=32, help_text="Discord username")
+    display_name = models.CharField(blank=True, max_length=32, help_text="Display name")
     character = models.ForeignKey(
         Character, null=True, blank=True, on_delete=models.SET_NULL, help_text="Character info"
     )
