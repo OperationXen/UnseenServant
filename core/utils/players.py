@@ -72,8 +72,6 @@ def get_user_signups_remaining(user) -> int:
     """Get the total number of signups the user has availble to them"""
     max_games = get_player_max_games(user)
     game_count = get_user_pending_games_count(str(user.id))
-
-    log.debug(f"{user.display_name} is signed up for {game_count}")
     return max_games - game_count
 
 
