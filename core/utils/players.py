@@ -106,7 +106,7 @@ def async_populate_game_from_waitlist(game):
             promoted.append(next)
             players = Player.objects.filter(game=game).filter(standby=False)
         else:
-            log.info("Not enough waitlisted players to fill game")
+            log.info("[.] Not enough waitlisted players to fill game")
             break
     return promoted
 

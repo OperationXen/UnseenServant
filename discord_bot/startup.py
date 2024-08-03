@@ -16,7 +16,7 @@ def start_bot():
 
 @bot.event
 async def on_ready():
-    log.info(f"{bot.user.name} has connected to discord")
+    log.info(f"[-] {bot.user.name} has connected to discord")
     log.info("Starting automated services")
 
     try:
