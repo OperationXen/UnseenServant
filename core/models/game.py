@@ -58,7 +58,7 @@ class Game(models.Model):
         verbose_name="General Release Time",
     )
     datetime = models.DateTimeField(help_text="Date/Time game is starting (UTC)", verbose_name="Game Time")
-    duration = models.IntegerField(default=None, null=True, blank=True, help_text="Planned duration of game (hours)")
+    duration = models.IntegerField(default=4, null=True, help_text="Planned duration of game (hours)")
     ready = models.BooleanField(default=True, help_text="Game is ready for release")
 
     def __str__(self):
