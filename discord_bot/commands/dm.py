@@ -174,7 +174,7 @@ async def warn_waitlist(ctx):
         await discord_user.send(
             f"You are at the top of the waitlist for **{game.name}** which starts {discord_countdown(game.datetime)}"
         )
-        log.debug(f"Player {discord_user.display_name} notified")
+        log.debug(f"Player {discord_user.name} notified")
         return await ctx.followup.send(f"Player {discord_user.display_name} notified", ephemeral=True)
     except Exception as e:
         log.error(f"Unable to find waitlisted player")

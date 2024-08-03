@@ -132,7 +132,7 @@ async def async_channel_add_user(
         )
         return True
     except Exception as e:
-        log.error(f"Exception occured adding discord user {user.display_name} to channel")
+        log.error(f"Exception occured adding discord user {user.name} to channel")
     return False
 
 
@@ -141,7 +141,7 @@ async def async_channel_remove_user(channel: TextChannel, user: DiscordUser):
     if not channel:
         return False
     try:
-        log.debug(f"Removing player [{user.display_name}] from channel [{channel.name}]")
+        log.debug(f"Removing player [{user.name}] from channel [{channel.name}]")
         await channel.set_permissions(
             user,
             read_messages=False,
@@ -152,7 +152,7 @@ async def async_channel_remove_user(channel: TextChannel, user: DiscordUser):
         )
         return True
     except Exception as e:
-        log.debug(f"Exception occured removing discord user {user.display_name} from channel")
+        log.debug(f"Exception occured removing discord user {user.name} from channel")
     return False
 
 
@@ -190,7 +190,7 @@ async def async_remove_all_channel_members(channel: TextChannel) -> bool:
     """Remove all the members of a specific channel"""
     for member in channel.members:
         if not member.bot:
-            log.info(f"Removed [{member.display_name}] from [{channel.name}]")
+            log.info(f"Removed [{member.name}] from [{channel.name}]")
             await channel.set_permissions(
                 member, read_messages=False, send_messages=False, read_message_history=False, use_slash_commands=False
             )
