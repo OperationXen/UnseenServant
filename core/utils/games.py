@@ -91,6 +91,23 @@ def async_get_wait_list(game: Game) -> list[Player]:
 
 
 # ########################################################################## #
+def player_dropout_permitted(game: Game) -> bool:
+    """Check if game can be dropped or if players are locked in"""
+    now = timezone.now()
+    an_hour_ago = now - timedelta(hours=1)
+
+    if game.datetime > an_hour_ago:
+        return True
+    return False
+
+
+@sync_to_async
+def async_player_dropout_permitted(game: Game) -> bool:
+    """async wrapper for checking if a game can be dropped from"""
+    return player_dropout_permitted(game)
+
+
+# ########################################################################## #
 def get_historic_games(days: int = 30, start_date: datetime | None = None) -> QuerySet:
     """Get games which have been played over the last X days"""
     if start_date:
