@@ -1,4 +1,7 @@
+from datetime import timedelta
+
 from rest_framework.status import *
+from django.utils import timezone
 from django.test import TestCase
 from django.urls import reverse
 
@@ -100,6 +103,32 @@ class TestGameActionViews(TestCase):
         response = self.client.post(reverse("games-drop", kwargs={"pk": 1}))
         self.assertIn("You are not in this game", response.data["message"])
         self.assertEqual(Player.objects.filter(game=game).count(), 2)
+
+    def test_user_cant_leave_old_game(self) -> None:
+        """Check that a user cannot leave a game after the first hour"""
+        game = Game.objects.get(pk=1)
+        # update game time to be two hours ago
+        game.datetime = timezone.now() - timedelta(hours=2)
+        game.save()
+        self.assertEqual(Player.objects.filter(game=game).count(), 2)
+
+        self.client.login(username="playeruser", password="testpassword")
+        response = self.client.post(reverse("games-drop", kwargs={"pk": 1}))
+        self.assertTrue("message" in response.data)
+        self.assertEqual(Player.objects.filter(game=game).count(), 2)
+
+    def test_user_can_leave_just_started_game(self) -> None:
+        """Check that a user can leave a game before the first hour passes"""
+        game = Game.objects.get(pk=1)
+        # update game time to be less than an hour ago
+        game.datetime = timezone.now() - timedelta(minutes=55)
+        game.save()
+        self.assertEqual(Player.objects.filter(game=game).count(), 2)
+
+        self.client.login(username="playeruser", password="testpassword")
+        response = self.client.post(reverse("games-drop", kwargs={"pk": 1}))
+        self.assertIn(game.name, response.data["message"])
+        self.assertEqual(Player.objects.filter(game=game).count(), 1)
 
     def test_user_cant_join_game_twice(self) -> None:
         """A user who is already in a game cannot join it again"""
