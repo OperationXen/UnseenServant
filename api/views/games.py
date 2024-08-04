@@ -11,7 +11,7 @@ from api.serialisers.games import GameCreationSerialiser, GameSerialiser, Player
 from core.models import DM, Game, Player
 from core.utils.sanctions import check_discord_user_good_standing
 from core.utils.user import get_user_available_credit, user_in_game
-from core.utils.games import game_has_player_by_discord_id
+from core.utils.games import game_has_player_by_discord_id, player_dropout_permitted
 from core.utils.games_rework import add_user_to_game, remove_user_from_game
 
 
@@ -52,6 +52,9 @@ class GamesViewSet(ViewSet):
             game = Game.objects.get(pk=pk)
         except Game.DoesNotExist:
             return Response({"message": "Invalid game ID"}, HTTP_400_BAD_REQUEST)
+
+        if not player_dropout_permitted(game):
+            return Response({"message": "This game is in the past and so you cannot leave it"}, HTTP_400_BAD_REQUEST)
 
         if not user_in_game(request.user, game):
             return Response({"message": "You are not in this game"}, HTTP_400_BAD_REQUEST)
