@@ -22,9 +22,12 @@ class GamesPoster:
 
     async def fetch_message_state(self):
         """Perform async initialisation"""
-        self.current_games = {}
-        await self.get_bot_channels()
-        await self.recover_message_state()
+        try:
+            self.current_games = {}
+            await self.get_bot_channels()
+            await self.recover_message_state()
+        except Exception as e:
+            log.error(f"[!] Exception in fetch_message_state: {e}")
 
     async def get_bot_channels(self):
         """Attempt to get the specified channels"""
@@ -128,8 +131,11 @@ class GamesPoster:
 
     @tasks.loop(seconds=60)
     async def check_and_post_games(self):
-        await self.fetch_message_state()
+        try:
+            await self.fetch_message_state()
 
-        if self.channel_priority and self.channel_general:
-            await self.remove_stale_games()
-            await self.post_outstanding_games()
+            if self.channel_priority and self.channel_general:
+                await self.remove_stale_games()
+                await self.post_outstanding_games()
+        except Exception as e:
+            log.error(f"[!] An unhandled exception has occured in the GamesPoster Loop: " + str(e))
