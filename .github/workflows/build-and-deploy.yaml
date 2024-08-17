@@ -75,7 +75,8 @@ jobs:
               -e DB_USER=${{ secrets.DB_USER }} -e DB_PASS=${{ secrets.DB_PASS }} \
               -e DISCORD_TOKEN=${{ secrets.DISCORD_TOKEN }} -e DISCORD_GUILDS=${{ secrets.DISCORD_GUILDS }} \
               -e DISCORD_CLIENT_ID=${{ secrets.DISCORD_CLIENT_ID }} -e DISCORD_CLIENT_SECRET=${{ secrets.DISCORD_CLIENT_SECRET }} \
-              -e MOONSEACODEX_APIKEY=${{ secrets.MOONSEACODEX_APIKEY }} -e WEBAPP_URL=${{ secrets.WEBAPP_URL }} \
+              -e MOONSEACODEX_URL=${{ vars.MOONSEACODEX_URL }} -e MOONSEACODEX_APIKEY=${{ secrets.MOONSEACODEX_APIKEY }} \
+              -e WEBAPP_URL=${{ secrets.WEBAPP_URL }} \
               -e CHANNEL_SEND_PINGS=${{ secrets.CHANNEL_SEND_PINGS }} -e OAUTH_COMPLETE_URL=${{ secrets.OAUTH_COMPLETE_URL }} \
               -e OAUTH_REDIRECT_URL=${{ secrets.OAUTH_REDIRECT_URL }} -e OAUTH_FAIL_URL=${{ secrets.OAUTH_FAIL_URL }} \
               -e DB_HOST=${{ secrets.DB_HOST }} -e DB_NAME=${{ secrets.DB_NAME }} \
