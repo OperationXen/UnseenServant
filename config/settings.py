@@ -56,6 +56,10 @@ else:
 
 WEBAPP_URL = getenv("WEBAPP_URL", "http://127.0.0.1:3000")
 
+# MSC config
+MOONSEACODEX_URL = getenv("MSC_URL", "https://moonseacodex.com")
+MOONSEACODEX_APIKEY = getenv("MOONSEACODEX_APIKEY")
+
 # Security Controls
 ALLOWED_HOSTS = ["127.0.0.1"]
 
@@ -97,8 +101,6 @@ CHANNEL_WARN_MINUTES = getenv("CHANNEL_WARN_MINUTES", 60)
 CHANNEL_DESTROY_HOURS = getenv("CHANNEL_DESTROY_HOURS", 72)
 
 CHANNEL_SEND_PINGS = getenv("CHANNEL_SEND_PINGS", False)
-
-MOONSEACODEX_APIKEY = getenv("MOONSEACODEX_APIKEY")
 
 INSTALLED_APPS = [
     "django.contrib.admin",
