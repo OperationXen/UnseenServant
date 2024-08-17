@@ -1,6 +1,7 @@
 from discord import Embed, Colour, SelectOption
 from discord.ui import View, Select
 
+from config.settings import MOONSEACODEX_URL
 from discord_bot.logs import logger as log
 from discord_bot.utils.moonseacodex import get_character_string, get_classes_string, get_stats_string, get_items_string
 
@@ -42,11 +43,11 @@ class MSCCharacterEmbed(Embed):
         sheet = character.get("sheet")
         token = character.get("token")
 
-        links = f"[MSC entry](https://digitaldemiplane.com/moonseacodex/character/{character.get('uuid')}/)"
+        links = f"[MSC entry]({MOONSEACODEX_URL}/character/{character.get('uuid')}/)"
         if sheet:
             links += f" | [Character sheet]({sheet})"
         if token:
-            links += f" | [Token download](https://digitaldemiplane.com{token})"
+            links += f" | [Token download]({MOONSEACODEX_URL}{token})"
         return links
 
     def __init__(self, character):
@@ -71,9 +72,9 @@ class MSCCharacterEmbed(Embed):
             self.add_field(name="Useful Links", value=self.get_links(character))
 
             if character.get("artwork"):
-                self.set_thumbnail(url=f"https://digitaldemiplane.com{character.get('artwork')}")
+                self.set_thumbnail(url=f"{MOONSEACODEX_URL}{character.get('artwork')}")
             elif character.get("token"):
-                self.set_thumbnail(url=f"https://digitaldemiplane.com{character.get('token')}")
+                self.set_thumbnail(url=f"{MOONSEACODEX_URL}{character.get('token')}")
         except Exception as e:
             log.error(f"Exception {str(e)} occured creating MSC embed for {character.get('name')}")
 
@@ -140,6 +141,6 @@ class MSCTradeSearchResultsEmbed(Embed):
         self.add_field(name="Desired trades", value=description, inline=False)
         self.add_field(
             name="Moonsea Codex",
-            value=f"[Link to item on Moonsea Codex](https://digitaldemiplane.com/moonseacodex/magicitem/{item_uuid}/)",
+            value=f"[Link to item on Moonsea Codex]({MOONSEACODEX_URL}/magicitem/{item_uuid}/)",
             inline=False,
         )
