@@ -92,8 +92,8 @@ def async_get_player_credit_text(user):
         return f"You have no game credits available from your [{max_games}] total"
 
 
-@sync_to_async
-def async_populate_game_from_waitlist(game):
+# ############################################################################### #
+def populate_game_from_waitlist(game):
     """fill a game up using the waitlist, return a list of the promoted players"""
     promoted = []
     players = Player.objects.filter(game=game).filter(standby=False)
@@ -111,6 +111,13 @@ def async_populate_game_from_waitlist(game):
     return promoted
 
 
+@sync_to_async
+def async_populate_game_from_waitlist(game):
+    """async wrapper for population from waitlist functionality"""
+    return populate_game_from_waitlist(game)
+
+
+# ############################################################################### #
 def get_user_from_player(player: Player) -> CustomUser:
     """Async wrapper to fetch the user"""
     if player.user:
