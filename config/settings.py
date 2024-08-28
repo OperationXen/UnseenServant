@@ -57,7 +57,7 @@ else:
 WEBAPP_URL = getenv("WEBAPP_URL", "http://127.0.0.1:3000")
 
 # MSC config
-MOONSEACODEX_URL = getenv("MSC_URL", "https://moonseacodex.com")
+MOONSEACODEX_URL = getenv("MOONSEACODEX_URL", "https://moonseacodex.com")
 MOONSEACODEX_APIKEY = getenv("MOONSEACODEX_APIKEY")
 
 # Security Controls
