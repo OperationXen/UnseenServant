@@ -119,7 +119,7 @@ class GameSummaryEmbed(BaseGameEmbed):
 class GameDetailEmbed(BaseGameEmbed):
     """Embed for game detail view"""
 
-    def __init__(self, game):
+    def __init__(self, game: Game):
         tier = calc_game_tier(game)
         if tier:
             title = f"{game.datetime.strftime('%Y/%m/%d')} {game.name} (T{tier})"
@@ -159,6 +159,9 @@ class GameDetailEmbed(BaseGameEmbed):
             value=f"{self.game.description[:1024] or 'None'}",
             inline=False,
         )
+        if self.game.realm != "Forgotten Realms":
+            self.add_field(name="Setting", value=self.game.realm or "None", inline=False)
+
         self.add_field(name="When", value=self.get_game_time(), inline=True)
 
         self.add_field(
