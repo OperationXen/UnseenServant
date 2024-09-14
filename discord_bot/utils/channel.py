@@ -1,3 +1,5 @@
+from typing import List
+
 from discord import PermissionOverwrite
 from discord import User as DiscordUser
 from discord.channel import TextChannel
@@ -200,21 +202,37 @@ async def async_remove_all_channel_members(channel: TextChannel) -> bool:
 
 
 # ################################################################################### #
-#               Channel membership detection logic                                    #
+#                          Channel permissions utilities                              #
 # ################################################################################### #
-async def async_get_channel_current_members(channel: TextChannel):
-    """Get all the current members of the channel on discord"""
+def get_channel_overwrites_for_discord_user(channel: TextChannel, discord_user: DiscordUser) -> PermissionOverwrite:
+    """Get the permissions for a channel member within a specific channel"""
+    permissions = channel.overwrites_for(discord_user)
+    return permissions
+
+
+def set_channel_overwrites_for_discord_user(channel: TextChannel, discord_user: DiscordUser):
+    """Sets permission overrides on a channel for a user"""
+    pass
+
+
+def get_channel_current_members(channel: TextChannel) -> List[Member]:
+    """utility function to get all members in a private channel"""
     current_members = []
 
     for member in channel.overwrites:
         if type(member) != Member or member.bot:
             pass
         else:
-            allowed = channel.overwrites_for(member)
-            if allowed.read_messages:
+            permissions = get_channel_overwrites_for_discord_user(channel, member)
+            if permissions.read_messages:
                 current_members.append(member)
-
     return current_members
+
+
+async def async_get_channel_current_members(channel: TextChannel):
+    """Get all the current members of the channel on discord"""
+    members = get_channel_current_members(channel)
+    return members
 
 
 # ################################################################################### #
