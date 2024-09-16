@@ -12,7 +12,6 @@ from discord_bot.utils.channel import async_get_channel_current_members, refresh
 from discord_bot.utils.channel import async_remove_discord_ids_from_channel, async_add_member_to_channel
 from discord_bot.utils.channel import (
     async_game_channel_tag_promoted_discord_id,
-    async_game_channel_tag_removed_discord_id,
 )
 
 
@@ -58,7 +57,7 @@ class ChannelMembershipController:
         excess_user_ids = list(actual_member_ids - expected_member_ids)
         if excess_user_ids:
             log.debug(f"[.] Channel {game_channel.name} has excess players {excess_user_ids}")
-            num_removed = await async_remove_discord_ids_from_channel(excess_user_ids, discord_channel)
+            num_removed = await async_remove_discord_ids_from_channel(excess_user_ids, discord_channel, notify=True)
             log.debug(f"[.] removed {num_removed} users from channel")
 
     @tasks.loop(seconds=30)
