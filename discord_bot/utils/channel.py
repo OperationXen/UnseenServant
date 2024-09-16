@@ -102,12 +102,15 @@ async def async_game_channel_tag_promoted_discord_id(game_channel: GameChannel, 
     return message
 
 
-async def async_game_channel_tag_removed_discord_id(game_channel: GameChannel, member: GameChannelMember):
+async def async_game_channel_tag_removed_discord_user(game_channel: GameChannel, discord_user: DiscordUser):
     """Send a message to the game channel notifying the DM that a player has dropped"""
-    discord_user = await get_discord_user_by_id(member.user.discord_id)
-    text = f"{discord_user.display_name} dropped out"
-    message = await game_channel.send(text)
-    return message
+    try:
+        text = f"{discord_user.display_name} left the channel"
+        message = await game_channel.send(text)
+        return message
+    except Exception as e:
+        log.error(f"[!] Exception occured whilst tagging a removed user: ${e}")
+        return False
 
 
 # ################################################################ #
@@ -152,10 +155,11 @@ async def async_channel_remove_user(channel: TextChannel, user: DiscordUser):
         )
         return True
     except Exception as e:
-        log.debug(f"Exception occured removing discord user {user.name} from channel")
+        log.error(f"[!] Exception occured removing discord user {user.name} from channel")
     return False
 
 
+# ################################################################ #
 async def async_create_channel_hidden(guild, parent, name, topic):
     """creates a channel which can only be seen and used by the bot"""
     log.info(f"Creating new game mustering channel: {name} ")
@@ -186,15 +190,15 @@ async def async_get_channel_first_message(channel: TextChannel):
         return None
 
 
-async def async_remove_all_channel_members(channel: TextChannel) -> bool:
-    """Remove all the members of a specific channel"""
-    for member in channel.members:
-        if not member.bot:
-            log.info(f"Removed [{member.name}] from [{channel.name}]")
-            await channel.set_permissions(
-                member, read_messages=False, send_messages=False, read_message_history=False, use_slash_commands=False
-            )
-    return True
+# async def async_remove_all_channel_members(channel: TextChannel) -> bool:
+#     """Remove all the members of a specific channel"""
+#     for member in channel.members:
+#         if not member.bot:
+#             log.info(f"Removed [{member.name}] from [{channel.name}]")
+#             await channel.set_permissions(
+#                 member, read_messages=False, send_messages=False, read_message_history=False, use_slash_commands=False
+#             )
+#     return True
 
 
 # ################################################################################### #
@@ -257,7 +261,7 @@ async def async_add_member_to_channel(membership: GameChannelMember, channel: Te
     return success
 
 
-async def async_remove_discord_ids_from_channel(discord_ids, channel: TextChannel) -> int:
+async def async_remove_discord_ids_from_channel(discord_ids, channel: TextChannel, notify: False) -> int:
     """remove the users refered to in the list of discord IDs from the channel"""
     num_removed = 0
     for discord_id in discord_ids:
@@ -266,6 +270,9 @@ async def async_remove_discord_ids_from_channel(discord_ids, channel: TextChanne
             log.error(f"[!] Unable to find discord user id: {discord_id}")
             continue
         success = await async_channel_remove_user(channel, discord_user)
+        if notify:
+            await async_game_channel_tag_removed_discord_user(channel, discord_user)
+
         if success:
             num_removed = num_removed + 1
     return num_removed
