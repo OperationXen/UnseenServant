@@ -1,3 +1,6 @@
+from django.db import transaction
+from sequences import get_next_value
+
 from core.models.auth import CustomUser
 from core.models.game import Game
 from core.models.players import Player
@@ -13,12 +16,10 @@ def add_user_to_game(user: CustomUser, game: Game, force: bool = False) -> bool:
         current_players = game.players.all()
         if current_players.count() >= game.max_players and not force:  # party is full
             # Add player to end of waitlist
-            waitlist = current_players.filter(standby=True).order_by("-waitlist")
-            if waitlist.last():
-                last_waitlist_position = waitlist.last().waitlist or 0
-            else:
-                last_waitlist_position = 0
-            player = Player.objects.create(game=game, user=user, waitlist=last_waitlist_position + 1, standby=True)
+            with transaction.atomic():
+                player = Player.objects.create(
+                    game=game, user=user, waitlist=get_next_value(f"game-{game.pk}"), standby=True
+                )
         else:
             try:
                 # check to see if player is in the waitlist, and being force-added by the DM
