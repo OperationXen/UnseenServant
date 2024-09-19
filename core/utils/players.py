@@ -131,22 +131,6 @@ def async_get_user_from_player(player: Player) -> CustomUser:
     return get_user_from_player(player)
 
 
-def get_waitlist_rank(player):
-    """get the rank of the player in the waitlist"""
-    queryset = Player.objects.filter(game=player.game).filter(standby=True)
-    waitlist = list(queryset.order_by("waitlist"))
-    return waitlist.index(player) + 1
-
-
-def get_last_waitlist_position(game):
-    """get the position at the end of the waitlist"""
-    queryset = Player.objects.filter(game=game).filter(standby=True)
-    last_player = queryset.order_by("waitlist").last()
-    if last_player and last_player.waitlist:
-        return last_player.waitlist
-    return 0
-
-
 # ########################################################################## #
 def get_historic_users(days: int = 31, start_date: datetime | None = None) -> QuerySet:
     """Get all players who have played in the last X days"""
