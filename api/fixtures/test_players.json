@@ -17,7 +17,7 @@
     "fields": {
       "game": 1,
       "standby": true,
-      "waitlist": null,
+      "waitlist": 1,
       "discord_id": "123123123123123123",
       "discord_name": "Waitlister",
       "character": null

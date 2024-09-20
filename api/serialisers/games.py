@@ -9,7 +9,7 @@ class PlayerSummarySerialiser(ModelSerializer):
 
     class Meta:
         model = Player
-        fields = ["discord_id", "discord_name", "standby"]
+        fields = ["discord_id", "discord_name", "standby", "waitlist"]
 
 
 class PlayerSerialiser(ModelSerializer):
