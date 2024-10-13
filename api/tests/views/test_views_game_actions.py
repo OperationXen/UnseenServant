@@ -137,3 +137,17 @@ class TestGameActionViews(TestCase):
 
         response = self.client.post(reverse("games-join", kwargs={"pk": 1}))
         self.assertEqual(response.status_code, HTTP_400_BAD_REQUEST)
+
+    def test_user_patron_permissions_verified(self) -> None:
+        """A non-patreon user cannot sign up for games on patreon release"""
+        self.client.login(username="playeruser", password="testpassword")
+        game = Game.objects.get(pk=1)
+
+        # set game general release to some point in the future
+        game.datetime_open_release = timezone.now() + timedelta(minutes=5)
+        # set patreon release to a point in the past
+        game.datetime_release = timezone.now() - timedelta(minutes=5)
+        game.save()
+
+        response = self.client.post(reverse("games-join", kwargs={"pk": 1}))
+        self.assertEqual(response.status_code, HTTP_400_BAD_REQUEST)
