@@ -47,10 +47,10 @@
     "model": "core.rank",
     "pk": 5,
     "fields": {
-      "name": "Res DM",
+      "name": "ResDM123",
       "discord_id": "55555555",
       "priority": 10,
-      "max_games": 0,
+      "max_games": 5,
       "patreon": false
     }
   }

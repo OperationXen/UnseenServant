@@ -3,7 +3,7 @@ from asgiref.sync import sync_to_async
 from django.utils import timezone
 
 from core.utils.players import get_bonus_credits, get_user_pending_games_count
-from core.utils.ranks import get_highest_rank
+from core.utils.ranks import get_highest_rank, has_res_dm_ranks, has_patreon_ranks
 from core.models.auth import CustomUser
 from core.models.players import Player
 from core.models.game import Game
@@ -96,6 +96,8 @@ def user_signup_permissions_valid(user: CustomUser, game: Game) -> bool:
         return False
 
     # game is currently available to patreon users only
-    if user.ranks.contains("patreon"):
+    if has_patreon_ranks(user.ranks.all()):
+        return True
+    if has_res_dm_ranks(user.ranks.all()):
         return True
     return False

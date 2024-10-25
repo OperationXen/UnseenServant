@@ -1,3 +1,5 @@
+from typing import List
+
 from django.db.models import Q
 from discord.role import Role as DiscordRole
 
@@ -20,7 +22,7 @@ def get_ranks_for_discord_roles(discord_user_roles: list) -> list[Rank]:
     return user_ranks
 
 
-def get_highest_rank(ranks: list[Rank]) -> Rank:
+def get_highest_rank(ranks: List[Rank]) -> Rank:
     """Given a list of ranks, return the highest"""
     ranks.sort(key=lambda x: x.priority, reverse=True)
     try:
@@ -34,3 +36,26 @@ def get_user_highest_rank(discord_user_roles: list) -> Rank:
     user_ranks = get_ranks_for_discord_roles(discord_user_roles)
     highest_rank = get_highest_rank(user_ranks)
     return highest_rank
+
+
+# ################################################################ #
+# TODO: This should be refactored as part of issue 572
+
+
+def has_patreon_ranks(user_ranks: List[Rank]) -> bool:
+    """Given a list of ranks, determine if a user is a patron or not"""
+    for rank in user_ranks:
+        if rank.patreon:
+            return True
+    return False
+
+
+def has_res_dm_ranks(user_ranks: List[Rank]) -> bool:
+    """Given a list of ranks, identify if the user has a resident DM ranks"""
+    for rank in user_ranks:
+        if rank.name[:5] == "ResDM":
+            return True
+    return False
+
+
+# ################################################################ #
