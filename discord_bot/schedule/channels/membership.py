@@ -27,7 +27,7 @@ class ChannelMembershipController:
         self.channel_event_loop.start()
 
     def get_discord_user_id_list(self, members: List[DiscordMember]) -> List[str]:
-        member_ids = set(map(lambda x: str(x.id), members))
+        member_ids = set(map(lambda x: str(x["id"]), members))
         return member_ids
 
     def get_game_channel_member_id_list(self, gcm: List[GameChannelMember]) -> List[str]:
@@ -36,7 +36,7 @@ class ChannelMembershipController:
         return gcm_ids
 
     ###### Member adding logic ######
-    def get_missing_users(self, actual: List[DiscordMember], gcm: List[GameChannelMember]) -> List[GameChannelMember]:
+    def get_missing_users(self, actual, gcm: List[GameChannelMember]) -> List[GameChannelMember]:
         """Get all users which should be added to the channel"""
         missing = []
         member_ids = self.get_discord_user_id_list(actual)
@@ -60,14 +60,14 @@ class ChannelMembershipController:
                 log.warn(f"[!] Failed to add user {missing_user.user.discord_name} to channel {discord_channel.name}")
 
     ###### Member removal logic ######
-    def get_excess_users(self, actual: List[DiscordMember], gcm: List[GameChannelMember]) -> List[GameChannelMember]:
+    def get_excess_users(self, actual, gcm: List[GameChannelMember]) -> List[GameChannelMember]:
         """Get all users which should be removed from the channel"""
         excess = []
         gcm_ids = self.get_game_channel_member_id_list(gcm)
-        for discord_member in actual:
-            if str(discord_member.id) in gcm_ids:
+        for member_permissions in actual:
+            if str(member_permissions["id"]) in gcm_ids:
                 continue
-            excess.append(discord_member)
+            excess.append(member_permissions)
         return excess
 
     async def async_remove_excess_members_from_channel(self, actual, expected, discord_channel):
@@ -76,23 +76,28 @@ class ChannelMembershipController:
 
         log.debug(f"[.] Removing {len(to_remove)} users from channel {discord_channel.name}")
         for excess_user in to_remove:
-            if await async_remove_discord_id_from_channel(excess_user.id, discord_channel):
+            if await async_remove_discord_id_from_channel(excess_user["id"], discord_channel):
                 log.info(f"[-] Removed user {excess_user.name} from channel {discord_channel.name}")
             else:
                 log.warn(f"[!] Failed to remove {excess_user.name} from channel {discord_channel.name}")
 
     ###### Member update logic ######
+    def permission_update_needed(discord_member, expected_user: GameChannelMember) -> bool:
+        """Compare a discord members permissions to their expected game channel member representation"""
+        print(discord_member, expected_user)
+        return False
+
     def get_updated_users(self, actual, expected) -> List[GameChannelMember]:
         """Get all users who have outdated channel permissions"""
         users_pending_update = []
         try:
-            for discord_member in actual:
-                expected_user = [x for x in expected if x.user.discord_id == str(discord_member.id)][0]
-                print(expected_user)
-                # insert check for permissions
-                users_pending_update.append(expected_user)
+            for member_permissions in actual:
+                expected_user = [x for x in expected if x.user.discord_id == str(member_permissions["id"])][0]
+                if self.permission_update_needed(member_permissions, expected_user):
+                    users_pending_update.append(expected_user)
         except IndexError:
             pass  # user is not expected to be in channel
+        # Could simplify logic here and just remove them. Rendering the remove users call moot
         return users_pending_update
 
     async def async_apply_permission_updates(self, actual, expected, discord_channel):
@@ -109,11 +114,13 @@ class ChannelMembershipController:
             return
 
         expected_members = await async_get_game_channel_members(game_channel)
-        actual_members = await async_get_channel_current_members(discord_channel)
+        actual_member_permissions = await async_get_channel_current_members(discord_channel)
 
-        await self.async_remove_excess_members_from_channel(actual_members, expected_members, discord_channel)
-        await self.async_add_missing_members_to_channel(actual_members, expected_members, discord_channel)
-        # await self.async_apply_permission_updates(actual_members, expected_members, discord_channel)
+        await self.async_remove_excess_members_from_channel(
+            actual_member_permissions, expected_members, discord_channel
+        )
+        await self.async_add_missing_members_to_channel(actual_member_permissions, expected_members, discord_channel)
+        # await self.async_apply_permission_updates(actual_member_permissions, expected_members, discord_channel)
 
     # ################################### Worker loop definition ################################## #
     @tasks.loop(seconds=20)

@@ -231,7 +231,18 @@ def get_channel_current_members(channel: TextChannel) -> List[Member]:
         else:
             permissions = get_channel_overwrites_for_discord_user(channel, member)
             if permissions.read_messages:
-                current_members.append(member)
+                # construct a new dict type that contains the info we're interested in
+                current_members.append(
+                    {
+                        "id": member.id,
+                        "display_name": member.display_name,
+                        "read_messages": permissions.read_messages,
+                        "read_message_history": permissions.read_message_history,
+                        "send_messages": permissions.send_messages,
+                        "use_slash_commands": permissions.use_slash_commands,
+                        "manage_messages": permissions.manage_messages,
+                    }
+                )
     return current_members
 
 
