@@ -137,3 +137,49 @@ class TestGameActionViews(TestCase):
 
         response = self.client.post(reverse("games-join", kwargs={"pk": 1}))
         self.assertEqual(response.status_code, HTTP_400_BAD_REQUEST)
+
+    def test_user_patron_permissions_verified(self) -> None:
+        """A non-patreon user cannot sign up for games on patreon release"""
+        self.client.login(username="playeruser", password="testpassword")
+        game = Game.objects.get(pk=1)
+
+        # set game general release to some point in the future
+        game.datetime_open_release = timezone.now() + timedelta(minutes=5)
+        # set patreon release to a point in the past
+        game.datetime_release = timezone.now() - timedelta(minutes=5)
+        game.save()
+
+        response = self.client.post(reverse("games-join", kwargs={"pk": 1}))
+        self.assertEqual(response.status_code, HTTP_400_BAD_REQUEST)
+
+    def test_patron_user_can_join_patreon_games(self) -> None:
+        """A patron user should be able to join a patron game"""
+        self.client.login(username="patreon_user", password="testpassword")
+        # This game starts with no players
+        game = Game.objects.get(pk=2)
+        # set game general release to some point in the future
+        game.datetime_open_release = timezone.now() + timedelta(minutes=5)
+        # set patreon release to a point in the past
+        game.datetime_release = timezone.now() - timedelta(minutes=5)
+        game.save()
+
+        self.assertEqual(game.players.all().count(), 0)
+        response = self.client.post(reverse("games-join", kwargs={"pk": 2}))
+        self.assertEqual(response.status_code, HTTP_200_OK)
+        self.assertEqual(game.players.all().count(), 1)
+
+    def test_res_dm_can_join_patreon_games(self) -> None:
+        """A Resident DM should be able to join patreon games"""
+        self.client.login(username="resdm_user", password="testpassword")
+        # This game starts with no players
+        game = Game.objects.get(pk=2)
+        # set game general release to some point in the future
+        game.datetime_open_release = timezone.now() + timedelta(minutes=5)
+        # set patreon release to a point in the past
+        game.datetime_release = timezone.now() - timedelta(minutes=5)
+        game.save()
+
+        self.assertEqual(game.players.all().count(), 0)
+        response = self.client.post(reverse("games-join", kwargs={"pk": 2}))
+        self.assertEqual(response.status_code, HTTP_200_OK)
+        self.assertEqual(game.players.all().count(), 1)

@@ -13,7 +13,6 @@ from discord_bot.utils.channel import async_get_channel_current_members, refresh
 from discord_bot.utils.channel import async_remove_discord_id_from_channel, async_add_member_to_channel
 from discord_bot.utils.channel import (
     async_game_channel_tag_promoted_discord_id,
-    async_game_channel_tag_removed_discord_id,
 )
 
 

@@ -65,7 +65,7 @@ def async_get_dm(game):
 # ########################################################################## #
 def get_player_list(game: Game) -> QuerySet:
     """Get a list of players for a specified game"""
-    queryset = game.players.filter(standby=False)
+    queryset = game.players.filter(standby=False).order_by("pk")
     return queryset
 
 

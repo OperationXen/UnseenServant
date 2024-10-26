@@ -35,7 +35,7 @@ class Player(models.Model):
     )
     standby = models.BooleanField(default=False, help_text="If player is a waitlist player", verbose_name="Waitlist")
     waitlist = models.IntegerField(
-        null=True, blank=True, help_text="Rank in queue for place in game", verbose_name="Waitlist Position"
+        null=True, default=0, blank=True, help_text="Rank in queue for place in game", verbose_name="Waitlist Position"
     )
     user = models.ForeignKey(
         CustomUser,

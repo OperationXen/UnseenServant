@@ -107,12 +107,15 @@ async def async_game_channel_tag_promoted_discord_id(game_channel: GameChannel, 
     return message
 
 
-async def async_game_channel_tag_removed_discord_id(game_channel: GameChannel, member: GameChannelMember):
+async def async_game_channel_tag_removed_discord_user(game_channel: GameChannel, discord_user: DiscordUser):
     """Send a message to the game channel notifying the DM that a player has dropped"""
-    discord_user = await get_discord_user_by_id(member.user.discord_id)
-    text = f"{discord_user.display_name} dropped out"
-    message = await game_channel.send(text)
-    return message
+    try:
+        text = f"{discord_user.display_name} left the channel"
+        message = await game_channel.send(text)
+        return message
+    except Exception as e:
+        log.error(f"[!] Exception occured whilst tagging a removed user: ${e}")
+        return False
 
 
 # ################################################################ #
@@ -190,15 +193,15 @@ async def async_get_channel_first_message(channel: TextChannel):
         return None
 
 
-async def async_remove_all_channel_members(channel: TextChannel) -> bool:
-    """Remove all the members of a specific channel"""
-    for member in channel.members:
-        if not member.bot:
-            log.info(f"Removed [{member.name}] from [{channel.name}]")
-            await channel.set_permissions(
-                member, read_messages=False, send_messages=False, read_message_history=False, use_slash_commands=False
-            )
-    return True
+# async def async_remove_all_channel_members(channel: TextChannel) -> bool:
+#     """Remove all the members of a specific channel"""
+#     for member in channel.members:
+#         if not member.bot:
+#             log.info(f"Removed [{member.name}] from [{channel.name}]")
+#             await channel.set_permissions(
+#                 member, read_messages=False, send_messages=False, read_message_history=False, use_slash_commands=False
+#             )
+#     return True
 
 
 # ################################################################################### #

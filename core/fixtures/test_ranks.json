@@ -31,5 +31,27 @@
       "max_games": 0,
       "patreon": false
     }
+  },
+  {
+    "model": "core.rank",
+    "pk": 4,
+    "fields": {
+      "name": "Patreon User",
+      "discord_id": "44444444",
+      "priority": 5,
+      "max_games": 2,
+      "patreon": true
+    }
+  },
+  {
+    "model": "core.rank",
+    "pk": 5,
+    "fields": {
+      "name": "ResDM123",
+      "discord_id": "55555555",
+      "priority": 10,
+      "max_games": 5,
+      "patreon": false
+    }
   }
 ]

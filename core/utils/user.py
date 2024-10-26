@@ -1,7 +1,9 @@
 from asgiref.sync import sync_to_async
 
+from django.utils import timezone
+
 from core.utils.players import get_bonus_credits, get_user_pending_games_count
-from core.utils.ranks import get_highest_rank
+from core.utils.ranks import get_highest_rank, has_res_dm_ranks, has_patreon_ranks
 from core.models.auth import CustomUser
 from core.models.players import Player
 from core.models.game import Game
@@ -72,5 +74,30 @@ def user_is_waitlisted_in_game(user: CustomUser, game: Game) -> bool:
     queryset = queryset.filter(standby=True)
     queryset = queryset.filter(discord_id=user.discord_id)
     if queryset.exists():
+        return True
+    return False
+
+
+###########################################################################
+def user_signup_permissions_valid(user: CustomUser, game: Game) -> bool:
+    """Check a user's permissions to ensure they're permitted to sign up for a game"""
+    now = timezone.now()
+
+    # users cannot join a game which is not marked as ready
+    if not game.ready:
+        return False
+
+    # if game is in general release, everyone can sign up
+    if game.datetime_open_release < now:
+        return True
+
+    # game not pre-released to patreons (at all, or yet)
+    if not game.datetime_release or game.datetime_release > now:
+        return False
+
+    # game is currently available to patreon users only
+    if has_patreon_ranks(user.ranks.all()):
+        return True
+    if has_res_dm_ranks(user.ranks.all()):
         return True
     return False
