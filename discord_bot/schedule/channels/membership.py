@@ -65,7 +65,7 @@ class ChannelMembershipController:
         excess = []
         gcm_ids = self.get_game_channel_member_id_list(gcm)
         for discord_member in actual:
-            if discord_member in gcm_ids:
+            if str(discord_member.id) in gcm_ids:
                 continue
             excess.append(discord_member)
         return excess
@@ -113,10 +113,10 @@ class ChannelMembershipController:
 
         await self.async_remove_excess_members_from_channel(actual_members, expected_members, discord_channel)
         await self.async_add_missing_members_to_channel(actual_members, expected_members, discord_channel)
-        await self.async_apply_permission_updates(actual_members, expected_members, discord_channel)
+        # await self.async_apply_permission_updates(actual_members, expected_members, discord_channel)
 
     # ################################### Worker loop definition ################################## #
-    @tasks.loop(seconds=30)
+    @tasks.loop(seconds=20)
     async def channel_event_loop(self):
         try:
             if not self.initialised:

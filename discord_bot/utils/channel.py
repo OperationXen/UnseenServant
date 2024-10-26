@@ -129,15 +129,18 @@ async def async_channel_add_discord_user(
     manage_messages=False,
 ):
     """Give a specific user permission to view and post in the channel for an upcoming game"""
+
+    # start by creating an override object that describes the desired permissions
+    overwrite = PermissionOverwrite()
+    overwrite.read_messages = read_messages
+    overwrite.read_message_history = read_message_history
+    overwrite.send_messages = send_messages
+    overwrite.use_slash_commands = use_slash_commands
+    overwrite.manage_messages = manage_messages
+
+    # then apply the overwrites to the user
     try:
-        await channel.set_permissions(
-            user,
-            read_messages=read_messages,
-            send_messages=send_messages,
-            read_message_history=read_message_history,
-            use_slash_commands=use_slash_commands,
-            manage_messages=manage_messages,
-        )
+        await channel.set_permissions(user, overwrite=overwrite)
         return True
     except Exception as e:
         log.error(f"[!] Exception occured adding discord user {user.display_name} to channel")
