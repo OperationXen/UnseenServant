@@ -13,14 +13,14 @@ from discord_bot.logs import logger as log
 
 async def handle_player_dropout_event(game: Game, discord_member: DiscordMember) -> bool:
     """handle a player clicking the dropout button"""
-    log.debug(f"[>] User {discord_member.name} attempted to drop from game {game.name}")
+    # log.debug(f"[>] User {discord_member.name} attempted to drop from game {game.name}")
 
     try:
         if await async_player_dropout_permitted(game):
             removed = await async_remove_discord_member_from_game(discord_member, game)
             await async_do_waitlist_updates(game)
             if removed:
-                log.info(f"[>] {discord_member.name} dropped from {game.name}")
+                log.info(f"[>] User {discord_member.name} dropped from {game.name}")
                 games_remaining_text = await async_get_player_credit_text(discord_member)
                 await discord_member.send(f"Removed you from {game.name} `({games_remaining_text})`")
 
