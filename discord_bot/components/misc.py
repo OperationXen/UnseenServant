@@ -21,6 +21,11 @@ class HelpMessageEmbed(Embed):
         )
         self.add_field(
             name="DM Commands",
-            value="To create games, first assign yourself the Dungeon Master role from **#roles-and-rules**, the go to [Tridengames.com](https://www.tridengames.com/members). You will then be able to log in and create games.\n5 days before game time, a new channel will be created only accessible by the DM and the players who will be tagged. Several useful commands are available to the DM inside a game channel:\n**/reset_channel_membership** - removes and re-adds players for this game. The first thing to try if a player cannot see the channel.\n**/tag_players** - will ping all players for this game.\n**/warn_waitlist** - sends a message with game details to the person at the top of the waitlist.\n**add_player** - immediately adds the specified player to game. This will force the game above the maximum number of players if full. The specified player will be removed from the waitlist if they were on it.\n**/remove_player** - immediately removes the specified player from the game. This can be useful if the player has advised they won’t be able to play but they haven’t pressed the button to drop out.",
+            value="To create games, first assign yourself the Dungeon Master role from **#roles-and-rules**, the go to [Tridengames.com](https://www.tridengames.com/members). You will then be able to log in and create games.",
+            inline=False,
+        )
+        self.add_field(
+            name="Channel commands",
+            value="\n5 days before game time, a new channel will be created only accessible by the DM and the players who will be tagged. Several useful commands are available to the DM inside a game channel:\n**/reset_channel_membership** - removes and re-adds players for this game. The first thing to try if a player cannot see the channel.\n**/tag_players** - will ping all players for this game.\n**/warn_waitlist** - sends a message with game details to the person at the top of the waitlist.\n**add_player** - immediately adds the specified player to game. This will force the game above the maximum number of players if full. The specified player will be removed from the waitlist if they were on it.\n**/remove_player** - immediately removes the specified player from the game. This can be useful if the player has advised they won’t be able to play but they haven’t pressed the button to drop out.",
             inline=False,
         )
