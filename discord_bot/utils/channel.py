@@ -14,6 +14,7 @@ from core.utils.user import async_get_user_by_discord_id
 from core.utils.channels import async_add_user_to_game_channel, async_remove_user_from_game_channel
 from core.utils.channels import async_get_game_channel_for_game
 from discord_bot.utils.games import async_get_game_from_message
+from discord_bot.utils.channelmember import ChannelMember as ActualChannelMember
 
 
 def get_discord_channel(game_channel: GameChannel) -> TextChannel:
@@ -107,10 +108,10 @@ async def async_game_channel_tag_promoted_discord_id(game_channel: GameChannel, 
     return message
 
 
-async def async_game_channel_tag_removed_discord_user(game_channel: GameChannel, discord_user: DiscordUser):
+async def async_game_channel_notify_removed_user(game_channel: GameChannel, user_name: str):
     """Send a message to the game channel notifying the DM that a player has dropped"""
     try:
-        text = f"{discord_user.display_name} left the channel"
+        text = f"{user_name} left the channel"
         message = await game_channel.send(text)
         return message
     except Exception as e:
@@ -221,9 +222,9 @@ def set_channel_overwrites_for_discord_user(channel: TextChannel, discord_user: 
     pass
 
 
-def get_channel_current_members(channel: TextChannel) -> List[Member]:
+def get_actual_channel_members(channel: TextChannel) -> List[Member]:
     """utility function to get all members in a private channel"""
-    current_members = []
+    current_members: List[ActualChannelMember] = []
 
     for member in channel.overwrites:
         if type(member) != Member or member.bot:
@@ -231,24 +232,26 @@ def get_channel_current_members(channel: TextChannel) -> List[Member]:
         else:
             permissions = get_channel_overwrites_for_discord_user(channel, member)
             if permissions.read_messages:
-                # construct a new dict type that contains the info we're interested in
-                current_members.append(
-                    {
-                        "id": member.id,
-                        "display_name": member.display_name,
-                        "read_messages": permissions.read_messages,
-                        "read_message_history": permissions.read_message_history,
-                        "send_messages": permissions.send_messages,
-                        "use_slash_commands": permissions.use_slash_commands,
-                        "manage_messages": permissions.manage_messages,
-                    }
+                # construct an object that contains the info we're interested in
+                actual_channel_member = ActualChannelMember(
+                    discord_id=member.id,
+                    display_name=member.display_name,
+                    channel_id=channel.id,
+                    channel_name=channel.name,
+                    # pick relevant permissions from permissions object
+                    read_messages=permissions.read_messages,
+                    read_message_history=permissions.read_message_history,
+                    send_messages=permissions.send_messages,
+                    use_slash_commands=permissions.use_slash_commands,
+                    manage_messages=permissions.manage_messages,
                 )
+                current_members.append(actual_channel_member)
     return current_members
 
 
-async def async_get_channel_current_members(channel: TextChannel):
+async def async_get_actual_channel_members(channel: TextChannel):
     """Get all the current members of the channel on discord"""
-    members = get_channel_current_members(channel)
+    members = get_actual_channel_members(channel)
     return members
 
 
