@@ -56,7 +56,8 @@ class ChannelMembershipController:
         """Identify players missing from the channel and add them"""
         to_add = self.get_missing_users(actual, expected)
 
-        log.debug(f"[.] Adding {len(to_add)} users to channel {discord_channel.name}")
+        if to_add:
+            log.debug(f"[.] Adding {len(to_add)} users to channel {discord_channel.name}")
         for missing_user in to_add:
             if await async_add_member_to_channel(missing_user, discord_channel):
                 log.debug(f"[.] added user {missing_user.user.discord_name} to channel {discord_channel.name}")
@@ -85,7 +86,8 @@ class ChannelMembershipController:
         """Identify any members who need to be removed and remove them"""
         to_remove = self.get_excess_users(actual_channel_members, expected)
 
-        log.debug(f"[.] Removing {len(to_remove)} users from channel {discord_channel.name}")
+        if to_remove:
+            log.debug(f"[.] Removing {len(to_remove)} users from channel {discord_channel.name}")
         for excess_user in to_remove:
             if await async_remove_discord_id_from_channel(excess_user.discord_id, discord_channel):
                 log.info(f"[-] Removed user {excess_user.display_name} from channel {discord_channel.name}")
