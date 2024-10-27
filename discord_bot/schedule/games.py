@@ -129,7 +129,7 @@ class GamesPoster:
                 log.info(f"[-] Removing game ID {key} from list and continuing...")
                 self.current_games.pop(key)
 
-    @tasks.loop(seconds=60)
+    @tasks.loop(seconds=30)
     async def check_and_post_games(self):
         try:
             await self.fetch_message_state()
