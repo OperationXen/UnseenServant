@@ -54,7 +54,7 @@ def get_player_permissions_text(gcm: GameChannelMember, user_text: str):
         message += f"\n- :white_check_mark: Send messages"
     else:
         message += f"\n- :x: Send messages"
-    if gcm.use_slash_commands:
+    if gcm.use_slash_commands and gcm.send_messages:
         message += f"\n- :white_check_mark: Use bot commands"
     else:
         message += f"\n- :x: Use bot commands"
