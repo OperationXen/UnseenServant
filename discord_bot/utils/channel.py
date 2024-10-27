@@ -13,6 +13,7 @@ from core.utils.announcements import async_get_player_announce_text
 from core.utils.user import async_get_user_by_discord_id
 from core.utils.channels import async_add_user_to_game_channel, async_remove_user_from_game_channel
 from core.utils.channels import async_get_game_channel_for_game
+from core.utils.announcements import get_player_permissions_text
 from discord_bot.utils.games import async_get_game_from_message
 from discord_bot.utils.channelmember import ChannelMember as ActualChannelMember
 
@@ -119,6 +120,18 @@ async def async_game_channel_notify_removed_user(game_channel: GameChannel, user
         return False
 
 
+async def async_game_channel_notify_modified_user_permissions(game_channel: GameChannel, member: GameChannelMember):
+    """Tag a user in a channel from a player object"""
+    discord_user = await get_discord_user_by_id(member.user.discord_id)
+    if CHANNEL_SEND_PINGS:
+        user_text = discord_user.mention
+    else:
+        user_text = discord_user.display_name
+    text = get_player_permissions_text(member, user_text)
+    message = await game_channel.send(text)
+    return message
+
+
 # ################################################################ #
 async def async_channel_add_discord_user(
     channel: TextChannel,
@@ -197,17 +210,6 @@ async def async_get_channel_first_message(channel: TextChannel):
         return None
 
 
-# async def async_remove_all_channel_members(channel: TextChannel) -> bool:
-#     """Remove all the members of a specific channel"""
-#     for member in channel.members:
-#         if not member.bot:
-#             log.info(f"Removed [{member.name}] from [{channel.name}]")
-#             await channel.set_permissions(
-#                 member, read_messages=False, send_messages=False, read_message_history=False, use_slash_commands=False
-#             )
-#     return True
-
-
 # ################################################################################### #
 #                          Channel permissions utilities                              #
 # ################################################################################### #
@@ -215,11 +217,6 @@ def get_channel_overwrites_for_discord_user(channel: TextChannel, discord_user: 
     """Get the permissions for a channel member within a specific channel"""
     permissions = channel.overwrites_for(discord_user)
     return permissions
-
-
-def set_channel_overwrites_for_discord_user(channel: TextChannel, discord_user: DiscordUser):
-    """Sets permission overrides on a channel for a user"""
-    pass
 
 
 def get_actual_channel_members(channel: TextChannel) -> List[Member]:

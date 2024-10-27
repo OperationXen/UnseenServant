@@ -2,7 +2,7 @@ from typing import List
 from asgiref.sync import sync_to_async
 from random import choice as random_choice
 
-from core.models import CustomUser, Announcement
+from core.models import CustomUser, Announcement, GameChannelMember
 
 
 def get_user_custom_announcements(user: CustomUser) -> List[Announcement]:
@@ -44,3 +44,20 @@ def get_player_announce_text(user: CustomUser, user_text: str) -> str:
 def async_get_player_announce_text(user: CustomUser, user_text: str) -> str:
     """async wrapper to allow database access from async context"""
     return get_player_announce_text(user, user_text)
+
+
+# ##################################################################### #
+def get_player_permissions_text(gcm: GameChannelMember, user_text: str):
+    """get a string that shows what permissions are applied to a game channel member"""
+    message = f"Channel permissions updated for {user_text}:"
+    if gcm.send_messages:
+        message += f"\n- :white_check_mark: Send messages"
+    else:
+        message += f"\n- :x: Send messages"
+    if gcm.use_slash_commands:
+        message += f"\n- :white_check_mark: Use bot commands"
+    else:
+        message += f"\n- :x: Use bot commands"
+    if gcm.manage_messages:
+        message += f"\n- :white_check_mark: Channel moderator"
+    return message

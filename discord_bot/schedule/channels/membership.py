@@ -15,6 +15,7 @@ from discord_bot.utils.channel import async_remove_discord_id_from_channel, asyn
 from discord_bot.utils.channel import (
     async_game_channel_tag_promoted_discord_id,
     async_game_channel_notify_removed_user,
+    async_game_channel_notify_modified_user_permissions,
 )
 
 
@@ -79,10 +80,10 @@ class ChannelMembershipController:
         return excess
 
     async def async_remove_excess_members_from_channel(
-        self, actual: List[ActualChannelMember], expected, discord_channel
+        self, actual_channel_members: List[ActualChannelMember], expected, discord_channel
     ):
         """Identify any members who need to be removed and remove them"""
-        to_remove = self.get_excess_users(actual, expected)
+        to_remove = self.get_excess_users(actual_channel_members, expected)
 
         log.debug(f"[.] Removing {len(to_remove)} users from channel {discord_channel.name}")
         for excess_user in to_remove:
@@ -93,27 +94,55 @@ class ChannelMembershipController:
                 log.warning(f"[!] Failed to remove {excess_user.display_name} from channel {discord_channel.name}")
 
     ###### Member update logic ######
-    def permission_update_needed(discord_member, expected_user: GameChannelMember) -> bool:
+    def permission_update_needed(self, actual_member: ActualChannelMember, expected_member: GameChannelMember) -> bool:
         """Compare a discord members permissions to their expected game channel member representation"""
-        print(discord_member, expected_user)
+        if actual_member.read_messages != expected_member.read_messages:
+            return True
+        if actual_member.read_message_history != expected_member.read_message_history:
+            return True
+        if actual_member.send_messages != expected_member.send_messages:
+            return True
+        if actual_member.use_slash_commands != expected_member.use_slash_commands:
+            return True
+        if actual_member.manage_messages != expected_member.manage_messages:
+            return True
         return False
 
-    def get_updated_users(self, actual, expected) -> List[GameChannelMember]:
+    def get_expected_member(self, discord_id, expected: List[GameChannelMember]) -> GameChannelMember | None:
+        """find a game channel member with a specific ID"""
+        for gcm in expected:
+            if gcm.user.discord_id == str(discord_id):
+                return gcm
+        return None
+
+    def get_updated_users(
+        self, actual_channel_members: List[ActualChannelMember], expected: List[GameChannelMember]
+    ) -> List[GameChannelMember]:
         """Get all users who have outdated channel permissions"""
         users_pending_update = []
         try:
-            for member_permissions in actual:
-                expected_user = [x for x in expected if x.user.discord_id == str(member_permissions["id"])][0]
-                if self.permission_update_needed(member_permissions, expected_user):
-                    users_pending_update.append(expected_user)
+            for actual_member in actual_channel_members:
+                expected_member = self.get_expected_member(actual_member.discord_id, expected)
+                if expected_member and self.permission_update_needed(actual_member, expected_member):
+                    users_pending_update.append(expected_member)
         except IndexError:
             pass  # user is not expected to be in channel
+        except Exception as e:
+            log.error(f"[!] Exception occured in get_updated_users: {e}")
         # Could simplify logic here and just remove them. Rendering the remove users call moot
         return users_pending_update
 
     async def async_apply_permission_updates(self, actual, expected, discord_channel):
         to_update = self.get_updated_users(actual, expected)
-        pass
+
+        for member in to_update:
+            discord_name = member.user.discord_name
+
+            if await async_add_member_to_channel(member, discord_channel):
+                log.debug(f"[.] updated user permissions for {discord_name} in channel {discord_channel.name}")
+                await async_game_channel_notify_modified_user_permissions(discord_channel, member)
+            else:
+                log.warning(f"[!] Failed to update permissions for {discord_name} in channel {discord_channel.name}")
 
     # ######################################################################## #
     async def sync_channel_membership(self, game_channel: GameChannel):
@@ -129,7 +158,7 @@ class ChannelMembershipController:
 
         await self.async_remove_excess_members_from_channel(actual_channel_members, expected_members, discord_channel)
         await self.async_add_missing_members_to_channel(actual_channel_members, expected_members, discord_channel)
-        # await self.async_apply_permission_updates(actual_member_permissions, expected_members, discord_channel)
+        await self.async_apply_permission_updates(actual_channel_members, expected_members, discord_channel)
 
     # ################################### Worker loop definition ################################## #
     @tasks.loop(seconds=20)
