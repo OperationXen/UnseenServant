@@ -1,14 +1,14 @@
 from discord.ext.commands import has_any_role
 from discord.commands import Option
-from discord import Member, HTTPException, Forbidden
+from discord import Member
 
-from discord_bot.bot import bot
 from config.settings import DISCORD_GUILDS, DISCORD_DM_ROLES, DISCORD_ADMIN_ROLES
+from discord_bot.bot import bot
 from discord_bot.logs import logger as log
 from core.utils.games import async_get_wait_list
 from core.utils.channels import async_get_game_channel_for_game
 from discord_bot.utils.time import discord_countdown
-
+from discord_bot.utils.messaging import async_send_dm
 from discord_bot.utils.channel import (
     async_remove_discord_member_from_game_channel,
     async_add_discord_member_to_game_channel,
@@ -48,14 +48,13 @@ async def remove_player(ctx, user: Option(Member, "Player to remove from the gam
         await async_do_waitlist_updates(game)
         await async_update_mustering_embed(game)
         await async_update_game_listing_embed(game)
-        log.info(f"Removed player {user.name} from game {game.name}")
-        try:
-            await user.send(
-                f"You were removed from {game.name} on {game.datetime}. Please contact {game.dm.discord_name} if you require more information."
-            )
+        log.info(f"[.] Removed player {user.name} from game {game.name}")
+
+        message = f"You were removed from {game.name} on {game.datetime}. Please contact {game.dm.discord_name} if you require more information."
+        if await async_send_dm(user, message):
             log.info(f"[.] {user.name} notified of removal")
-        except (HTTPException, Forbidden):
-            log.info(f"[!] Exception occured whilst attempting to notify user")
+        else:
+            log.warning(f"[!] could not notify {user.name} of removal")
 
         return await ctx.followup.send("Player removed OK", ephemeral=True, delete_after=10)
     log.info(f"[.] Unable to remove player {user.name} from game {game.name}")
@@ -81,10 +80,13 @@ async def add_player(ctx, user: Option(Member, "Player to add to the game", requ
         game_channel = await async_get_game_channel_for_game(game)
         await async_add_discord_member_to_game_channel(user, game_channel)
         await async_do_waitlist_updates(game)
+
+        message = f"{ctx.author.name} added you to game {game.name}"
+        await async_send_dm(user, message)
         await async_update_mustering_embed(game)
         await async_update_game_listing_embed(game)
-        log.info(f"[-] Added player {user.name} to game {game.name}")
 
+        log.info(f"[-] Added player {user.name} to game {game.name}")
         return await ctx.followup.send("Player added to game", ephemeral=True, delete_after=10)
     log.info(f"[-] Unable to add player {user.name} to game {game.name}")
     return await ctx.followup.send(f"Unable to add {user.name} to {game.name}", ephemeral=True, delete_after=10)
@@ -115,11 +117,13 @@ async def add_waitlist(ctx, user: Option(Member, "Player to add to the waitlist"
         if added.waitlist:
             log.info(f"[-] Added {user.name} to game {game.name} waitlist")
             message = "Player added to waitlist"
+            await async_send_dm(user, f"{ctx.author.name} added you to the waitlist for {game.name}")
         else:
             game_channel = await async_get_game_channel_for_game(game)
             await async_add_discord_member_to_game_channel(user, game_channel)
             log.info(f"[-] Added {user.name} to game {game.name}")
             message = "Player added to game, as there was a space"
+            await async_send_dm(user, f"{ctx.author.name} added you to game {game.name}")
         return await ctx.followup.send(message, ephemeral=True, delete_after=10)
     log.info(f"[-] Unable to add player {user.name} to waitlist {game.name}")
     return await ctx.followup.send(f"Unable to add {user.name} to waitlist for {game.name}", delete_after=10)
@@ -171,11 +175,13 @@ async def warn_waitlist(ctx):
     try:
         player = waitlist[0]
         discord_user = await bot.fetch_user(player.discord_id)
-        await discord_user.send(
-            f"You are at the top of the waitlist for **{game.name}** which starts {discord_countdown(game.datetime)}"
-        )
-        log.debug(f"Player {discord_user.name} notified")
-        return await ctx.followup.send(f"Player {discord_user.display_name} notified", ephemeral=True)
+
+        message = f"You are at the top of the waitlist for **{game.name}**"
+        message += f" which starts {discord_countdown(game.datetime)}"
+        if await async_send_dm(discord_user, message):
+            return await ctx.followup.send(f"Player {discord_user.display_name} notified", ephemeral=True)
+        else:
+            return await ctx.followup.send("Unable to message player at top of waitlist", ephemeral=True)
     except Exception as e:
-        log.error(f"Unable to find waitlisted player")
-        return await ctx.followup.send("Unable to message player at top of waitlist", ephemeral=True)
+        log.error(f"[!] Unable to find waitlisted player: {e}")
+        return await ctx.followup.send("Something went wrong whilst warning the waitlist...", ephemeral=True)

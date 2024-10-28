@@ -3,6 +3,7 @@ from discord.commands import Option
 from discord.ext.commands import has_any_role
 
 from discord_bot.bot import bot
+from discord_bot.utils.messaging import async_send_dm
 from config.settings import DISCORD_GUILDS, DISCORD_ADMIN_ROLES
 from discord_bot.components.user_management import PlayerBanEmbed, PlayerStrikeEmbed, BanPlayerView
 from core.utils.sanctions import async_issue_player_strike, async_get_outstanding_strikes, async_get_outstanding_bans
@@ -28,10 +29,10 @@ async def strike(
         embed_list.append(PlayerStrikeEmbed(strike))
     for ban in await async_get_outstanding_bans(user):
         embed_list.append(PlayerBanEmbed(ban))
-    result = await user.send(
-        "You have been issued a bad conduct strike - three of these will result in an automatic ban from bot usage",
-        embeds=embed_list,
+    message = (
+        "You have been issued a bad conduct strike - three of these will result in an automatic ban from bot usage"
     )
+    await async_send_dm(user, message, embeds=embed_list)
 
 
 @bot.slash_command(guild_ids=DISCORD_GUILDS, description="Issue an immediate bot ban to a user")
