@@ -4,11 +4,11 @@ from discord_bot.bot import bot
 from discord_bot.logs import logger as log
 
 
-async def async_send_dm(user: DiscordUser | DiscordMember | int, message: str):
+async def async_send_dm(user: DiscordUser | DiscordMember | int, message: str, **kwargs):
     if type(user) == int:
         user = await bot.get_or_fetch_user(user)
     try:
-        return await user.send(message)
+        return await user.send(message, **kwargs)
     except Forbidden:
         return None
     except Exception as e:
