@@ -14,7 +14,8 @@ from core.utils.channels import async_get_games_pending_channel_creation, async_
 from core.utils.channels import async_get_game_channels_pending_destruction, async_destroy_game_channel
 from core.utils.channels import async_get_game_channels_pending_reminder, async_set_game_channel_reminded
 from core.utils.channels import async_get_game_channels_pending_warning, async_set_game_channel_warned
-from core.utils.channels import async_get_game_channel_for_game, async_set_default_channel_membership
+from core.utils.channels import async_get_game_channel_for_game
+from core.utils.channel_members import async_set_default_channel_membership
 
 
 class ChannelController:
