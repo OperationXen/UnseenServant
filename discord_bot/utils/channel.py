@@ -64,26 +64,6 @@ async def async_get_game_for_channel(channel: TextChannel) -> Game | None:
         return None
 
 
-def async_get_mustering_view_for_game(game: Game):
-    """Given a game object, check its mustering channel and retrieve the view attached to the mustering embed"""
-    for view in bot.persistent_views:
-        view_name = str(type(view))
-        if "MusteringView" in view_name and view.game == game:
-            return view
-    return None
-
-
-async def async_update_mustering_embed(game: Game):
-    """Refresh a mustering embed for a specific game"""
-    try:
-        view = async_get_mustering_view_for_game(game)
-        if view:
-            return await view.update_message()
-    except Exception as e:
-        log.debug(f"Error when updating associated muster embed")
-    return False
-
-
 async def async_notify_game_channel(game: Game, message: str):
     """Send a notification to a game channel"""
     channel = await async_get_channel_for_game(game)

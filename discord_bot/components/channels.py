@@ -5,7 +5,8 @@ from discord_bot.components.moonseacodex import MSCCharacterList
 from discord_bot.utils.moonseacodex import get_msc_characters
 from core.utils.games import calc_game_tier
 from discord_bot.components.games import BaseGameEmbed
-from discord_bot.utils.games import async_update_game_listing_embed
+from discord_bot.utils.embed import async_update_game_embeds
+from discord_bot.utils.players import async_do_waitlist_updates
 
 from discord_bot.components.common import handle_player_dropout_event
 from discord_bot.logs import logger as log
@@ -95,12 +96,18 @@ class MusteringView(View):
             label="Import Character from Moonsea Codex",
             custom_id=f"unseen-servant-muster-import#{game.pk}",
         )
+        self.refresh_button = Button(
+            style=ButtonStyle.grey, emoji="🔄", custom_id=f"unseen-servant-muster-refresh#{game.pk}"
+        )
         self.dropout_button = Button(
             style=ButtonStyle.red, label="Drop out", custom_id=f"unseen-servant-muster-dropout#{game.pk}"
         )
         self.msc_button.callback = self.muster_view_msc
+        self.refresh_button.callback = self.game_listing_view_refresh
         self.dropout_button.callback = self.muster_view_dropout
+
         self.add_item(self.msc_button)
+        self.add_item(self.refresh_button)
         self.add_item(self.dropout_button)
 
     def update_message_embeds(self, new_embed: MusteringBanner) -> list[MusteringBanner]:
@@ -128,13 +135,21 @@ class MusteringView(View):
         else:
             await self.message.edit(embeds=embeds)
 
+    async def game_listing_view_refresh(self, interaction):
+        """Force refresh button callback"""
+        try:
+            await interaction.response.defer(ephemeral=True)
+            await async_do_waitlist_updates(self.game)
+            await async_update_game_embeds(self.game)
+        except Exception as e:
+            log.error(f"[!] Error refreshing game from muster channel {self.game.name}: {e}")
+
     async def muster_view_dropout(self, interaction):
         """Callback for dropout button pressed"""
         try:
             await interaction.response.defer(ephemeral=True)
             await handle_player_dropout_event(self.game, interaction.user)
-            await self.update_message(followup_hook=interaction.followup)
-            await async_update_game_listing_embed(self.game)
+            await async_update_game_embeds(self.game)
         except Exception as e:
             log.error(f"f[!] Exception occured in drop interaction {e}")
 

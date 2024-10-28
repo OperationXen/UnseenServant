@@ -52,26 +52,6 @@ async def async_get_game_from_message(message) -> Game | None:
     return None
 
 
-async def async_get_game_control_view_for_game(game):
-    """Given a game object, check its mustering channel and retrieve the view attached to the mustering embed"""
-    for view in bot.persistent_views:
-        view_name = str(type(view))
-        if "GameControlView" in view_name and view.game == game:
-            return view
-    return None
-
-
-async def async_update_game_listing_embed(game):
-    """Refresh a game listing embed for a specific game"""
-    try:
-        view = await async_get_game_control_view_for_game(game)
-        if view:
-            return await view.update_message()
-    except Exception as e:
-        log.debug(f"Error when updating associated game listing embed")
-    return False
-
-
 # ################################################################################ #
 def add_discord_member_to_game(member: DiscordMember, game: Game, force: bool = False) -> Player | None:
     """2024 Rework - Wrapper to facilitate adding a member/user to a game by their discord id"""

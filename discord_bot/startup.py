@@ -7,6 +7,7 @@ from discord_bot.commands import *
 from discord_bot.schedule.games import GamesPoster
 from discord_bot.schedule.channels.manager import ChannelController
 from discord_bot.schedule.channels.membership import ChannelMembershipController
+from discord_bot.schedule.embeds import EmbedController
 
 
 def start_bot():
@@ -29,5 +30,7 @@ async def on_ready():
         log.info("[+] Started service: Channel creation/deletion")
         discord_bot.core.channel_membership_controller = ChannelMembershipController(discord_bot.core.guild)
         log.info("[+] Started service: Channel membership manager")
+        discord_bot.core.embed_controller = EmbedController()
+        log.info("[+] Started service: Embed auto update worker")
     except IndexError:
         log.info("Unable to find the specified guild")
