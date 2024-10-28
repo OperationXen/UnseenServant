@@ -44,19 +44,22 @@ async def issue_credit(
     except Exception as e:
         log.error(f"[!] Exception occured whilst attempting to issue credit: {e}")
 
-    if credit_issued:
-        message = f"{ctx.author.name} has awarded you [{credits}] bonus game credits!"
-        if expires_after:
-            message = f"{message} These will expire in {expires_after} days"
-        else:
-            message = f"{message} These do not have a fixed expiry time"
-        if reason:
-            message = message + f"\nReason given: {reason}"
+    try:
+        if credit_issued:
+            message = f"{ctx.author.name} has awarded you [{credits}] bonus game credits!"
+            if expires_after:
+                message = f"{message} These will expire in {expires_after} days"
+            else:
+                message = f"{message} These do not have a fixed expiry time"
+            if reason:
+                message = message + f"\nReason given: {reason}"
 
-        pm = await user.send(message)
-        await ctx.respond(f"Game credit awarded to {user.name}", ephemeral=True, delete_after=15)
-    else:
-        await ctx.respond("Failed to issue credit", ephemeral=True, delete_after=15)
+            pm = await user.send(message)
+            await ctx.respond(f"Game credit awarded to {user.name}", ephemeral=True, delete_after=15)
+        else:
+            await ctx.respond("Failed to issue credit", ephemeral=True, delete_after=15)
+    except Exception as e:
+        log.error(f"[!] Exception occured in notifications after issuing credit: {e}")
 
 
 @bot.slash_command(guild_ids=DISCORD_GUILDS, description="Get a users current game credit balance")
