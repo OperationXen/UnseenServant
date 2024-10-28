@@ -31,7 +31,7 @@ async def async_update_mustering_embed(game: Game):
         if view:
             return await view.update_message()
     except Exception as e:
-        log.debug(f"Error when updating associated muster embed")
+        log.error(f"[!] Error when updating associated muster embed: {e}")
     return False
 
 
@@ -43,14 +43,16 @@ async def async_update_game_listing_embed(game: Game):
         if view:
             return await view.update_message()
     except Exception as e:
-        log.debug(f"Error when updating associated game listing embed")
+        log.error(f"[!] Error when updating associated game listing embed: {e}")
     return False
 
 
 # ######################### Higher order functions ################################### #
 async def async_update_game_embeds(game: Game):
     """Update all embeds for the specified game"""
-    refresh_mustering = async_update_mustering_embed(game)
-    refresh_control = async_update_game_listing_embed(game)
-
-    await asyncio_gather(refresh_mustering, refresh_control)
+    try:
+        embed_1 = async_update_mustering_embed(game)
+        embed_2 = async_update_game_listing_embed(game)
+        await asyncio_gather(embed_1, embed_2)
+    except Exception as e:
+        log.error(f"[!] Error in embed update: {e}")

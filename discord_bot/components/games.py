@@ -268,7 +268,6 @@ class GameControlView(View):
         else:
             message = f"Added you to to the waitlist for {self.game.name} `({games_remaining_text})`"
         await async_do_waitlist_updates(self.game)
-        # await self.update_message(followup_hook=interaction.followup)
         await async_update_game_embeds(self.game)
         await async_send_dm(interaction.user, message)
         return True
@@ -284,13 +283,15 @@ class GameControlView(View):
         try:
             await interaction.response.defer(ephemeral=True)
             await handle_player_dropout_event(self.game, interaction.user)
-            # await self.update_message(followup_hook=interaction.followup)
             await async_update_game_embeds(self.game)
         except Exception as e:
             log.error(f"f[!] Exception occured in drop interaction {e}")
 
     async def game_listing_view_refresh(self, interaction):
         """Force refresh button callback"""
-        await async_do_waitlist_updates(self.game)
-        # await self.update_message(response_hook=interaction.response)
-        await async_update_game_embeds(self.game)
+        try:
+            await interaction.response.defer(ephemeral=True)
+            await async_do_waitlist_updates(self.game)
+            await async_update_game_embeds(self.game)
+        except Exception as e:
+            log.error(f"[!] Error refreshing game {self.game.name}: {e}")
