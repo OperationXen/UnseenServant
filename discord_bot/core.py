@@ -1,6 +1,6 @@
 game_controller = None
 channel_controller = None
-game_calendar_manager = None
+channel_membership_controller = None
 embed_controller = None
 
 guild = None
