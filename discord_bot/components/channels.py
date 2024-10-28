@@ -5,7 +5,7 @@ from discord_bot.components.moonseacodex import MSCCharacterList
 from discord_bot.utils.moonseacodex import get_msc_characters
 from core.utils.games import calc_game_tier
 from discord_bot.components.games import BaseGameEmbed
-from discord_bot.utils.embed import async_update_game_listing_embed
+from discord_bot.utils.embed import async_update_game_embeds
 
 from discord_bot.components.common import handle_player_dropout_event
 from discord_bot.logs import logger as log
@@ -133,8 +133,8 @@ class MusteringView(View):
         try:
             await interaction.response.defer(ephemeral=True)
             await handle_player_dropout_event(self.game, interaction.user)
-            await self.update_message(followup_hook=interaction.followup)
-            await async_update_game_listing_embed(self.game)
+            # await self.update_message(followup_hook=interaction.followup)
+            await async_update_game_embeds(self.game)
         except Exception as e:
             log.error(f"f[!] Exception occured in drop interaction {e}")
 

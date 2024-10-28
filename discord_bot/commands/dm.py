@@ -9,7 +9,7 @@ from core.utils.games import async_get_wait_list
 from core.utils.channels import async_get_game_channel_for_game
 from discord_bot.utils.time import discord_countdown
 from discord_bot.utils.messaging import async_send_dm
-from discord_bot.utils.embed import async_update_mustering_embed
+from discord_bot.utils.embed import async_update_game_embeds
 from discord_bot.utils.channel import (
     async_remove_discord_member_from_game_channel,
     async_add_discord_member_to_game_channel,
@@ -23,7 +23,6 @@ from discord_bot.utils.players import (
     async_get_party_for_game,
 )
 from discord_bot.utils.games import async_add_discord_member_to_game, async_remove_discord_member_from_game
-from discord_bot.utils.embed import async_update_game_listing_embed
 from discord_bot.utils.roles import do_dm_permissions_check
 
 
@@ -46,8 +45,7 @@ async def remove_player(ctx, user: Option(Member, "Player to remove from the gam
         game_channel = await async_get_game_channel_for_game(game)
         await async_remove_discord_member_from_game_channel(user, game_channel)
         await async_do_waitlist_updates(game)
-        await async_update_mustering_embed(game)
-        await async_update_game_listing_embed(game)
+        await async_update_game_embeds(game)
         log.info(f"[.] Removed player {user.name} from game {game.name}")
 
         message = f"You were removed from {game.name} on {game.datetime}. Please contact {game.dm.discord_name} if you require more information."
@@ -83,8 +81,7 @@ async def add_player(ctx, user: Option(Member, "Player to add to the game", requ
 
         message = f"{ctx.author.name} added you to game {game.name}"
         await async_send_dm(user, message)
-        await async_update_mustering_embed(game)
-        await async_update_game_listing_embed(game)
+        await async_update_game_embeds(game)
 
         log.info(f"[-] Added player {user.name} to game {game.name}")
         return await ctx.followup.send("Player added to game", ephemeral=True, delete_after=10)
@@ -112,8 +109,7 @@ async def add_waitlist(ctx, user: Option(Member, "Player to add to the waitlist"
     added = await async_add_discord_member_to_game(user, game, force=False)
     if added:
         await async_do_waitlist_updates(game)
-        await async_update_mustering_embed(game)
-        await async_update_game_listing_embed(game)
+        await async_update_game_embeds(game)
         if added.waitlist:
             log.info(f"[-] Added {user.name} to game {game.name} waitlist")
             message = "Player added to waitlist"
