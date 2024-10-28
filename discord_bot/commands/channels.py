@@ -1,3 +1,4 @@
+from discord.commands import Option
 from discord.ext.commands import has_any_role
 
 from discord_bot.bot import bot
@@ -5,13 +6,16 @@ from config.settings import DISCORD_GUILDS, DISCORD_DM_ROLES, DISCORD_ADMIN_ROLE
 from discord_bot.logs import logger as log
 from discord_bot.utils.roles import do_dm_permissions_check
 from discord_bot.utils.channel import async_get_game_for_channel
-from core.utils.channels import async_set_default_channel_membership
+from core.utils.channel_members import async_set_default_channel_membership
 from core.utils.channels import async_get_game_channel_for_game
 
 
 @bot.slash_command(guild_ids=DISCORD_GUILDS, description="Resets channel membership")
 @has_any_role(*DISCORD_DM_ROLES, *DISCORD_ADMIN_ROLES)
-async def reset_channel_membership(ctx):
+async def reset_channel_membership(
+    ctx,
+    add_waitlist_read_only: Option(bool, "Optionally add read only permissions to the waitlist", required=False),
+):
     """Resets membership of a given game channel"""
     await ctx.response.defer(ephemeral=True, invisible=True)
     log.info(f"[/] {ctx.author.name} used command /reset_channel_membership in channel {ctx.channel.name}")
@@ -24,10 +28,13 @@ async def reset_channel_membership(ctx):
         return await ctx.followup.send("You are not the DM for this game", ephemeral=True)
 
     game_channel = await async_get_game_channel_for_game(game)
-    set_members = await async_set_default_channel_membership(game_channel)
+    set_members = await async_set_default_channel_membership(game_channel, add_waitlist_read_only)
     if set_members:
-        log.info(f"[-] Channel membership reset to default")
-        return await ctx.followup.send("Channel membership reset", ephemeral=True, delete_after=10)
+        message = "Channel membership reset"
+        if add_waitlist_read_only:
+            message += ", waitlist added as read-only"
+        log.info(f"[-] {message}")
+        return await ctx.followup.send(message, ephemeral=True, delete_after=10)
     else:
-        log.error(f"[!] Failed to reset channel membership to defaults")
+        log.error(f"[!] Failed to reset channel membership")
         return await ctx.followup.send("Unable to perform channel membership reset", ephemeral=True, delete_after=10)

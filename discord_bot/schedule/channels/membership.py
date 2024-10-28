@@ -9,7 +9,8 @@ from discord_bot.logs import logger as log
 from core.models.channel import GameChannel, GameChannelMember
 from discord_bot.utils.channelmember import ChannelMember as ActualChannelMember
 
-from core.utils.channels import async_get_all_current_game_channels, async_get_game_channel_members
+from core.utils.channels import async_get_all_current_game_channels
+from core.utils.channel_members import async_get_game_channel_members
 from discord_bot.utils.channel import async_get_actual_channel_members, refresh_discord_channel
 from discord_bot.utils.channel import async_remove_discord_id_from_channel, async_add_member_to_channel
 from discord_bot.utils.channel import (
@@ -152,7 +153,7 @@ class ChannelMembershipController:
         try:
             discord_channel = await refresh_discord_channel(game_channel)
         except NotFound:
-            log.warn(f"[!] Unable to retrieve a channel from discord for {game_channel.name}")
+            log.warning(f"[!] Unable to retrieve a channel from discord for {game_channel.name}")
             return
 
         expected_members = await async_get_game_channel_members(game_channel)

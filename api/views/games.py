@@ -42,6 +42,8 @@ class GamesViewSet(ViewSet):
         available_credit = get_user_available_credit(request.user)
         if not available_credit > 0:
             return Response({"message": "You do not have any available credits"}, HTTP_401_UNAUTHORIZED)
+        # Ensure that any waitlisted players get priority
+        populate_game_from_waitlist(game)
         player = add_user_to_game(request.user, game)
         if player:
             serialiser = PlayerSerialiser(player)
@@ -65,6 +67,8 @@ class GamesViewSet(ViewSet):
         else:
             remove_user_from_game(request.user, game)
             populate_game_from_waitlist(game)
+            # TODO refresh game listings at this point - issue #207
+            # TODO update player channel permissions?
             return Response({"message": f"Removed {request.user.discord_name} from {game.name}"}, HTTP_200_OK)
 
     def list(self, request):
