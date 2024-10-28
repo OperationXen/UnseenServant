@@ -8,6 +8,7 @@ from discord_bot.bot import bot
 from core.utils.players import async_get_player_credit_text, async_issue_player_bonus_credit
 
 from discord_bot.utils.time import discord_time
+from discord_bot.logs import logger as log
 
 
 @bot.slash_command(guild_ids=DISCORD_GUILDS, description="Get your current game credit balance")
@@ -32,11 +33,17 @@ async def issue_credit(
     ) = 28,
 ):
     """issue a game credit to a user"""
+    log.info(f"[.] User {ctx.author.name} issued {credits} credit(s) to {user.name} for reason {reason}")
     if expires_after <= 0:
         expires_after = None
-    credit_issued = await async_issue_player_bonus_credit(
-        user, credits, ctx.author, reason or "Not given", expires_after
-    )
+
+    try:
+        credit_issued = await async_issue_player_bonus_credit(
+            user, credits, ctx.author, reason or "Not given", expires_after
+        )
+    except Exception as e:
+        log.error(f"[!] Exception occured whilst attempting to issue credit: {e}")
+
     if credit_issued:
         message = f"{ctx.author.name} has awarded you [{credits}] bonus game credits!"
         if expires_after:
