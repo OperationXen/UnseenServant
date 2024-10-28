@@ -2,6 +2,8 @@ import discord
 from discord import Embed, Colour, SelectOption
 from discord.ui import View
 
+from discord_bot.utils.messaging import async_send_dm
+
 from core.utils.sanctions import async_issue_player_ban, async_get_outstanding_bans
 
 
@@ -64,10 +66,12 @@ class BanPlayerView(View):
         ban_list = []
         for ban in await async_get_outstanding_bans(self.user):
             ban_list.append(PlayerBanEmbed(ban))
-        result = await self.user.send("You have been banned from using this bot", embeds=ban_list)
+        return await async_send_dm(self.user, "You have been banned from using this bot", embeds=ban_list)
 
     @discord.ui.select(
-        placeholder="Change ban length", row=0, options=[length_1w, length_2w, length_1m, length_2m, length_3m, forever]
+        placeholder="Change ban length",
+        row=0,
+        options=[length_1w, length_2w, length_1m, length_2m, length_3m, forever],
     )
     async def update_timescale(self, select, interaction):
         self.timeframe = int(select.values[0])

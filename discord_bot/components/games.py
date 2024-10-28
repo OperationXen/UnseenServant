@@ -9,6 +9,7 @@ from discord_bot.utils.channel import async_update_mustering_embed
 from discord_bot.utils.channel import async_add_discord_member_to_game_channel
 from discord_bot.utils.format import generate_calendar_message
 from discord_bot.utils.games import async_add_discord_member_to_game
+from discord_bot.utils.messaging import async_send_dm
 from core.models.game import Game
 from core.utils.channels import async_get_game_channel_for_game
 from core.utils.games import (
@@ -269,7 +270,7 @@ class GameControlView(View):
         await async_do_waitlist_updates(self.game)
         await self.update_message(followup_hook=interaction.followup)
         await async_update_mustering_embed(self.game)
-        await interaction.user.send(message)
+        await async_send_dm(interaction.user, message)
         return True
 
     async def calendar(self, interaction):

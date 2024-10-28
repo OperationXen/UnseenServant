@@ -16,7 +16,7 @@ from discord_bot.utils.time import discord_time
 
 
 @bot.slash_command(guild_ids=DISCORD_GUILDS, description="Summary of your upcoming games (both playing and DMing)")
-async def games(ctx, send_dm: Option(bool, "Send information in a DM instead of inline", required=False) = False):
+async def games(ctx):
     """Retrieve a list of the users upcoming games and provide a summary"""
     now = timezone.now()
     game_credit_text = await async_get_player_credit_text(ctx.author)
@@ -25,14 +25,9 @@ async def games(ctx, send_dm: Option(bool, "Send information in a DM instead of 
     dming = await async_get_upcoming_games_for_dm_discord_id(ctx.author.id)
 
     log.debug(
-        f"[ ] Command: [/games] used by User [{ctx.author.name}], PM requested [{send_dm}], DMing [{len(dming)}], Playing [{len(games)}], Waitlist [{len(waitlist)}]"
+        f"[/] [/games] used by User [{ctx.author.name}], DMing [{len(dming)}], Playing [{len(games)}], Waitlist [{len(waitlist)}]"
     )
-
-    if send_dm:
-        await ctx.author.send(f"As of: {discord_time(now)}\n{game_credit_text}")
-        await ctx.respond(f"Please check your PMs", ephemeral=True, delete_after=15)
-    else:
-        await ctx.respond(f"As of: {discord_time(now)}\n{game_credit_text}", ephemeral=True)
+    await ctx.respond(f"As of: {discord_time(now)}\n{game_credit_text}", ephemeral=True)
 
     if dming:
         embeds = []
@@ -41,10 +36,7 @@ async def games(ctx, send_dm: Option(bool, "Send information in a DM instead of 
             await summary_embed.build()
             embeds.append(summary_embed)
         message = f"You are DMing {len(dming)} games"
-        if send_dm:
-            await ctx.author.send(message, embeds=embeds)
-        else:
-            await ctx.respond(message, embeds=embeds, ephemeral=True)
+        await ctx.respond(message, embeds=embeds, ephemeral=True)
 
     if games:
         embeds = []
@@ -53,10 +45,7 @@ async def games(ctx, send_dm: Option(bool, "Send information in a DM instead of 
             await summary_embed.build()
             embeds.append(summary_embed)
         message = f"You are registered for {len(games)} games"
-        if send_dm:
-            await ctx.author.send(message, embeds=embeds)
-        else:
-            await ctx.respond(message, embeds=embeds, ephemeral=True)
+        await ctx.respond(message, embeds=embeds, ephemeral=True)
 
     if waitlist:
         embeds = []
@@ -65,10 +54,7 @@ async def games(ctx, send_dm: Option(bool, "Send information in a DM instead of 
             await summary_embed.build()
             embeds.append(summary_embed)
         message = f"You are waitlisted for {len(waitlist)} games"
-        if send_dm:
-            await ctx.author.send(message, embeds=embeds)
-        else:
-            await ctx.respond(message, embeds=embeds, ephemeral=True)
+        await ctx.respond(message, embeds=embeds, ephemeral=True)
 
 
 @bot.slash_command(
