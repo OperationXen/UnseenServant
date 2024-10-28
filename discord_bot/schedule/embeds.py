@@ -9,7 +9,7 @@ class EmbedController:
         """initialisation function"""
         self.embed_refresh_loop.start()
 
-    @tasks.loop(seconds=30)
+    @tasks.loop(seconds=600)
     async def embed_refresh_loop(self):
         try:
             for view in bot.persistent_views:
