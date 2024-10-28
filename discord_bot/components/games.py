@@ -5,7 +5,7 @@ import discord_bot.core
 from discord_bot.logs import logger as log
 from discord_bot.utils.players import async_do_waitlist_updates
 from discord_bot.utils.time import discord_time, discord_countdown
-from discord_bot.utils.channel import async_update_mustering_embed
+from discord_bot.utils.embed import async_update_mustering_embed
 from discord_bot.utils.channel import async_add_discord_member_to_game_channel
 from discord_bot.utils.format import generate_calendar_message
 from discord_bot.utils.games import async_add_discord_member_to_game

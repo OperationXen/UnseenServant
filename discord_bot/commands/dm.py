@@ -9,13 +9,13 @@ from core.utils.games import async_get_wait_list
 from core.utils.channels import async_get_game_channel_for_game
 from discord_bot.utils.time import discord_countdown
 from discord_bot.utils.messaging import async_send_dm
+from discord_bot.utils.embed import async_update_mustering_embed
 from discord_bot.utils.channel import (
     async_remove_discord_member_from_game_channel,
     async_add_discord_member_to_game_channel,
 )
 from discord_bot.utils.channel import (
     async_get_game_for_channel,
-    async_update_mustering_embed,
     async_notify_game_channel,
 )
 from discord_bot.utils.players import (
@@ -23,7 +23,7 @@ from discord_bot.utils.players import (
     async_get_party_for_game,
 )
 from discord_bot.utils.games import async_add_discord_member_to_game, async_remove_discord_member_from_game
-from discord_bot.utils.games import async_update_game_listing_embed
+from discord_bot.utils.embed import async_update_game_listing_embed
 from discord_bot.utils.roles import do_dm_permissions_check
 
 
