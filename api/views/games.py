@@ -67,7 +67,6 @@ class GamesViewSet(ViewSet):
         else:
             remove_user_from_game(request.user, game)
             populate_game_from_waitlist(game)
-            # TODO refresh game listings at this point - issue #207
             # TODO update player channel permissions?
             return Response({"message": f"Removed {request.user.discord_name} from {game.name}"}, HTTP_200_OK)
 
