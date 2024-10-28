@@ -1,9 +1,18 @@
+from discord import Forbidden, User as DiscordUser
+
 from discord_bot.bot import bot
+from discord_bot.logs import logger as log
 
 
-async def async_send_dm(discord_id, message):
-    discord_user = await bot.get_or_fetch_user(discord_id)
-    return await discord_user.send(message)
+async def async_send_dm(message: str, discord_user: DiscordUser = None, discord_id: int = None):
+    if not discord_user:
+        discord_user = await bot.get_or_fetch_user(discord_id)
+    try:
+        return await discord_user.send(message)
+    except Forbidden:
+        return None
+    except Exception as e:
+        log.error(f"[!] Unexpected error sending DM to user {discord_user.name}: {e}")
 
 
 def get_channel_by_name(channel_name):
