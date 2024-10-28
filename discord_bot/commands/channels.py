@@ -30,8 +30,11 @@ async def reset_channel_membership(
     game_channel = await async_get_game_channel_for_game(game)
     set_members = await async_set_default_channel_membership(game_channel, add_waitlist_read_only)
     if set_members:
-        log.info(f"[-] Channel membership reset to default")
-        return await ctx.followup.send("Channel membership reset", ephemeral=True, delete_after=10)
+        message = "Channel membership reset"
+        if add_waitlist_read_only:
+            message += ", waitlist added as read-only"
+        log.info(f"[-] {message}")
+        return await ctx.followup.send(message, ephemeral=True, delete_after=10)
     else:
-        log.error(f"[!] Failed to reset channel membership to defaults")
+        log.error(f"[!] Failed to reset channel membership")
         return await ctx.followup.send("Unable to perform channel membership reset", ephemeral=True, delete_after=10)
