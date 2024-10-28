@@ -1,13 +1,14 @@
 from django.utils import timezone
+
 from discord.commands import Option
 from discord.ext.commands import has_any_role
 from discord import Member
 
 from config.settings import DISCORD_GUILDS, DISCORD_ADMIN_ROLES, DISCORD_SIGNUP_ROLES, DISCORD_DM_ROLES
-from discord_bot.bot import bot
 from core.utils.players import async_get_player_credit_text, async_issue_player_bonus_credit
-
+from discord_bot.bot import bot
 from discord_bot.utils.time import discord_time
+from discord_bot.utils.messaging import async_send_dm
 from discord_bot.logs import logger as log
 
 
@@ -44,22 +45,18 @@ async def issue_credit(
     except Exception as e:
         log.error(f"[!] Exception occured whilst attempting to issue credit: {e}")
 
-    try:
-        if credit_issued:
-            message = f"{ctx.author.name} has awarded you [{credits}] bonus game credits!"
-            if expires_after:
-                message = f"{message} These will expire in {expires_after} days"
-            else:
-                message = f"{message} These do not have a fixed expiry time"
-            if reason:
-                message = message + f"\nReason given: {reason}"
-
-            pm = await user.send(message)
-            await ctx.respond(f"Game credit awarded to {user.name}", ephemeral=True, delete_after=15)
+    if credit_issued:
+        message = f"{ctx.author.name} has awarded you [{credits}] bonus game credits!"
+        if expires_after:
+            message = f"{message} These will expire in {expires_after} days"
         else:
-            await ctx.respond("Failed to issue credit", ephemeral=True, delete_after=15)
-    except Exception as e:
-        log.error(f"[!] Exception occured in notifications after issuing credit: {e}")
+            message = f"{message} These do not have a fixed expiry time"
+        if reason:
+            message = message + f"\nReason given: {reason}"
+        await async_send_dm(user, message)
+        await ctx.respond(f"Game credit awarded to {user.name}", ephemeral=True, delete_after=15)
+    else:
+        await ctx.respond("Failed to issue credit", ephemeral=True, delete_after=15)
 
 
 @bot.slash_command(guild_ids=DISCORD_GUILDS, description="Get a users current game credit balance")
