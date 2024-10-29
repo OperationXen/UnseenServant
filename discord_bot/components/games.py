@@ -1,3 +1,5 @@
+from asyncio import gather, create_task
+
 from discord import Embed, Colour, ButtonStyle
 from discord.ui import View, Button
 
@@ -219,9 +221,8 @@ class GameControlView(View):
         self.add_item(self.dropout_button)
 
     async def get_data(self):
-        """retrieve data from Django (syncronous)"""
-        self.players = await async_get_player_list(self.game)
-        self.dm = await async_get_dm(self.game)
+        """retrieve data from Django (wrappers for syncronous calls)"""
+        (self.players, self.dm) = await gather(async_get_player_list(self.game), async_get_dm(self.game))
 
     def update_message_embeds(self, new_embed: GameDetailEmbed) -> list[GameDetailEmbed]:
         """Find and replace the game detail embed within the message"""
@@ -268,8 +269,10 @@ class GameControlView(View):
         else:
             message = f"Added you to to the waitlist for {self.game.name} `({games_remaining_text})`"
         await async_do_waitlist_updates(self.game)
-        await async_update_game_embeds(self.game)
-        await async_send_dm(interaction.user, message)
+        pending = []
+        pending.append(create_task(async_update_game_embeds(self.game)))
+        pending.append(create_task(async_send_dm(interaction.user, message)))
+        await gather(*pending)
         return True
 
     async def calendar(self, interaction):
