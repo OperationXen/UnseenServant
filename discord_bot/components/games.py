@@ -131,6 +131,19 @@ class GameDetailEmbed(BaseGameEmbed):
         super().__init__(game, title)
         self.game = game
 
+    def __eq__(self, other):
+        """Test this embed for equality with another"""
+        if self.title != other.title:
+            return False
+        for field in self.fields:
+            try:
+                other_field = [x for x in other.fields if x.name == field.name][0]
+                if field.value != other_field.value:
+                    return False
+            except Exception as e:
+                return False
+        return True
+
     def player_details_list(self):
         """get list of all players with a spot in the game"""
         player_list = "\n".join(f"{p.discord_name}" for p in self.players if not p.standby)
@@ -224,16 +237,18 @@ class GameControlView(View):
         """retrieve data from Django (wrappers for syncronous calls)"""
         (self.players, self.dm) = await gather(async_get_player_list(self.game), async_get_dm(self.game))
 
-    def update_message_embeds(self, new_embed: GameDetailEmbed) -> list[GameDetailEmbed]:
+    def get_existing_embed_by_title(self, title: str) -> GameDetailEmbed:
+        """Get the embed for this game by its title"""
+        for embed in self.message.embeds:
+            if embed.title == title:
+                return embed
+        return None
+
+    def update_message_embeds(self, old_embed: GameDetailEmbed, new_embed: GameDetailEmbed) -> list[GameDetailEmbed]:
         """Find and replace the game detail embed within the message"""
         embeds = self.message.embeds
-        if len(embeds) <= 1:  # If there's only one (or none) embed, replace it
-            embeds[0] = new_embed
-        else:
-            for embed in embeds:  # Otherwise we need to look for a match by comparing titles
-                if embed.title == new_embed.title:
-                    index = embeds.index(embed)
-                    embeds[index] = new_embed
+        index = embeds.index(old_embed)
+        embeds[index] = new_embed
         return embeds
 
     async def update_message(self, followup_hook=None, response_hook=None):
@@ -241,14 +256,18 @@ class GameControlView(View):
         detail_embed = GameDetailEmbed(self.game)
         await detail_embed.refresh_game_data()
         await detail_embed.build()
-        embeds = self.update_message_embeds(detail_embed)
 
-        if followup_hook:
-            return await followup_hook.edit_message(message_id=self.message.id, embeds=embeds)
-        elif response_hook:
-            return await response_hook.edit_message(embeds=embeds)
+        existing_embed = self.get_existing_embed_by_title(detail_embed.title)
+        if existing_embed != detail_embed:
+            embeds = self.update_message_embeds(existing_embed, detail_embed)
+            if followup_hook:
+                return await followup_hook.edit_message(message_id=self.message.id, embeds=embeds)
+            elif response_hook:
+                return await response_hook.edit_message(embeds=embeds)
+            else:
+                return await self.message.edit(embeds=embeds)
         else:
-            return await self.message.edit(embeds=embeds)
+            return
 
     async def game_listing_view_signup(self, interaction):
         """Callback for signup button pressed"""

@@ -24,6 +24,19 @@ class MusteringBanner(BaseGameEmbed):
         super().__init__(game, title)
         self.game = game
 
+    def __eq__(self, other):
+        """Test this banner embed for equality with another"""
+        if self.title != other.title:
+            return False
+        for field in self.fields:
+            try:
+                other_field = [x for x in other.fields if x.name == field.name][0]
+                if field.value != other_field.value:
+                    return False
+            except Exception as e:
+                return False
+        return True
+
     def player_details_list(self):
         """get list of all players with a spot in the game"""
         player_list = "\n".join(f"{p.discord_name}" for p in self.players if not p.standby)
@@ -110,30 +123,36 @@ class MusteringView(View):
         self.add_item(self.refresh_button)
         self.add_item(self.dropout_button)
 
-    def update_message_embeds(self, new_embed: MusteringBanner) -> list[MusteringBanner]:
+    def get_existing_banner_by_title(self, title: str):
+        """Get the mustering embed for this game by its title"""
+        for embed in self.message.embeds:
+            if embed.title == title:
+                return embed
+        return None
+
+    def update_message_embeds(self, old_embed: MusteringBanner, new_embed: MusteringBanner) -> list[MusteringBanner]:
         """Find and replace the mustering embed within the message"""
         embeds = self.message.embeds
-        if len(embeds) <= 1:  # If there's only one (or none) embed, replace it
-            embeds[0] = new_embed
-        else:
-            for embed in embeds:  # Otherwise we need to look for a match by comparing titles
-                if embed.title == new_embed.title:
-                    index = embeds.index(embed)
-                    embeds[index] = new_embed
+        index = embeds.index(old_embed)
+        embeds[index] = new_embed
         return embeds
 
     async def update_message(self, followup_hook=None, response_hook=None):
         """Update the message this view is attached to"""
-        muster_banner = MusteringBanner(self.game)
-        await muster_banner.build()
-        embeds = self.update_message_embeds(muster_banner)
+        updated_banner = MusteringBanner(self.game)
+        await updated_banner.build()
+        existing_banner = self.get_existing_banner_by_title(updated_banner.title)
+        if existing_banner != updated_banner:
+            embeds = self.update_message_embeds(existing_banner, updated_banner)
 
-        if followup_hook:
-            await followup_hook.edit_message(message_id=self.message.id, embeds=embeds)
-        elif response_hook:
-            await response_hook.edit_message(embeds=embeds)
+            if followup_hook:
+                await followup_hook.edit_message(message_id=self.message.id, embeds=embeds)
+            elif response_hook:
+                await response_hook.edit_message(embeds=embeds)
+            else:
+                await self.message.edit(embeds=embeds)
         else:
-            await self.message.edit(embeds=embeds)
+            return
 
     async def game_listing_view_refresh(self, interaction):
         """Force refresh button callback"""
