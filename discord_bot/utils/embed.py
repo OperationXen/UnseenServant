@@ -1,4 +1,4 @@
-from asyncio import gather as asyncio_gather
+from asyncio import gather, create_task
 from enum import Enum
 
 from discord_bot.bot import bot
@@ -50,9 +50,12 @@ async def async_update_game_listing_embed(game: Game):
 # ######################### Higher order functions ################################### #
 async def async_update_game_embeds(game: Game):
     """Update all embeds for the specified game"""
+    pending = []
     try:
-        embed_1 = async_update_mustering_embed(game)
-        embed_2 = async_update_game_listing_embed(game)
-        await asyncio_gather(embed_1, embed_2)
+        pending.append(create_task(async_update_mustering_embed(game)))
+        pending.append(create_task(async_update_game_listing_embed(game)))
+        await gather(*pending)
     except Exception as e:
         log.error(f"[!] Error in embed update: {e}")
+        return False
+    return True

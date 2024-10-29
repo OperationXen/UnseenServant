@@ -13,6 +13,7 @@ async def async_send_dm(user: DiscordUser | DiscordMember | int, message: str, *
         return None
     except Exception as e:
         log.error(f"[!] Unexpected error sending DM to user {user.name}: {e}")
+    return True
 
 
 def get_channel_by_name(channel_name):
