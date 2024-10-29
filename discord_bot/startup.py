@@ -30,7 +30,7 @@ async def on_ready():
         log.info("[+] Started service: Channel creation/deletion")
         discord_bot.core.channel_membership_controller = ChannelMembershipController(discord_bot.core.guild)
         log.info("[+] Started service: Channel membership manager")
-        discord_bot.core.embed_controller = EmbedController()
-        log.info("[+] Started service: Embed auto update worker")
+        # discord_bot.core.embed_controller = EmbedController()
+        # log.info("[+] Started service: Embed auto update worker")
     except IndexError:
         log.info("Unable to find the specified guild")
