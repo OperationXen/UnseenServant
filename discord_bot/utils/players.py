@@ -6,6 +6,7 @@ from core.utils.games import check_game_pending, async_get_player_list, async_ge
 from discord_bot.utils.channel import async_get_game_channel_for_game
 from core.utils.players import async_populate_game_from_waitlist, async_get_user_from_player
 from core.utils.channels import async_add_user_to_game_channel
+from core.errors import ChannelError
 
 from discord_bot.logs import logger as log
 
@@ -20,6 +21,8 @@ async def async_do_waitlist_updates(game):
         try:
             game_channel = await async_get_game_channel_for_game(game)
             await async_add_user_to_game_channel(user, game_channel)
+        except ChannelError:
+            pass  # no existing game channel, this is fine
         except Exception as e:
             log.error(f"[!] Exception adding promoted user {user.discord_name} to channel for game {game.name}")
         # Only ping players if they're being promoted into a game that hasn't started

@@ -8,6 +8,7 @@ from discord_bot.utils.roles import do_dm_permissions_check
 from discord_bot.utils.channel import async_get_game_for_channel
 from core.utils.channel_members import async_set_default_channel_membership
 from core.utils.channels import async_get_game_channel_for_game
+from core.errors import ChannelError
 
 
 @bot.slash_command(guild_ids=DISCORD_GUILDS, description="Resets channel membership")
@@ -27,7 +28,12 @@ async def reset_channel_membership(
     if not do_dm_permissions_check(ctx.author, game):
         return await ctx.followup.send("You are not the DM for this game", ephemeral=True)
 
-    game_channel = await async_get_game_channel_for_game(game)
+    try:
+        game_channel = await async_get_game_channel_for_game(game)
+    except ChannelError:
+        log.error(f"[!] Unable to find a GameChannel object for game: {game.name}")
+        return await ctx.followup.send("Error - game channel has no matching entity", ephemeral=True, delete_after=10)
+
     set_members = await async_set_default_channel_membership(game_channel, add_waitlist_read_only)
     if set_members:
         message = "Channel membership reset"

@@ -2,8 +2,9 @@ from datetime import timedelta
 from django.utils import timezone
 from asgiref.sync import sync_to_async
 
+from core.errors import ChannelError
 from config.settings import CHANNEL_CREATION_DAYS, CHANNEL_REMIND_HOURS, CHANNEL_WARN_MINUTES, CHANNEL_DESTROY_HOURS
-from core.models.channel import GameChannel
+from core.models.channel import GameChannel, GameChannelMember
 from core.models.game import Game
 from core.models.auth import CustomUser
 
@@ -94,6 +95,8 @@ def async_get_games_pending_channel_creation():
 def get_game_channel_for_game(game: Game) -> GameChannel | None:
     """Get the channel for the specified game if it exists"""
     game_channel = game.text_channel.all().first()
+    if game_channel is None:
+        raise ChannelError(f"GameChannel does not exist for game: {game.name}")
     return game_channel
 
 
@@ -117,8 +120,18 @@ def async_get_all_current_game_channels():
 
 def add_user_to_game_channel(user: CustomUser, channel: GameChannel) -> bool:
     """Add a user to a specified game channel"""
+    # Get a list of all current members and see if user is already there
+    try:
+        existing = GameChannelMember.objects.filter(channel=channel).get(user=user)
+        existing.send_messages = True
+        existing.save()
+        return True
+    except GameChannelMember.DoesNotExist:
+        pass
+    # User isn't already in the channel, so we need to add them (default permissions are for fully interactive)
     channel.members.add(user)
     channel.save()
+    return True
 
 
 @sync_to_async

@@ -2,6 +2,7 @@ from asyncio import gather, create_task
 
 from discord import Member as DiscordMember
 from core.models import Game
+from core.errors import ChannelError
 
 from discord_bot.utils.channel import async_remove_discord_member_from_game_channel
 from discord_bot.utils.players import async_do_waitlist_updates
@@ -30,12 +31,13 @@ async def handle_player_dropout_event(game: Game, discord_member: DiscordMember)
                         async_send_dm(discord_member, f"Removed you from {game.name} `({games_remaining_text})`")
                     )
                 )
-
-                game_channel = await async_get_game_channel_for_game(game)
-                if game_channel:
+                try:
+                    game_channel = await async_get_game_channel_for_game(game)
                     pending.append(
                         create_task(async_remove_discord_member_from_game_channel(discord_member, game_channel))
                     )
+                except ChannelError:
+                    pass  # no game channel exists, this is fine.
             else:
                 log.debug(f"[!] Unable to remove {discord_member.name} from {game.name}")
             retval = removed
