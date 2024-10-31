@@ -15,7 +15,6 @@ from discord_bot.utils.messaging import async_send_dm
 from core.models.game import Game
 from core.errors import ChannelError
 from core.utils.channels import async_get_game_channel_for_game
-from core.errors import ChannelError
 from core.utils.games import (
     async_get_player_list,
     async_get_wait_list,
