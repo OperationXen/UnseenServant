@@ -1,5 +1,3 @@
-from asyncio import create_task
-
 from discord_bot.logs import logger as log
 from discord_bot.utils.messaging import async_send_dm
 from discord_bot.utils.time import discord_countdown
