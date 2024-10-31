@@ -26,8 +26,15 @@ class MusteringBanner(BaseGameEmbed):
 
     def __eq__(self, other):
         """Test this banner embed for equality with another"""
+        if not other:
+            return False
         if self.title != other.title:
             return False
+        field_names = [field.name for field in self.fields]
+        other_names = [field.name for field in other.fields]
+        if set(field_names) != set(other_names):
+            return False
+
         for field in self.fields:
             try:
                 other_field = [x for x in other.fields if x.name == field.name][0]
@@ -140,6 +147,7 @@ class MusteringView(View):
     async def update_message(self, followup_hook=None, response_hook=None):
         """Update the message this view is attached to"""
         updated_banner = MusteringBanner(self.game)
+        await updated_banner.refresh_game_data()
         await updated_banner.build()
         existing_banner = self.get_existing_banner_by_title(updated_banner.title)
         if existing_banner != updated_banner:

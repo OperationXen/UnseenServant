@@ -7,6 +7,7 @@ from discord_bot.bot import bot
 from discord_bot.logs import logger as log
 from core.utils.games import async_get_wait_list
 from core.utils.channels import async_get_game_channel_for_game
+from core.errors import ChannelError
 from discord_bot.utils.time import discord_countdown
 from discord_bot.utils.messaging import async_send_dm
 from discord_bot.utils.embed import async_update_game_embeds
@@ -42,7 +43,11 @@ async def remove_player(ctx, user: Option(Member, "Player to remove from the gam
 
     removed = await async_remove_discord_member_from_game(user, game)
     if removed:
-        game_channel = await async_get_game_channel_for_game(game)
+        try:
+            game_channel = await async_get_game_channel_for_game(game)
+        except ChannelError:
+            log.error(f"[!] Unable to find a GameChannel object for game: {game.name}")
+            return await ctx.followup.send("GameChannel object missing in db", ephemeral=True, delete_after=10)
         await async_remove_discord_member_from_game_channel(user, game_channel)
         await async_do_waitlist_updates(game)
         await async_update_game_embeds(game)
@@ -75,7 +80,12 @@ async def add_player(ctx, user: Option(Member, "Player to add to the game", requ
 
     added = await async_add_discord_member_to_game(user, game, force=True)
     if added:
-        game_channel = await async_get_game_channel_for_game(game)
+        try:
+            game_channel = await async_get_game_channel_for_game(game)
+        except ChannelError:
+            log.error(f"[!] Unable to find a GameChannel object for game: {game.name}")
+            return await ctx.followup.send("GameChannel object missing in db", ephemeral=True, delete_after=10)
+
         await async_add_discord_member_to_game_channel(user, game_channel)
         await async_do_waitlist_updates(game)
 
@@ -115,7 +125,12 @@ async def add_waitlist(ctx, user: Option(Member, "Player to add to the waitlist"
             message = "Player added to waitlist"
             await async_send_dm(user, f"{ctx.author.name} added you to the waitlist for {game.name}")
         else:
-            game_channel = await async_get_game_channel_for_game(game)
+            try:
+                game_channel = await async_get_game_channel_for_game(game)
+            except ChannelError:
+                log.error(f"[!] Unable to find a GameChannel object for game: {game.name}")
+                return await ctx.followup.send("GameChannel object missing in db", ephemeral=True, delete_after=10)
+
             await async_add_discord_member_to_game_channel(user, game_channel)
             log.info(f"[-] Added {user.name} to game {game.name}")
             message = "Player added to game, as there was a space"

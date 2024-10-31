@@ -9,6 +9,7 @@ from discord_bot.bot import bot
 from discord_bot.logs import logger as log
 from config.settings import CHANNEL_SEND_PINGS
 from core.models import Game, GameChannel, GameChannelMember
+from core.errors import ChannelError
 from core.utils.announcements import async_get_player_announce_text
 from core.utils.user import async_get_user_by_discord_id
 from core.utils.channels import async_add_user_to_game_channel, async_remove_user_from_game_channel
@@ -47,8 +48,10 @@ async def async_get_channel_for_game(game: Game) -> TextChannel:
         game_channel = await async_get_game_channel_for_game(game)
         channel = get_discord_channel(game_channel)
         return channel
+    except ChannelError:
+        pass  # this Game doesn't have a GameChannel object
     except Exception as e:
-        log.debug(f"Unable to get an active channel for {game.name}")
+        log.debug(f"[.] Unable to get an active channel for {game.name}")
     return None
 
 

@@ -13,7 +13,9 @@ from discord_bot.utils.format import generate_calendar_message
 from discord_bot.utils.games import async_add_discord_member_to_game
 from discord_bot.utils.messaging import async_send_dm
 from core.models.game import Game
+from core.errors import ChannelError
 from core.utils.channels import async_get_game_channel_for_game
+from core.errors import ChannelError
 from core.utils.games import (
     async_get_player_list,
     async_get_wait_list,
@@ -133,8 +135,15 @@ class GameDetailEmbed(BaseGameEmbed):
 
     def __eq__(self, other):
         """Test this embed for equality with another"""
+        if other == None:
+            return False
         if self.title != other.title:
             return False
+        field_names = [field.name for field in self.fields]
+        other_names = [field.name for field in other.fields]
+        if set(field_names) != set(other_names):
+            return False
+
         for field in self.fields:
             try:
                 other_field = [x for x in other.fields if x.name == field.name][0]
@@ -248,7 +257,10 @@ class GameControlView(View):
         """Find and replace the game detail embed within the message"""
         embeds = self.message.embeds
         index = embeds.index(old_embed)
-        embeds[index] = new_embed
+        if index is not None:
+            embeds[index] = new_embed
+        else:
+            embeds.append(new_embed)
         return embeds
 
     async def update_message(self, followup_hook=None, response_hook=None):
@@ -282,8 +294,11 @@ class GameControlView(View):
             return False
         games_remaining_text = await async_get_player_credit_text(interaction.user)
         if not player.standby:
-            channel = await async_get_game_channel_for_game(self.game)
-            await async_add_discord_member_to_game_channel(interaction.user, channel)
+            try:
+                channel = await async_get_game_channel_for_game(self.game)
+                await async_add_discord_member_to_game_channel(interaction.user, channel)
+            except ChannelError:
+                pass  # no game channel exists, this is fine.
             message = f"You're playing in {self.game.name} `({games_remaining_text})`"
         else:
             message = f"Added you to to the waitlist for {self.game.name} `({games_remaining_text})`"
