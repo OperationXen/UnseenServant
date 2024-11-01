@@ -8,7 +8,7 @@ async def async_send_dm(user: DiscordUser | DiscordMember | int | str, message: 
     if type(user) == int:
         user = await bot.get_or_fetch_user(user)
     if type(user) == str:
-        user = await bot.get_or_fetch_user(str(user))
+        user = await bot.get_or_fetch_user(int(user))
     try:
         return await user.send(message, **kwargs)
     except Forbidden:
