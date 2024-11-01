@@ -135,7 +135,12 @@ class MusteringView(View):
         for embed in self.message.embeds:
             if embed.title == title:
                 return embed
-        return None
+
+        # If no title match is found, fall back to the top one
+        try:
+            return self.message.embeds[0]
+        except:
+            return None
 
     def update_message_embeds(self, old_embed: MusteringBanner, new_embed: MusteringBanner) -> list[MusteringBanner]:
         """Find and replace the mustering embed within the message"""
