@@ -255,11 +255,19 @@ class GameControlView(View):
     def update_message_embeds(self, old_embed: GameDetailEmbed, new_embed: GameDetailEmbed) -> list[GameDetailEmbed]:
         """Find and replace the game detail embed within the message"""
         embeds = self.message.embeds
-        index = embeds.index(old_embed)
-        if index is not None:
-            embeds[index] = new_embed
-        else:
-            embeds.append(new_embed)
+
+        if old_embed:
+            index = embeds.index(old_embed)
+            if index is not None:
+                embeds[index] = new_embed
+                return embeds
+
+        if len(embeds) == 1:
+            embeds[0] = new_embed
+            return embeds
+
+        # No match can be found and there are multiple options, so add a new embed to the message
+        embeds.append(new_embed)
         return embeds
 
     async def update_message(self, followup_hook=None, response_hook=None):
