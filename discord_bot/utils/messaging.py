@@ -4,15 +4,17 @@ from discord_bot.bot import bot
 from discord_bot.logs import logger as log
 
 
-async def async_send_dm(user: DiscordUser | DiscordMember | int, message: str, **kwargs):
+async def async_send_dm(user: DiscordUser | DiscordMember | int | str, message: str, **kwargs):
     if type(user) == int:
         user = await bot.get_or_fetch_user(user)
+    if type(user) == str:
+        user = await bot.get_or_fetch_user(str(user))
     try:
         return await user.send(message, **kwargs)
     except Forbidden:
         return None
     except Exception as e:
-        log.error(f"[!] Unexpected error sending DM to user {user.name}: {e}")
+        log.error(f"[!] Unexpected error sending DM to user {user}: {e}")
     return True
 
 
