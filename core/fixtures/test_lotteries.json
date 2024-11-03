@@ -1,0 +1,15 @@
+[
+  {
+    "model": "core.lottery",
+    "pk": 1,
+    "fields": {
+      "game": 1,
+      "cost": 1,
+      "ticket_limit": 3,
+      "max_tickets": 12,
+      "draw_done": false,
+      "datetime_open": "2023-01-28T16:59:39Z",
+      "datetime_draw": "2023-01-29T16:59:39Z"
+    }
+  }
+]
