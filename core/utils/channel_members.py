@@ -27,7 +27,7 @@ def add_waitlist_to_channel(channel: GameChannel):
 
     waitlist = game.players.filter(standby=True)
     for player in waitlist:
-        add_user_to_game_channel(player.user, read_only=True)
+        add_user_to_game_channel(player.user, channel, read_only=True)
 
 
 def add_party_to_channel(channel: GameChannel):
@@ -36,7 +36,7 @@ def add_party_to_channel(channel: GameChannel):
 
     party = game.players.filter(standby=False)
     for player in party:
-        add_user_to_game_channel(player.user, read_only=False)
+        add_user_to_game_channel(player.user, channel, read_only=False)
 
 
 # ################################################################################ #
