@@ -8,6 +8,12 @@ from core.models.dm import DM
 class Game(models.Model):
     """Defines an specific scheduled game"""
 
+    class SignUpTypes(models.TextChoices):
+        """internal class to define alternative game signup approaches"""
+
+        DEFAULT = "default", ("First come first served with waitlist")
+        LOTTERY = "lottery", ("Lottery mode with random player selection")
+
     class GameTypes(models.TextChoices):
         """Internal class to define possible game types"""
 
@@ -45,6 +51,13 @@ class Game(models.Model):
     streaming = models.BooleanField(default=False, help_text="Set to indicate that you may wish to stream the game")
     play_test = models.BooleanField(default=False, help_text="Set to indicate that this is a playtest")
 
+    signup_type = models.TextField(
+        max_length=16,
+        choices=SignUpTypes.choices,
+        default=SignUpTypes.DEFAULT,
+        help_text="The signup flow that will be used for this game",
+    )
+
     datetime_release = models.DateTimeField(
         blank=True,
         null=True,
@@ -79,10 +92,3 @@ class Game(models.Model):
 
     class Meta:
         indexes = [models.Index(fields=["dm", "datetime", "datetime_release", "datetime_open_release"])]
-
-
-class Character(models.Model):
-    """Character instances"""
-
-    dnd_beyond_link = models.URLField(blank=True, help_text="Link to character sheet on D&D Beyond")
-    forewarning = models.TextField(blank=True, help_text="Warnings of shenanigans, or notes for DM")

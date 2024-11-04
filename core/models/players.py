@@ -1,7 +1,6 @@
 from django.db import models
 
-from core.models.auth import CustomUser
-from core.models.game import Game, Character
+from core.models import Game, Character, CustomUser
 from core.utils.time import a_year_from_now, a_month_from_now
 
 
