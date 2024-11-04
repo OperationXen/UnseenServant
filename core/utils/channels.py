@@ -116,35 +116,3 @@ def get_all_current_game_channels():
 @sync_to_async
 def async_get_all_current_game_channels():
     return get_all_current_game_channels()
-
-
-def add_user_to_game_channel(user: CustomUser, channel: GameChannel) -> bool:
-    """Add a user to a specified game channel"""
-    # Get a list of all current members and see if user is already there
-    try:
-        existing = GameChannelMember.objects.filter(channel=channel).get(user=user)
-        existing.send_messages = True
-        existing.save()
-        return True
-    except GameChannelMember.DoesNotExist:
-        pass
-    # User isn't already in the channel, so we need to add them (default permissions are for fully interactive)
-    channel.members.add(user)
-    channel.save()
-    return True
-
-
-@sync_to_async
-def async_add_user_to_game_channel(user: CustomUser, channel: GameChannel) -> bool:
-    return add_user_to_game_channel(user, channel)
-
-
-def remove_user_from_game_channel(user: CustomUser, channel: GameChannel) -> bool:
-    """Remove a user from a game channel"""
-    channel.members.remove(user)
-    channel.save()
-
-
-@sync_to_async
-def async_remove_user_from_game_channel(user: CustomUser, channel: GameChannel) -> bool:
-    return remove_user_from_game_channel(user, channel)
