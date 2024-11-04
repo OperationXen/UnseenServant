@@ -141,14 +141,14 @@ async def tag_players(ctx):
         return await ctx.followup.send("You are not the DM for this game", ephemeral=True)
 
     party = await async_get_party_for_game(game)
-    message = ""
+    message = "Attention players: "
     for party_member in party:
         discord_user = await bot.fetch_user(party_member.discord_id)
         message += f"{discord_user.mention} "
     await async_notify_game_channel(game, message)
 
     log.info(f"Tagged {len(party)} players in channel for game {game.name}")
-    return await ctx.followup.send("Party have been individually tagged", ephemeral=True)
+    return await ctx.followup.send("Party have been individually tagged", ephemeral=True, delete_after=10)
 
 
 @bot.slash_command(
