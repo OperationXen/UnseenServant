@@ -62,7 +62,8 @@ class ChannelMembershipController:
         for missing_user in to_add:
             if await async_add_member_to_channel(missing_user, discord_channel):
                 log.debug(f"[.] added user {missing_user.user.discord_name} to channel {discord_channel.name}")
-                await async_game_channel_tag_promoted_discord_id(discord_channel, missing_user)
+                if missing_user.send_messages:
+                    await async_game_channel_tag_promoted_discord_id(discord_channel, missing_user)
             else:
                 log.warning(
                     f"[!] Failed to add user {missing_user.user.discord_name} to channel {discord_channel.name}"
