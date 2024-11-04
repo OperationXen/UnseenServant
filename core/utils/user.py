@@ -68,6 +68,11 @@ def user_is_player_in_game(user: CustomUser, game: Game) -> bool:
     return False
 
 
+@sync_to_async
+def async_user_is_player_in_game(user: CustomUser, game: Game) -> bool:
+    return user_is_player_in_game(user, game)
+
+
 def user_is_waitlisted_in_game(user: CustomUser, game: Game) -> bool:
     """Checks if a user is waitlisted in a given game or not"""
     queryset = Player.objects.filter(game=game)

@@ -4,6 +4,7 @@ from discord.ui import View, Button
 from discord_bot.components.moonseacodex import MSCCharacterList
 from discord_bot.utils.moonseacodex import get_msc_characters
 from core.utils.games import calc_game_tier
+from core.utils.user import async_user_is_player_in_game, async_get_user_by_discord_id
 from discord_bot.components.games import BaseGameEmbed
 from discord_bot.utils.embed import async_update_game_embeds
 from discord_bot.utils.players import async_do_waitlist_updates
@@ -188,6 +189,10 @@ class MusteringView(View):
     async def muster_view_msc(self, interaction):
         """Force refresh button callback"""
         await interaction.response.defer(ephemeral=True, invisible=False)
+
+        user = await async_get_user_by_discord_id(interaction.user.id)
+        if not await async_user_is_player_in_game(user, self.game):
+            return await interaction.followup.send(f"You are on the waitlist", ephemeral=True, delete_after=10)
 
         discord_name = str(interaction.user.name)
         characters = get_msc_characters(discord_id=discord_name)
