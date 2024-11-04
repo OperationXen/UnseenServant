@@ -80,18 +80,10 @@ async def add_player(ctx, user: Option(Member, "Player to add to the game", requ
 
     added = await async_add_discord_member_to_game(user, game, force=True)
     if added:
-        try:
-            game_channel = await async_get_game_channel_for_game(game)
-        except ChannelError:
-            log.error(f"[!] Unable to find a GameChannel object for game: {game.name}")
-            return await ctx.followup.send("GameChannel object missing in db", ephemeral=True, delete_after=10)
-
-        await async_add_discord_member_to_game_channel(user, game_channel)
         await async_do_waitlist_updates(game)
-
+        await async_update_game_embeds(game)
         message = f"{ctx.author.name} added you to game {game.name}"
         await async_send_dm(user, message)
-        await async_update_game_embeds(game)
 
         log.info(f"[-] Added player {user.name} to game {game.name}")
         return await ctx.followup.send("Player added to game", ephemeral=True, delete_after=10)
@@ -120,18 +112,12 @@ async def add_waitlist(ctx, user: Option(Member, "Player to add to the waitlist"
     if added:
         await async_do_waitlist_updates(game)
         await async_update_game_embeds(game)
+
         if added.waitlist:
             log.info(f"[-] Added {user.name} to game {game.name} waitlist")
             message = "Player added to waitlist"
             await async_send_dm(user, f"{ctx.author.name} added you to the waitlist for {game.name}")
         else:
-            try:
-                game_channel = await async_get_game_channel_for_game(game)
-            except ChannelError:
-                log.error(f"[!] Unable to find a GameChannel object for game: {game.name}")
-                return await ctx.followup.send("GameChannel object missing in db", ephemeral=True, delete_after=10)
-
-            await async_add_discord_member_to_game_channel(user, game_channel)
             log.info(f"[-] Added {user.name} to game {game.name}")
             message = "Player added to game, as there was a space"
             await async_send_dm(user, f"{ctx.author.name} added you to game {game.name}")
