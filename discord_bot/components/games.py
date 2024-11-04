@@ -301,11 +301,6 @@ class GameControlView(View):
             return False
         games_remaining_text = await async_get_player_credit_text(interaction.user)
         if not player.standby:
-            try:
-                channel = await async_get_game_channel_for_game(self.game)
-                await async_add_discord_member_to_game_channel(interaction.user, channel)
-            except ChannelError:
-                pass  # no game channel exists, this is fine.
             message = f"You're playing in {self.game.name} `({games_remaining_text})`"
         else:
             message = f"Added you to to the waitlist for {self.game.name} `({games_remaining_text})`"

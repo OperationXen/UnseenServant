@@ -1,7 +1,7 @@
 from typing import List
 from asgiref.sync import sync_to_async
 
-from core.models.channel import GameChannel, GameChannelMember
+from core.models.channel import GameChannel, GameChannelMember, CustomUser
 
 
 # ################################################################################ #
@@ -27,12 +27,7 @@ def add_waitlist_to_channel(channel: GameChannel):
 
     waitlist = game.players.filter(standby=True)
     for player in waitlist:
-        try:
-            channel.members.add(player.user, through_defaults={"send_messages": False, "use_slash_commands": False})
-        except Exception as e:
-            print(e)
-    # commit changes to DB
-    channel.save()
+        add_user_to_game_channel(player.user, channel, read_only=True)
 
 
 def add_party_to_channel(channel: GameChannel):
@@ -41,12 +36,7 @@ def add_party_to_channel(channel: GameChannel):
 
     party = game.players.filter(standby=False)
     for player in party:
-        try:
-            channel.members.add(player.user)
-        except Exception as e:
-            print(e)
-    # commit changes to DB
-    channel.save()
+        add_user_to_game_channel(player.user, channel, read_only=False)
 
 
 # ################################################################################ #
@@ -70,6 +60,50 @@ def set_default_channel_membership(channel: GameChannel, add_waitlist_read_only=
 
 
 @sync_to_async
-def async_set_default_channel_membership(channel: GameChannel, add_waitlist_read_only) -> bool:
+def async_set_default_channel_membership(channel: GameChannel, add_waitlist_read_only: bool) -> bool:
     """async wrapper to allow channel membership to be set from discord bot"""
     return set_default_channel_membership(channel, bool(add_waitlist_read_only))
+
+
+# ###################################################################################### #
+def add_user_to_game_channel(user: CustomUser, channel: GameChannel, read_only=False, admin=False) -> bool:
+    """Add a user to a specified game channel"""
+    # Get a list of all current members and see if user is already there
+    try:
+        existing = GameChannelMember.objects.filter(channel=channel).get(user=user)
+        existing.read_message_history = True
+        existing.read_messages = True
+        existing.send_messages = not read_only
+        existing.use_slash_commands = not read_only
+        existing.manage_messages = admin
+        existing.save()
+        return True
+    except GameChannelMember.DoesNotExist:
+        pass
+    # User isn't already in the channel, so we need to add them
+    channel.members.add(
+        user,
+        through_defaults={
+            "send_messages": not read_only,
+            "use_slash_commands": not read_only,
+            "manage_messages": admin,
+        },
+    )
+    channel.save()
+    return True
+
+
+@sync_to_async
+def async_add_user_to_game_channel(user: CustomUser, channel: GameChannel) -> bool:
+    return add_user_to_game_channel(user, channel)
+
+
+def remove_user_from_game_channel(user: CustomUser, channel: GameChannel) -> bool:
+    """Remove a user from a game channel"""
+    channel.members.remove(user)
+    channel.save()
+
+
+@sync_to_async
+def async_remove_user_from_game_channel(user: CustomUser, channel: GameChannel) -> bool:
+    return remove_user_from_game_channel(user, channel)

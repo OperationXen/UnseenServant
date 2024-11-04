@@ -5,7 +5,7 @@ from core.utils.games import check_game_pending, async_get_player_list, async_ge
 
 from discord_bot.utils.channel import async_get_game_channel_for_game
 from core.utils.players import async_populate_game_from_waitlist, async_get_user_from_player
-from core.utils.channels import async_add_user_to_game_channel
+from core.utils.channel_members import async_add_user_to_game_channel
 from core.errors import ChannelError
 
 from discord_bot.logs import logger as log

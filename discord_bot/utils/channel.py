@@ -12,7 +12,7 @@ from core.models import Game, GameChannel, GameChannelMember
 from core.errors import ChannelError
 from core.utils.announcements import async_get_player_announce_text
 from core.utils.user import async_get_user_by_discord_id
-from core.utils.channels import async_add_user_to_game_channel, async_remove_user_from_game_channel
+from core.utils.channel_members import async_add_user_to_game_channel, async_remove_user_from_game_channel
 from core.utils.channels import async_get_game_channel_for_game
 from core.utils.announcements import get_player_permissions_text
 from discord_bot.utils.games import async_get_game_from_message
