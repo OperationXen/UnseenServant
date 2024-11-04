@@ -60,7 +60,7 @@ def set_default_channel_membership(channel: GameChannel, add_waitlist_read_only=
 
 
 @sync_to_async
-def async_set_default_channel_membership(channel: GameChannel, add_waitlist_read_only) -> bool:
+def async_set_default_channel_membership(channel: GameChannel, add_waitlist_read_only: bool) -> bool:
     """async wrapper to allow channel membership to be set from discord bot"""
     return set_default_channel_membership(channel, bool(add_waitlist_read_only))
 

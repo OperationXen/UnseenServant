@@ -92,7 +92,7 @@ class ChannelController:
                 log.debug(f"[-] GameChannel created OK")
 
                 # now the channel has been created we can populate its membership list with the party
-                set_members = await async_set_default_channel_membership(game_channel, False)
+                set_members = await async_set_default_channel_membership(game_channel, True)
                 if set_members:
                     log.debug(f"[-] Set channel membership list to default")
 
