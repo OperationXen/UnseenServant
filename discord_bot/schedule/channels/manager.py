@@ -38,22 +38,28 @@ class ChannelController:
         topic_text += f"Game is scheduled for {get_hammertime(game.datetime)}"
         return topic_text
 
-    async def get_ping_text(self, game):
+    async def get_ping_text(self, game, include_waitlist=False):
         """Get text that will ping each of the users mentioned"""
         players = await async_get_player_list(game)
         dm = await async_get_dm(game)
-        ping_text = f"DM: <@{dm.discord_id}>\n"
-        ping_text += "Players: "
+        ping_text = f"- DM: <@{dm.discord_id}>"
+        ping_text += "\n- Players: "
         ping_text += ",".join(f"<@{p.discord_id}>" for p in players if not p.standby)
+        if include_waitlist:
+            ping_text += "\n- Waitlist: "
+            ping_text += ",".join(f"<@{p.discord_id}>" for p in players if p.standby)
         return ping_text
 
-    async def get_flat_message_list(self, game):
+    async def get_flat_message_list(self, game, include_waitlist=False):
         """Get a list of involved users, but in such a way as to not ping them"""
         players = await async_get_player_list(game)
         dm = await async_get_dm(game)
-        text = f"DM: {dm.discord_name}\n"
-        text += "Players: "
+        text = f"- DM: {dm.discord_name}"
+        text += "\n- Players: "
         text += ",".join(f"{p.discord_name}" for p in players if not p.standby)
+        if include_waitlist:
+            text += "\n- Waitlist: "
+            text += ",".join(f"{p.discord_name}" for p in players if p.standby)
         return text
 
     async def send_banner_message(self, channel, game):
@@ -119,12 +125,15 @@ class ChannelController:
             for game in upcoming_games:
 
                 game_channel = await async_get_game_channel_for_game(game)
-                log.info(f"Sending game reminder to channel: {game_channel.name}")
+                log.info(f"[-] Sending game reminder to channel: {game_channel.name}")
                 channel = self.guild.get_channel(int(game_channel.discord_id))
-                ping_text = await self.get_ping_text(game)
-                await channel.send(
-                    f"Reminder: this game is coming up {discord_countdown(game.datetime)}!\n{ping_text}"
-                )
+
+                ping_text = await self.get_ping_text(game, include_waitlist=True)
+                message = f"# Reminder; {game.name} is in {discord_countdown(game.datetime)}!\n"
+                message += f"{ping_text}\n"
+                message += f"-# Please ensure that you have submitted all of the requested information if you are listed as a player.\n"
+                message += f"-# If you are on the waitlist, you do not need to do anything, do not message the DM."
+                await channel.send(message)
                 await async_set_game_channel_reminded(game_channel)
 
         except Exception as e:
@@ -139,10 +148,14 @@ class ChannelController:
                 game_channel = await async_get_game_channel_for_game(game)
                 log.info(f"Sending 1 hour start warning to channel: {game_channel.name}")
                 channel = self.guild.get_channel(int(game_channel.discord_id))
+
                 ping_text = await self.get_ping_text(game)
-                await channel.send(
-                    f"Game starting {discord_countdown(game.datetime)}, please ensure that you are ready\n{ping_text}"
-                )
+                message = f"# {game.name} is starting in {discord_countdown(game.datetime)}\n"
+                message += f"{ping_text}\n"
+                message += f"-# If you have not submitted your character information you may be removed from play.\n"
+                message += f"-# Please be ready in voice and VTT at least 5 minutes before the scheduled start"
+
+                await channel.send(message)
                 await async_set_game_channel_warned(game_channel)
         except Exception as e:
             log.error(e)
@@ -178,8 +191,8 @@ class ChannelController:
 
             await self.check_and_create_channels()
             await self.check_and_delete_channels()
-            await self.check_and_remind_channels()
             await self.check_and_warn_channels()
+            await self.check_and_remind_channels()
         except Exception as e:
             log.error(f"[!] An unhandled exception has occured in the Channel Manager Loop: " + str(e))
             self.initialised = False
