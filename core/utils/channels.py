@@ -1,12 +1,13 @@
+from typing import List
+
 from datetime import timedelta
 from django.utils import timezone
 from asgiref.sync import sync_to_async
 
 from core.errors import ChannelError
 from config.settings import CHANNEL_CREATION_DAYS, CHANNEL_REMIND_HOURS, CHANNEL_WARN_MINUTES, CHANNEL_DESTROY_HOURS
-from core.models.channel import GameChannel, GameChannelMember
+from core.models.channel import GameChannel
 from core.models.game import Game
-from core.models.auth import CustomUser
 
 
 def get_games_pending(hours=0, days=0, minutes=0):
@@ -64,25 +65,40 @@ def async_get_game_channels_pending_destruction():
     return list(queryset)  # force evaluation before dropping back to async
 
 
-@sync_to_async
-def async_get_game_channels_pending_reminder():
+# ################################################################## #
+def get_games_pending_channel_reminder():
     """Identify games in need of a 24 hour warning sending"""
     queryset = get_games_pending(hours=CHANNEL_REMIND_HOURS)
     queryset = queryset.exclude(text_channel=None)  # not interested in anything without a channel
     queryset = queryset.exclude(text_channel__status=GameChannel.ChannelStatuses.REMINDED)
     queryset = queryset.exclude(text_channel__status=GameChannel.ChannelStatuses.WARNED)
-    return list(queryset)  # force evaluation before leaving this sync context
+    # force evaluation before leaving this sync context
+    return list(queryset)
 
 
 @sync_to_async
-def async_get_game_channels_pending_warning():
+def async_get_games_pending_channel_reminder():
+    game_channels = get_games_pending_channel_reminder()
+    return game_channels
+
+
+# ################################################################## #
+def get_games_pending_channel_warning() -> List[Game]:
     """Get those games which need a 1 hour warning sending"""
     queryset = get_games_pending(minutes=CHANNEL_WARN_MINUTES)
     queryset = queryset.exclude(text_channel=None)  # not interested in anything without a channel
     queryset = queryset.exclude(text_channel__status=GameChannel.ChannelStatuses.WARNED)
-    return list(queryset)  # force evaluation before leaving this sync context
+    # force evaluation before leaving this sync context
+    return list(queryset)
 
 
+@sync_to_async
+def async_get_games_pending_channel_warning():
+    game_channels = get_games_pending_channel_warning()
+    return game_channels
+
+
+# ################################################################## #
 @sync_to_async
 def async_get_games_pending_channel_creation():
     """Retrieve all game objects that need a channel posting"""

@@ -12,8 +12,8 @@ from discord_bot.components.channels import MusteringBanner, MusteringView
 from core.utils.games import async_get_dm, async_get_player_list
 from core.utils.channels import async_get_games_pending_channel_creation, async_set_game_channel_created
 from core.utils.channels import async_get_game_channels_pending_destruction, async_destroy_game_channel
-from core.utils.channels import async_get_game_channels_pending_reminder, async_set_game_channel_reminded
-from core.utils.channels import async_get_game_channels_pending_warning, async_set_game_channel_warned
+from core.utils.channels import async_get_games_pending_channel_reminder, async_set_game_channel_reminded
+from core.utils.channels import async_get_games_pending_channel_warning, async_set_game_channel_warned
 from core.utils.channels import async_get_game_channel_for_game
 from core.utils.channel_members import async_set_default_channel_membership
 
@@ -119,13 +119,11 @@ class ChannelController:
 
     async def check_and_remind_channels(self):
         """Remind players 24 hours before their game"""
-        # TODO  #596 - this logic is amazing. Get games by looking at their game channels, then get the game channels for those games? WTF
         try:
-            upcoming_games = await async_get_game_channels_pending_reminder()
+            upcoming_games = await async_get_games_pending_channel_reminder()
             for game in upcoming_games:
-
                 game_channel = await async_get_game_channel_for_game(game)
-                log.info(f"[-] Sending game reminder to channel: {game_channel.name}")
+                log.info(f"[-] Sending 24 hour reminder to channel: {game_channel.name}")
                 channel = self.guild.get_channel(int(game_channel.discord_id))
 
                 ping_text = await self.get_ping_text(game, include_waitlist=True)
@@ -136,18 +134,16 @@ class ChannelController:
                 message += f"if you are on the waitlist, you do not need to do anything, **do not** message the DM."
                 await channel.send(message)
                 await async_set_game_channel_reminded(game_channel)
-
         except Exception as e:
-            log.error(e)
+            log.error(f"[!] Exception in check_and_remind_channels: {e}")
 
     async def check_and_warn_channels(self):
         """Remind players 1 hour before their game"""
-        # TODO #596 - this logic is amazing. Get games by looking at their game channels, then get the game channels for those games? WTF
         try:
-            upcoming_games = await async_get_game_channels_pending_warning()
+            upcoming_games = await async_get_games_pending_channel_warning()
             for game in upcoming_games:
                 game_channel = await async_get_game_channel_for_game(game)
-                log.info(f"Sending 1 hour start warning to channel: {game_channel.name}")
+                log.info(f"[-] Sending 1 hour start warning to channel: {game_channel.name}")
                 channel = self.guild.get_channel(int(game_channel.discord_id))
 
                 ping_text = await self.get_ping_text(game)
@@ -162,7 +158,7 @@ class ChannelController:
                 await channel.send(message)
                 await async_set_game_channel_warned(game_channel)
         except Exception as e:
-            log.error(e)
+            log.error(f"[!] Exception in check_and_warn_channels: {e}")
 
     async def recover_channel_state(self):
         """Pull game postings from posting history and reconstruct a game/message status from it"""
