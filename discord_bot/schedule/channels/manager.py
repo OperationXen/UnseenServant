@@ -129,10 +129,11 @@ class ChannelController:
                 channel = self.guild.get_channel(int(game_channel.discord_id))
 
                 ping_text = await self.get_ping_text(game, include_waitlist=True)
-                message = f"# Reminder; {game.name} is in {discord_countdown(game.datetime)}!\n"
+                message = f"# Reminder: {game.name}\n"
+                message += f"# {discord_countdown(game.datetime)}!\n"
                 message += f"{ping_text}\n"
-                message += f"-# Please ensure that you have submitted all of the requested information if you are listed as a player.\n"
-                message += f"-# If you are on the waitlist, you do not need to do anything, do not message the DM."
+                message += f"-# Please ensure that you have submitted all of the requested information if you are listed as a player, "
+                message += f"if you are on the waitlist, you do not need to do anything, **do not** message the DM."
                 await channel.send(message)
                 await async_set_game_channel_reminded(game_channel)
 
@@ -150,10 +151,13 @@ class ChannelController:
                 channel = self.guild.get_channel(int(game_channel.discord_id))
 
                 ping_text = await self.get_ping_text(game)
-                message = f"# {game.name} is starting in {discord_countdown(game.datetime)}\n"
+                message = f"# {game.name} is starting {discord_countdown(game.datetime)}\n"
                 message += f"{ping_text}\n"
-                message += f"-# If you have not submitted your character information you may be removed from play.\n"
-                message += f"-# Please be ready in voice and VTT at least 5 minutes before the scheduled start"
+                if game.tabletop:
+                    # Putting links between < > prevents discord from creating an embed preview
+                    message += f"### VTT info: <{game.tabletop}>\n"
+                message += f"-# If you have not submitted your character information you may be removed from play, "
+                message += f"please be ready in voice and VTT at least 5 minutes before the scheduled start."
 
                 await channel.send(message)
                 await async_set_game_channel_warned(game_channel)

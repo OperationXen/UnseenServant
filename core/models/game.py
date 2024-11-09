@@ -48,6 +48,12 @@ class Game(models.Model):
     level_min = models.IntegerField(default=1, help_text="Minumum starting level")
     level_max = models.IntegerField(default=4, help_text="Maximum player level")
     warnings = models.TextField(blank=True, default="None", help_text="Content warnings or advisories")
+    tabletop = models.CharField(
+        blank=True,
+        null=True,
+        max_length=1024,
+        help_text="Information about the tabletop that will be used, eg a link to a roll 20 room",
+    )
     streaming = models.BooleanField(default=False, help_text="Set to indicate that you may wish to stream the game")
     play_test = models.BooleanField(default=False, help_text="Set to indicate that this is a playtest")
 
