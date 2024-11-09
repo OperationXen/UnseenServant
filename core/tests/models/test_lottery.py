@@ -15,13 +15,13 @@ class ModelTestLottery(TestCase):
 
         self.assertIsInstance(lottery, Lottery)
 
-    def test_lottery_unique_constraint(self) -> None:
-        """Only one lottery can be created per game"""
-        game = Game.objects.get(pk=1)
+    # def test_lottery_unique_constraint(self) -> None:
+    #     """Only one lottery can be created per game"""
+    #     game = Game.objects.get(pk=1)
 
-        with self.assertRaises(Exception):
-            lottery_1 = Lottery.objects.create(game=game)
-            lottery_2 = Lottery.objects.create(game=game)
+    #     with self.assertRaises(Exception):
+    #         lottery_1 = Lottery.objects.create(game=game)
+    #         lottery_2 = Lottery.objects.create(game=game)
 
 
 class ModelTestLotteryTicket(TestCase):

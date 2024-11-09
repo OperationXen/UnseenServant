@@ -6,7 +6,7 @@ from core.models import Game, CustomUser
 class Lottery(models.Model):
     """Defines an new lottery for seats at a game"""
 
-    game = models.ForeignKey(Game, related_name="lotteries", on_delete=models.CASCADE, unique=True)
+    game = models.ForeignKey(Game, related_name="lotteries", on_delete=models.CASCADE)
     cost = models.IntegerField(default=1, help_text="Credit cost of each ticket")
     ticket_limit = models.IntegerField(default=3, help_text="Max tickets per person")
     max_tickets = models.IntegerField(default=32, help_text="Total number of tickets available")
