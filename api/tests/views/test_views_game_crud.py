@@ -24,6 +24,7 @@ class TestGameViews(TestCase):
         "level_min": 1,
         "level_max": 4,
         "play_test": False,
+        "tabletop": "theatre of the mind",
         "warnings": "Beware of the Leopard",
         "streaming": False,
         "datetime_release": datetime.now(),
@@ -50,6 +51,7 @@ class TestGameViews(TestCase):
         self.assertEqual(4, response.data[0].get("duration"))
         self.assertIn("players", response.data[0])
         self.assertIn("user_is_dm", response.data[0])
+        self.assertIn("tabletop", response.data[0])
         self.assertFalse(response.data[0].get("user_is_dm"))
         self.assertIsInstance(response.data[0].get("players"), list)
         self.assertIn("discord_id", response.data[0]["players"][0])
@@ -194,3 +196,14 @@ class TestGameViews(TestCase):
 
         response = self.client.delete(reverse("games-detail", kwargs={"pk": 2}))
         self.assertEqual(response.status_code, HTTP_403_FORBIDDEN)
+
+    def test_user_can_create_game_without_tabletop(self) -> None:
+        """A logged in DM user should be able to create a game without setting a tabletop"""
+        self.client.login(username="Test DM", password="testpassword")
+        test_data = copy(self.valid_data)
+        test_data.pop("tabletop")
+
+        response = self.client.post(reverse("games-list"), test_data)
+        self.assertEqual(response.status_code, HTTP_201_CREATED)
+        self.assertIn("name", response.data)
+        self.assertEqual(response.data.get("name"), test_data["name"])

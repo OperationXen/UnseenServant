@@ -19,3 +19,13 @@ class ModelTestGame(TestCase):
         game = Game.objects.create(dm=test_dm, name="test game", datetime=game_time)
         self.assertIsInstance(game, Game)
         self.assertEqual(game.signup_type, Game.SignUpTypes.DEFAULT)
+
+    def test_game_tabletop(self) -> None:
+        """Test a tabletop can be set on a game"""
+        test_string = "http://foundry.com/test"
+        test_game = Game.objects.get(pk=1)
+        test_game.tabletop = test_string
+        test_game.save()
+
+        test_game.refresh_from_db()
+        self.assertEqual(test_game.tabletop, test_string)
