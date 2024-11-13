@@ -9,7 +9,7 @@ from discord_bot.utils.games import async_get_game_from_message, get_game_id_fro
 from discord_bot.utils.channel import async_create_channel_hidden
 from discord_bot.utils.channel import async_get_all_game_channels_for_guild, async_get_channel_first_message
 from discord_bot.components.channels import MusteringBanner, MusteringView
-from core.utils.games import async_get_dm, async_get_player_list
+from core.utils.games import async_get_dm, async_get_player_list, async_get_wait_list
 from core.utils.channels import async_get_games_pending_channel_creation, async_set_game_channel_created
 from core.utils.channels import async_get_game_channels_pending_destruction, async_destroy_game_channel
 from core.utils.channels import async_get_games_pending_channel_reminder, async_set_game_channel_reminded
@@ -44,10 +44,11 @@ class ChannelController:
         dm = await async_get_dm(game)
         ping_text = f"- DM: <@{dm.discord_id}>"
         ping_text += "\n- Players: "
-        ping_text += ",".join(f"<@{p.discord_id}>" for p in players if not p.standby)
+        ping_text += ",".join(f"<@{p.discord_id}>" for p in players)
         if include_waitlist:
+            waitlist = await async_get_wait_list(game)
             ping_text += "\n- Waitlist: "
-            ping_text += ",".join(f"<@{p.discord_id}>" for p in players if p.standby)
+            ping_text += ",".join(f"<@{p.discord_id}>" for p in waitlist)
         return ping_text
 
     async def get_flat_message_list(self, game, include_waitlist=False):
