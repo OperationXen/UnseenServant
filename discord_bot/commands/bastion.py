@@ -12,4 +12,4 @@ async def bastion(ctx):
     log.info(f"[/] {ctx.author.name} used command /bastion in channel {ctx.channel.name}")
 
     embed = BastionEmbed(ctx.author.display_name)
-    await ctx.followup.send(f"{ctx.author.display_name} takes a bastion turn", embed=embed)
+    await ctx.followup.send(f"", embed=embed)
