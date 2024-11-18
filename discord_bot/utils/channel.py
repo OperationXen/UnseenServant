@@ -80,7 +80,7 @@ async def async_notify_game_channel(game: Game, message: str):
 
 
 # ################################################################ #
-async def async_game_channel_tag_promoted_discord_id(game_channel: GameChannel, member: GameChannelMember):
+async def async_game_channel_tag_added_user(game_channel: GameChannel, member: GameChannelMember):
     """Tag a user in a channel from a player object"""
     discord_user = await get_discord_user_by_id(member.user.discord_id)
     if CHANNEL_SEND_PINGS:
@@ -92,7 +92,7 @@ async def async_game_channel_tag_promoted_discord_id(game_channel: GameChannel, 
     return message
 
 
-async def async_game_channel_notify_removed_user(game_channel: GameChannel, user_name: str):
+async def async_game_channel_tag_removed_user(game_channel: GameChannel, user_name: str):
     """Send a message to the game channel notifying the DM that a player has dropped"""
     try:
         text = f"{user_name} left the channel"
@@ -103,7 +103,19 @@ async def async_game_channel_notify_removed_user(game_channel: GameChannel, user
         return False
 
 
-async def async_game_channel_notify_modified_user_permissions(game_channel: GameChannel, member: GameChannelMember):
+async def async_game_channel_tag_promoted_waitlist_user(game_channel: GameChannel, member: GameChannelMember):
+    """tag a user who has just been promoted from the waitlist"""
+    discord_user = await get_discord_user_by_id(member.user.discord_id)
+    if CHANNEL_SEND_PINGS:
+        user_text = discord_user.mention
+    else:
+        user_text = discord_user.display_name
+    text = await async_get_player_announce_text(member.user, user_text, waitlist=True)
+    message = await game_channel.send(text)
+    return message
+
+
+async def async_game_channel_tag_modified_user_permissions(game_channel: GameChannel, member: GameChannelMember):
     """Tag a user in a channel from a player object"""
     discord_user = await get_discord_user_by_id(member.user.discord_id)
     if CHANNEL_SEND_PINGS:
