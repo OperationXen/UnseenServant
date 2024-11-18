@@ -5,15 +5,15 @@ from random import choice as random_choice
 from core.models import CustomUser, Announcement, GameChannelMember
 
 
-def get_user_custom_announcements(user: CustomUser) -> List[Announcement]:
+def get_user_custom_announcements(user: CustomUser, waitlist: bool = False) -> List[Announcement]:
     """Get a list of all of a user's custom announcements"""
-    announcements = user.announcements.all()
+    announcements = user.announcements.all().filter(promotion=waitlist)
     return list(announcements)  # force evaluation here
 
 
-def get_generic_announcements() -> List[Announcement]:
+def get_generic_announcements(waitlist: bool = False) -> List[Announcement]:
     """Get all of the generic announcements"""
-    announcements = Announcement.objects.filter(generic=True)
+    announcements = Announcement.objects.filter(generic=True).filter(promotion=waitlist)
     return list(announcements)  # force evaluation here
 
 
@@ -23,13 +23,13 @@ def generate_announcement_text(announcement: Announcement, user_text: str) -> st
     return text
 
 
-def get_player_announce_text(user: CustomUser, user_text: str) -> str:
+def get_player_announce_text(user: CustomUser, user_text: str, waitlist: bool = False) -> str:
     """
     Get an appropriate text string to use to announce the user
     Select randomly from custom lines if available, then randomly from generic lines
     """
-    custom_announcements = get_user_custom_announcements(user)
-    generic_announcements = get_generic_announcements()
+    custom_announcements = get_user_custom_announcements(user, waitlist)
+    generic_announcements = get_generic_announcements(waitlist)
     if custom_announcements:
         selected = random_choice(custom_announcements)
     elif generic_announcements:
@@ -41,9 +41,9 @@ def get_player_announce_text(user: CustomUser, user_text: str) -> str:
 
 
 @sync_to_async
-def async_get_player_announce_text(user: CustomUser, user_text: str) -> str:
+def async_get_player_announce_text(user: CustomUser, user_text: str, waitlist=False) -> str:
     """async wrapper to allow database access from async context"""
-    return get_player_announce_text(user, user_text)
+    return get_player_announce_text(user, user_text, waitlist)
 
 
 # ##################################################################### #

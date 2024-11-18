@@ -14,9 +14,10 @@ from core.utils.channel_members import async_get_game_channel_members
 from discord_bot.utils.channel import async_get_actual_channel_members, refresh_discord_channel
 from discord_bot.utils.channel import async_remove_discord_id_from_channel, async_add_member_to_channel
 from discord_bot.utils.channel import (
-    async_game_channel_tag_promoted_discord_id,
-    async_game_channel_notify_removed_user,
-    async_game_channel_notify_modified_user_permissions,
+    async_game_channel_tag_added_user,
+    async_game_channel_tag_removed_user,
+    async_game_channel_tag_modified_user_permissions,
+    async_game_channel_tag_promoted_waitlist_user,
 )
 
 
@@ -63,7 +64,7 @@ class ChannelMembershipController:
             if await async_add_member_to_channel(missing_user, discord_channel):
                 log.debug(f"[.] added user {missing_user.user.discord_name} to channel {discord_channel.name}")
                 if missing_user.send_messages:
-                    await async_game_channel_tag_promoted_discord_id(discord_channel, missing_user)
+                    await async_game_channel_tag_added_user(discord_channel, missing_user)
             else:
                 log.warning(
                     f"[!] Failed to add user {missing_user.user.discord_name} to channel {discord_channel.name}"
@@ -93,7 +94,7 @@ class ChannelMembershipController:
         for excess_user in to_remove:
             if await async_remove_discord_id_from_channel(excess_user.discord_id, discord_channel):
                 log.info(f"[-] Removed user {excess_user.display_name} from channel {discord_channel.name}")
-                await async_game_channel_notify_removed_user(discord_channel, excess_user.display_name)
+                await async_game_channel_tag_removed_user(discord_channel, excess_user.display_name)
             else:
                 log.warning(f"[!] Failed to remove {excess_user.display_name} from channel {discord_channel.name}")
 
@@ -144,7 +145,11 @@ class ChannelMembershipController:
 
             if await async_add_member_to_channel(member, discord_channel):
                 log.debug(f"[.] updated user permissions for {discord_name} in channel {discord_channel.name}")
-                await async_game_channel_notify_modified_user_permissions(discord_channel, member)
+                if member.manage_messages:
+                    # Tag permissions updates when users are promoted to channel admin
+                    await async_game_channel_tag_modified_user_permissions(discord_channel, member)
+                else:
+                    await async_game_channel_tag_promoted_waitlist_user(discord_channel, member)
             else:
                 log.warning(f"[!] Failed to update permissions for {discord_name} in channel {discord_channel.name}")
 

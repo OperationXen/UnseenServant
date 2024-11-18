@@ -13,6 +13,9 @@ class Announcement(models.Model):
         help_text="Users this announcement can be used for",
     )
     generic = models.BooleanField(default=False, help_text="Announcement is used as a global fallback")
+    promotion = models.BooleanField(
+        default=False, help_text="Announcement is used when a player is promoted from waitlist"
+    )
 
     text = models.CharField(
         max_length=256,
