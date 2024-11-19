@@ -94,7 +94,9 @@ class ChannelMembershipController:
         for excess_user in to_remove:
             if await async_remove_discord_id_from_channel(excess_user.discord_id, discord_channel):
                 log.info(f"[-] Removed user {excess_user.display_name} from channel {discord_channel.name}")
-                await async_game_channel_tag_removed_user(discord_channel, excess_user.display_name)
+                # Only send "player left channel" messages for users who had send messages permissions - ie players, not waitlisters
+                if excess_user.send_messages:
+                    await async_game_channel_tag_removed_user(discord_channel, excess_user.display_name)
             else:
                 log.warning(f"[!] Failed to remove {excess_user.display_name} from channel {discord_channel.name}")
 
