@@ -152,7 +152,7 @@ async def async_channel_add_discord_user(
         await channel.set_permissions(user, overwrite=overwrite)
         return True
     except Exception as e:
-        log.error(f"[!] Exception occured adding discord user {user.display_name} to channel")
+        log.error(f"[!] Exception occured adding discord user {user.display_name} to channel: {e}")
     return False
 
 
