@@ -4,9 +4,7 @@ from django.utils import timezone
 
 from core.utils.players import get_bonus_credits, get_user_pending_games_count
 from core.utils.ranks import get_highest_rank, has_res_dm_ranks, has_patreon_ranks
-from core.models.auth import CustomUser
-from core.models.players import Player
-from core.models.game import Game
+from core.models import CustomUser, DM, Player, Game
 
 
 def get_user_max_credit(user: CustomUser) -> int:
@@ -106,3 +104,12 @@ def user_signup_permissions_valid(user: CustomUser, game: Game) -> bool:
     if has_res_dm_ranks(user.ranks.all()):
         return True
     return False
+
+
+###########################################################################
+def user_on_dm_banlist(user: CustomUser, dm: DM) -> bool:
+    try:
+        if dm.banlist.through.objects.get(discord_name=user.discord_name):
+            return True
+    except Exception:
+        return False

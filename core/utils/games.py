@@ -9,7 +9,7 @@ from core.models import Game, Player, CustomUser
 from discord_bot.logs import logger as log
 from core.utils.players import get_player_max_games, get_player_game_count
 from core.utils.players import get_user_highest_rank
-from core.utils.user import get_user_available_credit
+from core.utils.user import get_user_available_credit, user_on_dm_banlist
 from core.utils.sanctions import get_current_user_bans
 
 
@@ -261,6 +261,8 @@ def user_can_join_game(user: CustomUser, game: Game) -> bool:
 
     # If user is banned they can't join
     if get_current_user_bans(user.discord_id):
+        return False
+    if user_on_dm_banlist(user, game.dm):
         return False
     return True
 

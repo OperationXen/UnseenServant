@@ -11,7 +11,8 @@ from api.serialisers.games import GameCreationSerialiser, GameSerialiser, Player
 from core.models import DM, Game, Player
 from core.utils.sanctions import check_discord_user_good_standing
 from core.utils.players import populate_game_from_waitlist
-from core.utils.user import get_user_available_credit, user_in_game, user_signup_permissions_valid
+from core.utils.user import get_user_available_credit, user_in_game
+from core.utils.user import user_on_dm_banlist, user_signup_permissions_valid
 from core.utils.games import game_has_player_by_discord_id, player_dropout_permitted
 from core.utils.games_rework import add_user_to_game, remove_user_from_game
 
@@ -38,6 +39,8 @@ class GamesViewSet(ViewSet):
 
         if not user_signup_permissions_valid(request.user, game):
             return Response({"message": "You lack the roles needed to sign up to this game"})
+        if user_on_dm_banlist(request.user, game.dm):
+            return Response({"message": "You may not sign up to games run by this DM"})
 
         available_credit = get_user_available_credit(request.user)
         if not available_credit > 0:
