@@ -38,3 +38,6 @@ class DMBanList(models.Model):
 
     dm = models.ForeignKey(DM, on_delete=models.CASCADE, related_name="banned_by")
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name="banlist")
+
+    def __str__(self):
+        return f"DM: {self.dm.user.discord_name} ban on {self.user.discord_name}"
