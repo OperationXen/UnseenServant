@@ -109,7 +109,7 @@ def user_signup_permissions_valid(user: CustomUser, game: Game) -> bool:
 ###########################################################################
 def user_on_dm_banlist(user: CustomUser, dm: DM) -> bool:
     try:
-        if dm.banlist.through.objects.get(discord_name=user.discord_name):
+        if user in dm.banlist.all():
             return True
-    except Exception:
+    except Exception as e:
         return False

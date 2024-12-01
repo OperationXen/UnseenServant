@@ -40,7 +40,7 @@ class GamesViewSet(ViewSet):
         if not user_signup_permissions_valid(request.user, game):
             return Response({"message": "You lack the roles needed to sign up to this game"})
         if user_on_dm_banlist(request.user, game.dm):
-            return Response({"message": "You may not sign up to games run by this DM"})
+            return Response({"message": "You may not sign up to games run by this DM"}, HTTP_401_UNAUTHORIZED)
 
         available_credit = get_user_available_credit(request.user)
         if not available_credit > 0:
