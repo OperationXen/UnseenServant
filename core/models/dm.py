@@ -1,3 +1,4 @@
+from django.utils import timezone
 from django.db import models
 from core.models.auth import CustomUser
 
@@ -16,6 +17,7 @@ class DM(models.Model):
     user = models.ForeignKey(
         CustomUser, null=True, related_name="dm", on_delete=models.CASCADE, help_text="Associated user account"
     )
+    banlist = models.ManyToManyField(CustomUser, related_name="banlisted_by", through="DMBanList")
 
     class Meta:
         verbose_name = "DM"
@@ -24,3 +26,15 @@ class DM(models.Model):
 
     def __str__(self):
         return f"{self.name}"
+
+
+class DMBanList(models.Model):
+    """A record that a specific user is banned from playing in games run by a DM"""
+
+    datetime_created = models.DateTimeField(default=timezone.now)
+    description = models.CharField(
+        max_length=512, blank=True, null=True, help_text="Optional notes field for grudge holding"
+    )
+
+    dm = models.ForeignKey(DM, on_delete=models.CASCADE, related_name="banned_by")
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name="banlist")
