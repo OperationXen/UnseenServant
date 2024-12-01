@@ -1,9 +1,6 @@
-from datetime import timedelta
-
 from django.test import TestCase
-from django.utils import timezone
 
-from core.models import DM, CustomUser
+from core.models import DM, CustomUser, DMBanList
 
 
 class ModelTestBanlist(TestCase):
@@ -19,3 +16,12 @@ class ModelTestBanlist(TestCase):
         self.assertEqual(test_dm.banlist.count(), 0)
         test_dm.banlist.add(test_user)
         self.assertEqual(test_dm.banlist.count(), 1)
+
+    def test_banlist_string(self) -> None:
+        test_dm = DM.objects.get(pk=1)
+        test_user = CustomUser.objects.get(pk=1)
+
+        ban = DMBanList.objects.create(dm=test_dm, user=test_user, description="test ban")
+        self.assertIsInstance(ban, DMBanList)
+        self.assertIn(test_dm.discord_name, str(ban))
+        self.assertIn(test_user.discord_name, str(ban))
