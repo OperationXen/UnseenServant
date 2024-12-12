@@ -3,7 +3,7 @@ from discord.utils import get
 
 from config.settings import CHANNEL_SEND_PINGS
 from discord_bot.logs import logger as log
-from discord_bot.utils.time import get_hammertime, discord_countdown
+from discord_bot.utils.time import get_hammertime, discord_countdown, discord_time
 from discord_bot.utils.views import add_persistent_view
 from discord_bot.utils.games import async_get_game_from_message, get_game_id_from_message
 from discord_bot.utils.channel import async_create_channel_hidden
@@ -14,8 +14,10 @@ from core.utils.channels import async_get_games_pending_channel_creation, async_
 from core.utils.channels import async_get_game_channels_pending_destruction, async_destroy_game_channel
 from core.utils.channels import async_get_games_pending_channel_reminder, async_set_game_channel_reminded
 from core.utils.channels import async_get_games_pending_channel_warning, async_set_game_channel_warned
+from core.utils.channels import async_set_game_channel_summarised, async_get_games_pending_summary_post
 from core.utils.channels import async_get_game_channel_for_game
 from core.utils.channel_members import async_set_default_channel_membership
+from core.utils.user import async_dm_is_res_dm
 
 
 class ChannelController:
@@ -50,6 +52,33 @@ class ChannelController:
             ping_text += "\n- Waitlist: "
             ping_text += ",".join(f"<@{p.discord_id}>" for p in waitlist)
         return ping_text
+
+    async def get_summary_text(self, game):
+        """Build a summary text post"""
+        players = await async_get_player_list(game)
+        dm = await async_get_dm(game)
+        is_res_dm = await async_dm_is_res_dm(dm)
+
+        player_list = ",".join(f"<@{p.discord_id}>" for p in players)
+
+        summary = "### Game details\n"
+        summary += f"**Date:** {discord_time(game.datetime)}\n"
+        summary += f"**Adventure:** {game.name}\n"
+        summary += f"**Module Code:** {game.module}\n"
+        summary += f"### Participants\n"
+        summary += f"- **DM:** <@{dm.discord_id}>\n"
+        if is_res_dm:
+            summary += "- **Bonus Credit:** No\n"
+        else:
+            summary += "- **Bonus Credit:** Yes\n"
+        summary += f"- **Players:** {player_list}\n"
+        summary += f"### Rewards\n"
+        summary += f"- **Item rewards**: \n"
+        summary += f"- **Consumables found**: \n"
+        summary += f"- **Gold per player**: \n"
+        summary += f"- **Story awards**: \n"
+        summary += f"-# You also receive 10 days of downtime and may take a level up"
+        return f"```{summary}```"
 
     async def get_flat_message_list(self, game, include_waitlist=False):
         """Get a list of involved users, but in such a way as to not ping them"""
@@ -166,6 +195,21 @@ class ChannelController:
         except Exception as e:
             log.error(f"[!] Exception in check_and_warn_channels: {e}")
 
+    async def check_and_summarise_channels(self):
+        """Print a summary of the game details suitable for session logs for the DM at game start"""
+        try:
+            games = await async_get_games_pending_summary_post()
+            for game in games:
+                game_channel = await async_get_game_channel_for_game(game)
+                log.info(f"[-] Sending session log summary to channel: {game_channel.name}")
+                channel = self.guild.get_channel(int(game_channel.discord_id))
+
+                summary_text = await self.get_summary_text(game)
+                await channel.send(summary_text)
+                await async_set_game_channel_summarised(game_channel)
+        except Exception as e:
+            log.error(f"[!] Exception in check_and_summarise_channels: {e}")
+
     async def recover_channel_state(self):
         """Pull game postings from posting history and reconstruct a game/message status from it"""
         log.info("Reconnecting to existing mustering views")
@@ -197,6 +241,7 @@ class ChannelController:
 
             await self.check_and_create_channels()
             await self.check_and_delete_channels()
+            await self.check_and_summarise_channels()
             await self.check_and_warn_channels()
             await self.check_and_remind_channels()
         except Exception as e:

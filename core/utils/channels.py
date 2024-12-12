@@ -20,6 +20,26 @@ def get_games_pending(hours=0, days=0, minutes=0):
     return queryset.order_by("datetime")
 
 
+def get_games_recent(hours=0, days=0, minutes=0):
+    """get games that have started within a specified timeframe"""
+    now = timezone.now()
+    start_time = now - timedelta(hours=hours, days=days, minutes=minutes)
+    queryset = Game.objects.filter(ready=True)
+    queryset = queryset.filter(datetime__lte=now).filter(datetime__gte=start_time)
+    return queryset.order_by("datetime")
+
+
+def get_games_in_progress(hours_start=2, hours_elapsed=1):
+    """get games that have started within a number of hours, but which have been going for an elapsed period"""
+    now = timezone.now()
+    # List of all the games that have started within the last X hours
+    recently_started = get_games_recent(hours=hours_start)
+    # filter those to those that started at least Y hours ago
+    started_before = now - timedelta(hours=hours_elapsed)
+    queryset = recently_started.filter(datetime__lte=started_before)
+    return queryset.order_by("datetime")
+
+
 @sync_to_async
 def async_destroy_game_channel(game_channel):
     """Destroy a given game channel object"""
@@ -49,6 +69,14 @@ def async_set_game_channel_warned(game_channel):
 def async_set_game_channel_reminded(game_channel):
     """Update a game channel object to show the 1 day reminder"""
     game_channel.status = GameChannel.ChannelStatuses.REMINDED
+    game_channel.save()
+    return True
+
+
+@sync_to_async
+def async_set_game_channel_summarised(game_channel):
+    """Update a game channel object to show the session log summary"""
+    game_channel.status = GameChannel.ChannelStatuses.SUMMARISED
     game_channel.save()
     return True
 
@@ -105,6 +133,22 @@ def async_get_games_pending_channel_creation():
     queryset = get_games_pending(days=CHANNEL_CREATION_DAYS)
     queryset = queryset.filter(text_channel=None)  # Only interested in games which don't yet have a channel
     return list(queryset)  # force evaluation before leaving this sync context
+
+
+# ################################################################## #
+def get_games_pending_summary_post() -> list[Game]:
+    """Retrieve all games that have started but which have not yet had a summary posted"""
+
+    queryset = get_games_in_progress(hours_start=4, hours_elapsed=1)  # get games which are at least an hour old
+    queryset = queryset.exclude(text_channel=None)  # not interested in anything without a channel
+    queryset = queryset.exclude(text_channel__status=GameChannel.ChannelStatuses.SUMMARISED)
+    return list(queryset)
+
+
+@sync_to_async
+def async_get_games_pending_summary_post() -> list[Game]:
+    game_channels = get_games_pending_summary_post()
+    return game_channels
 
 
 # ################################################################## #
