@@ -17,6 +17,7 @@ from core.utils.channels import async_get_games_pending_channel_warning, async_s
 from core.utils.channels import async_set_game_channel_summarised, async_get_games_pending_summary_post
 from core.utils.channels import async_get_game_channel_for_game
 from core.utils.channel_members import async_set_default_channel_membership
+from core.utils.user import async_dm_is_res_dm
 
 
 class ChannelController:
@@ -56,6 +57,7 @@ class ChannelController:
         """Build a summary text post"""
         players = await async_get_player_list(game)
         dm = await async_get_dm(game)
+        is_res_dm = await async_dm_is_res_dm(dm)
 
         player_list = ",".join(f"<@{p.discord_id}>" for p in players)
 
@@ -65,7 +67,10 @@ class ChannelController:
         summary += f"**Module Code:** {game.module}\n"
         summary += f"### Participants\n"
         summary += f"- **DM:** <@{dm.discord_id}>\n"
-        summary += f"- **Bonus Credit:** Yes\n"
+        if is_res_dm:
+            summary += "- **Bonus Credit:** No\n"
+        else:
+            summary += "- **Bonus Credit:** Yes\n"
         summary += f"- **Players:** {player_list}\n"
         summary += f"### Rewards\n"
         summary += f"- **Item rewards**: \n"

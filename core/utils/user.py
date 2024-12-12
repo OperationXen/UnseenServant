@@ -107,6 +107,27 @@ def user_signup_permissions_valid(user: CustomUser, game: Game) -> bool:
 
 
 ###########################################################################
+def user_is_res_dm(user: CustomUser) -> bool:
+    """Check if a user is a res DM"""
+    return has_res_dm_ranks(user.ranks.all())
+
+
+def dm_is_res_dm(dm: DM) -> bool:
+    """check if a DM is a resident or not"""
+    return user_is_res_dm(dm.user)
+
+
+@sync_to_async
+def async_dm_is_res_dm(dm: DM) -> bool:
+    return user_is_res_dm(dm.user)
+
+
+@sync_to_async
+def async_user_is_res_dm(user: CustomUser) -> bool:
+    return user_is_res_dm(user)
+
+
+###########################################################################
 def user_on_dm_banlist(user: CustomUser, dm: DM) -> bool:
     try:
         if user in dm.banlist.all():
