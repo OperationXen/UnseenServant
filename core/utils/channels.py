@@ -29,6 +29,17 @@ def get_games_recent(hours=0, days=0, minutes=0):
     return queryset.order_by("datetime")
 
 
+def get_games_in_progress(hours_start=2, hours_elapsed=1):
+    """get games that have started within a number of hours, but which have been going for an elapsed period"""
+    now = timezone.now()
+    # List of all the games that have started within the last X hours
+    recently_started = get_games_recent(hours=hours_start)
+    # filter those to those that started at least Y hours ago
+    started_before = now - timedelta(hours=hours_elapsed)
+    queryset = recently_started.filter(datetime__lte=started_before)
+    return queryset.order_by("datetime")
+
+
 @sync_to_async
 def async_destroy_game_channel(game_channel):
     """Destroy a given game channel object"""
@@ -127,8 +138,8 @@ def async_get_games_pending_channel_creation():
 # ################################################################## #
 def get_games_pending_summary_post() -> list[Game]:
     """Retrieve all games that have started but which have not yet had a summary posted"""
-    # get games that started in the last 15 minutes
-    queryset = get_games_recent(hours=1)
+
+    queryset = get_games_in_progress(hours_start=4, hours_elapsed=1)  # get games which are at least an hour old
     queryset = queryset.exclude(text_channel=None)  # not interested in anything without a channel
     queryset = queryset.exclude(text_channel__status=GameChannel.ChannelStatuses.SUMMARISED)
     return list(queryset)
