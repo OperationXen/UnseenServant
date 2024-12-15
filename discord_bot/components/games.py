@@ -303,7 +303,7 @@ class GameControlView(View):
         if not player.standby:
             message = f"You're playing in {self.game.name} `({games_remaining_text})`"
         else:
-            message = f"Added you to to the waitlist for {self.game.name} `({games_remaining_text})`"
+            message = f"Added you to the waitlist for {self.game.name} `({games_remaining_text})`"
         await async_do_waitlist_updates(self.game)
         pending = []
         pending.append(create_task(async_update_game_embeds(self.game)))
