@@ -51,7 +51,7 @@ class Player(models.Model):
     )
 
     def __str__(self):
-        return f"{self.game.datetime.date()} | {self.game.name} - {self.discord_name}"
+        return f"{self.game.datetime.date()} | {self.game.name} - {self.user.discord_name}"
 
     class Meta:
         indexes = [models.Index(fields=["discord_id", "game"])]
