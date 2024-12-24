@@ -7,6 +7,9 @@ from core.utils.user import user_is_player_in_game, user_is_waitlisted_in_game
 class PlayerSummarySerialiser(ModelSerializer):
     """Serialise a player (basic, no personal data)"""
 
+    discord_id = ReadOnlyField(source="user.discord_id")
+    discord_name = ReadOnlyField(source="user.discord_name")
+
     class Meta:
         model = Player
         fields = ["discord_id", "discord_name", "standby", "waitlist"]
@@ -16,6 +19,8 @@ class PlayerSerialiser(ModelSerializer):
     """Serialise a player (include related fields)"""
 
     game_name = ReadOnlyField(source="game.name")
+    discord_id = ReadOnlyField(source="user.discord_id")
+    discord_name = ReadOnlyField(source="user.discord_name")
 
     class Meta:
         model = Player

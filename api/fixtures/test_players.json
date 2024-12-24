@@ -3,11 +3,12 @@
     "model": "core.player",
     "pk": 1,
     "fields": {
+      "user": 7,
       "game": 1,
       "standby": false,
       "waitlist": null,
-      "discord_id": "12345678900987654321",
-      "discord_name": "TheGreatAndPowerfulOz",
+      "discord_id": "",
+      "discord_name": "",
       "character": null
     }
   },
@@ -15,11 +16,12 @@
     "model": "core.player",
     "pk": 2,
     "fields": {
+      "user": 8,
       "game": 1,
       "standby": true,
       "waitlist": 1,
-      "discord_id": "123123123123123123",
-      "discord_name": "Waitlister",
+      "discord_id": "",
+      "discord_name": "",
       "character": null
     }
   }

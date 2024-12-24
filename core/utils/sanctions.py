@@ -111,7 +111,7 @@ def add_new_ban(user, variant, reason, admin, ban_length):
         end = now + timedelta(days=ban_length)
     # Remove player from games on hard ban
     if variant == "HD" or variant == "PM":
-        queryset = Player.objects.filter(discord_id=str(user.id)).filter(game__datetime__gte=now)
+        queryset = Player.objects.filter(user__discord_id=str(user.id)).filter(game__datetime__gte=now)
         queryset.delete()
 
     Ban.objects.create(

@@ -156,7 +156,7 @@ def async_get_upcoming_games(days: int = 30, released: bool = False) -> list[Gam
 def get_upcoming_games_for_discord_id(discord_id: str, waitlisted: bool = False) -> QuerySet:
     """Get all of the upcoming games for a specified discord ID"""
     now = timezone.now()
-    players = Player.objects.filter(discord_id=discord_id)
+    players = Player.objects.filter(user__discord_id=discord_id)
     players = players.filter(standby=waitlisted)
 
     queryset = Game.objects.filter(players__in=players)
@@ -229,7 +229,7 @@ def async_get_game_by_id(game_id):
 
 def game_has_player_by_discord_id(game: Game, discord_id: str) -> bool:
     """Check to see if a specific game has a player by their discord ID"""
-    existing = game.players.filter(discord_id=discord_id).first()
+    existing = game.players.filter(user__discord_id=discord_id).first()
     if existing:
         return True
     return False
@@ -241,7 +241,7 @@ def async_db_force_add_player_to_game(game: Game, user: CustomUser):
     """Force a player into a specified game, ignoring all conditions"""
     discord_id = str(user.id)
     try:
-        player = game.players.get(discord_id=discord_id)
+        player = game.players.get(user__discord_id=discord_id)
         player.standby = False
         player.save()
     except Player.DoesNotExist:

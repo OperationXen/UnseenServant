@@ -33,7 +33,7 @@ def async_issue_player_bonus_credit(user, number, issuer, reason="Not supplied",
 def get_player_game_count(discord_id: str):
     """get the total number of games a player is in"""
     now = timezone.now()
-    queryset = Player.objects.filter(discord_id=discord_id)
+    queryset = Player.objects.filter(user__discord_id=discord_id)
     queryset = queryset.filter(game__datetime__gte=now)
     queryset = queryset.filter(game__ready=True)
     return queryset.count()
@@ -62,7 +62,7 @@ def get_player_max_games(discord_user) -> int:
 def get_user_pending_games_count(discord_id: str) -> int:
     now = timezone.now()
 
-    queryset = Player.objects.filter(discord_id=discord_id)
+    queryset = Player.objects.filter(user__discord_id=discord_id)
     queryset = queryset.filter(game__datetime__gte=now)
     pending_games = queryset.count()
     return pending_games
