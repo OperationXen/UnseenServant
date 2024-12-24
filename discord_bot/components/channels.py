@@ -81,7 +81,7 @@ class MusteringBanner(BaseGameEmbed):
         self.add_field(name="When", value=self.get_game_time(), inline=True)
         self.add_field(
             name="Details",
-            value=f"Character levels {self.game.level_min} - {self.game.level_max}\n DMed by <@{self.dm.discord_id}>",
+            value=f"Character levels {self.game.level_min} - {self.game.level_max}\n DMed by <@{self.dm.user.discord_id}>",
             inline=True,
         )
         self.add_field(name="Content Warnings", value=f"{self.game.warnings[:1024] or 'None'}", inline=False)

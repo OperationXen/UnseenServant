@@ -1,6 +1,6 @@
 from datetime import timedelta, datetime
 from django.utils import timezone
-from django.db.models import Q, QuerySet
+from django.db.models import Q, QuerySet, prefetch_related_objects
 from asgiref.sync import sync_to_async
 
 from discord import User as DiscordUser
@@ -50,6 +50,7 @@ def get_dm(game: Game):
     """Get the specified games DM (syncronous)"""
     try:
         if game.dm:
+            prefetch_related_objects([game.dm], "user")
             return game.dm
     except Exception as e:
         pass  # Silence
