@@ -44,13 +44,13 @@ class ChannelController:
         """Get text that will ping each of the users mentioned"""
         players = await async_get_player_list(game)
         dm = await async_get_dm(game)
-        ping_text = f"- DM: <@{dm.discord_id}>"
+        ping_text = f"- DM: <@{dm.user.discord_id}>"
         ping_text += "\n- Players: "
-        ping_text += ",".join(f"<@{p.discord_id}>" for p in players)
+        ping_text += ",".join(f"<@{p.user.discord_id}>" for p in players)
         if include_waitlist:
             waitlist = await async_get_wait_list(game)
             ping_text += "\n- Waitlist: "
-            ping_text += ",".join(f"<@{p.discord_id}>" for p in waitlist)
+            ping_text += ",".join(f"<@{p.user.discord_id}>" for p in waitlist)
         return ping_text
 
     async def get_summary_text(self, game):
@@ -59,14 +59,14 @@ class ChannelController:
         dm = await async_get_dm(game)
         is_res_dm = await async_dm_is_res_dm(dm)
 
-        player_list = ",".join(f"<@{p.discord_id}>" for p in players)
+        player_list = ",".join(f"<@{p.user.discord_id}>" for p in players)
 
         summary = "### Game details\n"
         summary += f"**Date:** {discord_time(game.datetime)}\n"
         summary += f"**Adventure:** {game.name}\n"
         summary += f"**Module Code:** {game.module}\n"
         summary += f"### Participants\n"
-        summary += f"- **DM:** <@{dm.discord_id}>\n"
+        summary += f"- **DM:** <@{dm.user.discord_id}>\n"
         if is_res_dm:
             summary += "- **Bonus Credit:** No\n"
         else:
@@ -84,12 +84,12 @@ class ChannelController:
         """Get a list of involved users, but in such a way as to not ping them"""
         players = await async_get_player_list(game)
         dm = await async_get_dm(game)
-        text = f"- DM: {dm.discord_name}"
+        text = f"- DM: {dm.user.discord_name}"
         text += "\n- Players: "
-        text += ",".join(f"{p.discord_name}" for p in players if not p.standby)
+        text += ",".join(f"{p.user.discord_name}" for p in players if not p.standby)
         if include_waitlist:
             text += "\n- Waitlist: "
-            text += ",".join(f"{p.discord_name}" for p in players if p.standby)
+            text += ",".join(f"{p.user.discord_name}" for p in players if p.standby)
         return text
 
     async def send_banner_message(self, channel, game):

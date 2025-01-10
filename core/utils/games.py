@@ -67,6 +67,7 @@ def async_get_dm(game):
 def get_player_list(game: Game) -> QuerySet:
     """Get a list of players for a specified game"""
     queryset = game.players.filter(standby=False).order_by("pk")
+    prefetch_related_objects(queryset, "user")
     return queryset
 
 
@@ -81,6 +82,7 @@ def async_get_player_list(game) -> list[Player]:
 def get_wait_list(game: Game) -> QuerySet:
     """Get the waitlist for the specified game"""
     queryset = game.players.filter(standby=True).order_by("waitlist")
+    prefetch_related_objects(queryset, "user")
     return queryset
 
 
