@@ -67,7 +67,7 @@ def get_character_string(character: dict) -> str:
 def get_msc_characters(discord_id: str) -> list:
     """Retrieve all characters for a given discord user"""
     data = {"apikey": MOONSEACODEX_APIKEY, "discord_id": discord_id}
-    response = requests.post(f"{MOONSEACODEX_URL}/api/discord_lookup/character/", data=data)
+    response = requests.post(f"{MOONSEACODEX_URL}/api/data/discord_lookup/character/", data=data)
     if response.status_code == 200:
         return json.loads(response.text)
     return None
@@ -75,7 +75,7 @@ def get_msc_characters(discord_id: str) -> list:
 
 def get_msc_trade_search(search_term):
     """Get MSC trading post search results for a given query"""
-    response = requests.get(f"{MOONSEACODEX_URL}/api/magicitem/advert", params={"search": search_term})
+    response = requests.get(f"{MOONSEACODEX_URL}/api/data/magicitem/advert", params={"search": search_term})
     if response.status_code == 200:
         return json.loads(response.text)
     return None

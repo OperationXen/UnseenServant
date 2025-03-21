@@ -47,7 +47,7 @@ class MSCCharacterEmbed(Embed):
         if sheet:
             links += f" | [Character sheet]({sheet})"
         if token:
-            links += f" | [Token download]({MOONSEACODEX_URL}/{'/'.join(token.split('/')[2:])})"
+            links += f" | [Token download]({MOONSEACODEX_URL}/media/{'/'.join(token.split('/')[2:])})"
         return links
 
     def __init__(self, character):
@@ -72,9 +72,9 @@ class MSCCharacterEmbed(Embed):
             self.add_field(name="Useful Links", value=self.get_links(character))
 
             if character.get("artwork"):
-                self.set_thumbnail(url=f"{MOONSEACODEX_URL}/{'/'.join(character.get('artwork').split('/')[2:])}")
+                self.set_thumbnail(url=f"{MOONSEACODEX_URL}/media/{'/'.join(character.get('artwork').split('/')[2:])}")
             elif character.get("token"):
-                self.set_thumbnail(url=f"{MOONSEACODEX_URL}/{'/'.join(character.get('token').split('/')[2:])}")
+                self.set_thumbnail(url=f"{MOONSEACODEX_URL}/media/{'/'.join(character.get('token').split('/')[2:])}")
         except Exception as e:
             log.error(f"Exception {str(e)} occured creating MSC embed for {character.get('name')}")
 
