@@ -67,7 +67,7 @@ def get_character_string(character: dict) -> str:
 def get_msc_characters(discord_id: str) -> list:
     """Retrieve all characters for a given discord user"""
     data = {"apikey": MOONSEACODEX_APIKEY, "discord_id": discord_id}
-    response = requests.post(f"{MOONSEACODEX_URL}/api/data/discord_lookup/character/", data=data)
+    response = requests.post(f"{MOONSEACODEX_URL}/api/discord/characters/list", data=data)
     if response.status_code == 200:
         return json.loads(response.text)
     return None
