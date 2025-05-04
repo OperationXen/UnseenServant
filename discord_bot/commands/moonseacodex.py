@@ -1,6 +1,7 @@
 from discord.commands import Option
 
-from discord_bot.components.moonseacodex import MSCCharacterList, MSCTradeSearchResultsEmbed
+from discord_bot.components.moonseacodex.character import MSCCharacterList
+from discord_bot.components.moonseacodex.trade import MSCTradeSearchResultsEmbed
 
 from config.settings import DISCORD_GUILDS
 from discord_bot.bot import bot
