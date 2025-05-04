@@ -2,6 +2,9 @@ import json
 import requests
 
 from config.settings import MOONSEACODEX_APIKEY, MOONSEACODEX_URL
+from discord_bot.moonseacodex.game import Game as MSCGame
+
+from discord_bot.utils.users import async_get_username_for_discord_id
 
 
 def _get_rarity_string(x: str) -> str:
@@ -79,3 +82,26 @@ def get_msc_trade_search(search_term):
     if response.status_code == 200:
         return json.loads(response.text)
     return None
+
+
+async def async_create_msc_game(game: MSCGame) -> bool:
+    dm_username = await async_get_username_for_discord_id(game.dm)
+
+    data = {
+        "apikey": MOONSEACODEX_APIKEY,
+        "owner_discord_id": dm_username,
+        "name": game.name,
+        "module": game.module,
+        "datetime": int(game.date.timestamp()),
+        "gold": game.gold,
+        "downtime": game.downtime,
+        "location": "Triden games",
+    }
+    response = requests.post(f"{MOONSEACODEX_URL}/api/discord/games/create", json=data)
+    if response.status_code == 200:
+        game_uuid = json.loads(response.text).get("uuid")
+        return game_uuid
+    else:
+        print(f"Error creating game: {response.text}")
+        print(response.text)
+        return False

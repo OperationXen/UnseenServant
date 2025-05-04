@@ -1,7 +1,7 @@
 from discord import ButtonStyle
 from discord.ui import View, Button
 
-from discord_bot.components.moonseacodex import MSCCharacterList
+from discord_bot.components.moonseacodex.character import MSCCharacterList
 from discord_bot.utils.moonseacodex import get_msc_characters
 from core.utils.games import calc_game_tier
 from core.utils.user import async_user_is_player_in_game, async_get_user_by_discord_id

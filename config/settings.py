@@ -88,6 +88,7 @@ DISCORD_GUILDS = [getenv("DISCORD_GUILDS")]
 DISCORD_ADMIN_ROLES = ["Admin", "admin", "Master Code Wizard", "Moderator", "council"]
 DISCORD_SIGNUP_ROLES = ["Signup Master"]
 DISCORD_DM_ROLES = ["Dungeon Master"]
+DISCORD_GAME_LOG_CHANNEL = "session-logs"
 
 # Event role management configuration
 EVENT_PLAYER_ROLE_NAME = "Event Participant"
