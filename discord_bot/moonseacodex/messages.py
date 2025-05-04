@@ -13,9 +13,9 @@ async def handle_game_log_posted(message):
         return False
 
     game = get_game_from_message(message)
-    log.debug(f"[+] Game log parsed for {game.name}")
+    log.debug(f"[-] Game log post parsed: {game.name}")
     if game:
-        log.debug(f"[+] Creating game in Moonsea Codex")
+        log.debug(f"[-] Creating game in Moonsea Codex")
         game_uuid = await async_create_msc_game(game)
         if game_uuid:
             log.info(f"[+] Game successfully added to Moonsea Codex: {game.name} ({game_uuid})")
@@ -26,6 +26,8 @@ async def handle_game_log_posted(message):
                 )
                 return True
             except Exception as e:
-                log.error(f"[!] Failed to send message: {e}")
+                log.error(f"[!] Failed to send reply to original log post: {e}")
                 return False
+        else:
+            log.error(f"[!] Failed to create game in Moonsea Codex")
     return False
