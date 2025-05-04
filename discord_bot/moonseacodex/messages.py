@@ -2,6 +2,7 @@ from discord_bot.utils.session_log import validate_game_log
 
 from discord_bot.moonseacodex.session_log_parser import get_game_from_message
 from discord_bot.utils.moonseacodex import async_create_msc_game
+from discord_bot.components.moonseacodex.games import MSCGameJoinEmbed
 
 from discord_bot.logs import logger as log
 
@@ -19,11 +20,9 @@ async def handle_game_log_posted(message):
         game_uuid = await async_create_msc_game(game)
         if game_uuid:
             log.info(f"[+] Game successfully added to Moonsea Codex: {game.name} ({game_uuid})")
+            embed = MSCGameJoinEmbed(game, game_uuid)
             try:
-                await message.reply(
-                    f"This game has been added to the Moonsea Codex, [click here to add it to your character log](https://moonseacodex.com/game/join/{game_uuid})",
-                    suppress=True,
-                )
+                await message.reply(embed=embed, mention_author=False)
                 return True
             except Exception as e:
                 log.error(f"[!] Failed to send reply to original log post: {e}")
