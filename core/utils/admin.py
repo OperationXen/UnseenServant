@@ -19,8 +19,6 @@ def async_create_new_dm_from_discord_user(discord_user, name=None, description=N
 
     new_dm_details = {
         "name": new_dm_name,
-        "discord_id": str(discord_user.id),
-        "discord_name": f"{discord_user.name}",
         "description": description,
     }
     new_dm = DM.objects.create(**new_dm_details)

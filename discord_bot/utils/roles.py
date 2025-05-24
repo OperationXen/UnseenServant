@@ -59,7 +59,7 @@ def do_dm_permissions_check(user: User, game: Game) -> bool:
         log.info(f"[-] {user.name} is an admin, skipping DM game ownership check...")
     else:
         dm = get_dm(game)
-        if dm.discord_id != str(user.id):
+        if dm.user.discord_id != str(user.id):
             log.error(f"{user.name} does not appear to be the DM for {game.name}, command failed")
             return False
     return True

@@ -177,7 +177,7 @@ def async_get_upcoming_games_for_discord_id(discord_id: str, waitlisted=False) -
 def get_upcoming_games_for_dm_discord_id(discord_id: str) -> list[Game]:
     now = timezone.now()
     queryset = Game.objects.filter(ready=True).filter(datetime__gte=now)
-    queryset = queryset.filter(dm__discord_id=discord_id)
+    queryset = queryset.filter(dm__user__discord_id=discord_id)
     queryset = queryset.order_by("datetime")
     return queryset
 

@@ -97,7 +97,9 @@ class TestDMProfileViews(TestCase):
         self.assertIn("name", response.data)
         self.assertEqual("newDM", response.data.get("name"))
         self.assertIn("discord_id", response.data)
-        self.assertEqual("11111111", response.data.get("discord_id"))
+        self.assertEqual(response.data.get("discord_id"), "11111111")
+        self.assertIn("discord_name", response.data)
+        self.assertEqual(response.data.get("discord_name"), "testuser1")
         dm_count = DM.objects.all().count()
         self.assertEqual(initial_dm_count + 1, dm_count)
 
