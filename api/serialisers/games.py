@@ -2,6 +2,7 @@ from rest_framework.serializers import ModelSerializer, ReadOnlyField, Serialize
 
 from core.models import Game, Player
 from core.utils.user import user_is_player_in_game, user_is_waitlisted_in_game
+from core.utils.games import get_wait_list, get_player_list
 
 
 class PlayerSummarySerialiser(ModelSerializer):
@@ -51,12 +52,12 @@ class GameSerialiser(ModelSerializer):
 
     def get_waitlist(self, game):
         """Get a list of the players who are waitlisted"""
-        waitlist = game.players.filter(standby=True)
+        waitlist = get_wait_list(game)
         return PlayerSummarySerialiser(waitlist, many=True).data
 
     def get_players(self, game):
         """Get a list of the players who are confirmed as playing"""
-        party = game.players.filter(standby=False)
+        party = get_player_list(game)
         return PlayerSummarySerialiser(party, many=True).data
 
     id = ReadOnlyField(source="pk")
