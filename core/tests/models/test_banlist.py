@@ -23,5 +23,5 @@ class ModelTestBanlist(TestCase):
 
         ban = DMBanList.objects.create(dm=test_dm, user=test_user, description="test ban")
         self.assertIsInstance(ban, DMBanList)
-        self.assertIn(test_dm.discord_name, str(ban))
+        self.assertIn(test_dm.user.discord_name, str(ban))
         self.assertIn(test_user.discord_name, str(ban))
