@@ -81,7 +81,7 @@ class Game(models.Model):
     ready = models.BooleanField(default=True, help_text="Game is ready for release")
 
     def __str__(self):
-        return f"{self.datetime.date()} | {self.dm.discord_name} - {self.name}"
+        return f"{self.datetime.date()} | {self.dm.user.discord_name} - {self.name}"
 
     def clean(self):
         """Validate data before saving"""
