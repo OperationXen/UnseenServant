@@ -5,8 +5,6 @@
     "fields": {
       "user": 3,
       "name": "Test DM",
-      "discord_id": 123123123123123,
-      "discord_name": "OpXen",
       "description": "An awesome DM"
     }
   }
