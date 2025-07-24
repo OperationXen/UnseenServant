@@ -126,8 +126,6 @@ class GamesPoster:
                     break  # because we've modified current_games we can't continue to iterate on it
             except Exception as e:
                 log.error(f"[!] Exception caught in remove_stale_games: {e.__class__}, key = {key}")
-                log.info(f"[-] Removing game ID {key} from list and continuing...")
-                self.current_games.pop(key)
 
     @tasks.loop(seconds=30)
     async def check_and_post_games(self):

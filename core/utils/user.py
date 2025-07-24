@@ -105,6 +105,21 @@ def user_signup_permissions_valid(user: CustomUser, game: Game) -> bool:
         return True
     return False
 
+# ########################################################################## #
+def get_dm_user(dm: DM):
+    """ fetch the user object for a DM"""
+    try:
+        if dm.user:
+            return dm.user
+    except Exception as e:
+        pass  # Silence
+    return None
+
+@sync_to_async
+def async_get_dm_user(game):
+    """Async wrapper function to get a user object for a DM"""
+    return get_dm_user(game)
+
 
 ###########################################################################
 def user_is_res_dm(user: CustomUser) -> bool:

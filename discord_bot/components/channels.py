@@ -4,10 +4,11 @@ from discord.ui import View, Button
 from discord_bot.components.moonseacodex.character import MSCCharacterList
 from discord_bot.utils.moonseacodex import get_msc_characters
 from core.utils.games import calc_game_tier
-from core.utils.user import async_user_is_player_in_game, async_get_user_by_discord_id
+from core.utils.user import async_user_is_player_in_game, async_get_user_by_discord_id, async_get_dm_user
 from discord_bot.components.games import BaseGameEmbed
 from discord_bot.utils.embed import async_update_game_embeds
 from discord_bot.utils.players import async_do_waitlist_updates
+
 
 from discord_bot.components.common import handle_player_dropout_event
 from discord_bot.logs import logger as log
@@ -72,6 +73,7 @@ class MusteringBanner(BaseGameEmbed):
     async def build(self):
         """Get data from database and populate the embed"""
         await self.get_data()
+        self.dm_user = await async_get_dm_user(self.dm)
 
         self.add_field(
             name=f"{self.game.module}",
@@ -81,7 +83,7 @@ class MusteringBanner(BaseGameEmbed):
         self.add_field(name="When", value=self.get_game_time(), inline=True)
         self.add_field(
             name="Details",
-            value=f"Character levels {self.game.level_min} - {self.game.level_max}\n DMed by <@{self.dm.discord_id}>",
+            value=f"Character levels {self.game.level_min} - {self.game.level_max}\n DMed by <@{self.dm_user.discord_id}>",
             inline=True,
         )
         self.add_field(name="Content Warnings", value=f"{self.game.warnings[:1024] or 'None'}", inline=False)
