@@ -126,6 +126,7 @@ class GamesPoster:
                     break  # because we've modified current_games we can't continue to iterate on it
             except Exception as e:
                 log.error(f"[!] Exception caught in remove_stale_games: {e.__class__}, key = {key}")
+                log.debug(f"{e}")
 
     @tasks.loop(seconds=30)
     async def check_and_post_games(self):
