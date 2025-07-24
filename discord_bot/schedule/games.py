@@ -118,12 +118,12 @@ class GamesPoster:
         """Go through existing games and check for anything stale"""
         for key in self.current_games:
             try:
-                log.debug(f"Getting announcement")
                 announcement = self.current_games[key]
-                log.debug(f"Checking game expiration")
                 if await async_check_game_expired(announcement["game"]):
-                    log.debug(f"Game expired")
-                    log.info(f"Deleteing expired game - {announcement['game']}")
+                    try:
+                        log.info(f"Deleteing expired game - {announcement['game']}")
+                    except Exception as e:
+                        log.error(f"[!] Exception caught while logging game deletion: {e}")
                     log.debug(f"Deleting message")
                     await announcement["message"].delete()
                     log.debug(f"Removing from current games")
