@@ -13,6 +13,7 @@ class PlayerAdmin(admin.ModelAdmin):
                 "fields": [
                     "game",
                     "user",
+                    ("discord_id", "discord_name")
                 ]
             },
         ),
