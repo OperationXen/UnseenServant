@@ -17,7 +17,7 @@ from core.utils.channels import async_get_games_pending_channel_warning, async_s
 from core.utils.channels import async_set_game_channel_summarised, async_get_games_pending_summary_post
 from core.utils.channels import async_get_game_channel_for_game
 from core.utils.channel_members import async_set_default_channel_membership
-from core.utils.user import async_dm_is_res_dm
+from core.utils.user import async_dm_is_res_dm, async_get_dm_user
 
 
 class ChannelController:
@@ -44,7 +44,9 @@ class ChannelController:
         """Get text that will ping each of the users mentioned"""
         players = await async_get_player_list(game)
         dm = await async_get_dm(game)
-        ping_text = f"- DM: <@{dm.discord_id}>"
+        dm_user = await async_get_dm_user(dm)
+
+        ping_text = f"- DM: <@{dm_user.discord_id}>"
         ping_text += "\n- Players: "
         ping_text += ",".join(f"<@{p.discord_id}>" for p in players)
         if include_waitlist:
@@ -57,6 +59,7 @@ class ChannelController:
         """Build a summary text post"""
         players = await async_get_player_list(game)
         dm = await async_get_dm(game)
+        dm_user = await async_get_dm_user(dm)
         is_res_dm = await async_dm_is_res_dm(dm)
 
         player_list = ",".join(f"<@{p.discord_id}>" for p in players)
@@ -66,7 +69,7 @@ class ChannelController:
         summary += f"**Adventure:** {game.name}\n"
         summary += f"**Module Code:** {game.module}\n"
         summary += f"### Participants\n"
-        summary += f"- **DM:** <@{dm.discord_id}>\n"
+        summary += f"- **DM:** <@{dm_user.discord_id}>\n"
         if is_res_dm:
             summary += "- **Bonus Credit:** No\n"
         else:
@@ -84,7 +87,9 @@ class ChannelController:
         """Get a list of involved users, but in such a way as to not ping them"""
         players = await async_get_player_list(game)
         dm = await async_get_dm(game)
-        text = f"- DM: {dm.discord_name}"
+        dm_user = await async_get_dm_user(dm)
+
+        text = f"- DM: {dm_user.discord_name}"
         text += "\n- Players: "
         text += ",".join(f"{p.discord_name}" for p in players if not p.standby)
         if include_waitlist:
