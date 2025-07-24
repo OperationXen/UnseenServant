@@ -124,7 +124,9 @@ class GamesPoster:
                 if await async_check_game_expired(announcement["game"]):
                     log.debug(f"Game expired")
                     log.info(f"Deleteing expired game - {announcement['game']}")
+                    log.debug(f"Deleting message")
                     await announcement["message"].delete()
+                    log.debug(f"Removing from current games")
                     self.current_games.pop(key)
                     break  # because we've modified current_games we can't continue to iterate on it
                 log.debug(f"Done")
