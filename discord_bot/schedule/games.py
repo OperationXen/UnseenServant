@@ -121,15 +121,12 @@ class GamesPoster:
                 announcement = self.current_games[key]
                 if await async_check_game_expired(announcement["game"]):
                     try:
-                        log.info(f"Deleteing expired game - {announcement['game']}")
+                        log.info(f"[-] Deleteing expired game - {announcement['game']}")
                     except Exception as e:
                         log.error(f"[!] Exception caught while logging game deletion: {e}")
-                    log.debug(f"Deleting message")
                     await announcement["message"].delete()
-                    log.debug(f"Removing from current games")
                     self.current_games.pop(key)
                     break  # because we've modified current_games we can't continue to iterate on it
-                log.debug(f"Done")
             except Exception as e:
                 log.error(f"[!] Exception caught in remove_stale_games: {e.__class__}, key = {key}")
 
