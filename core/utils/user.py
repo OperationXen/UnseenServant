@@ -116,9 +116,9 @@ def get_dm_user(dm: DM):
     return None
 
 @sync_to_async
-def async_get_dm_user(game):
+def async_get_dm_user(dm: DM):
     """Async wrapper function to get a user object for a DM"""
-    return get_dm_user(game)
+    return get_dm_user(dm)
 
 
 ###########################################################################

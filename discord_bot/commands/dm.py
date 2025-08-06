@@ -5,16 +5,15 @@ from discord import Member
 from config.settings import DISCORD_GUILDS, DISCORD_DM_ROLES, DISCORD_ADMIN_ROLES
 from discord_bot.bot import bot
 from discord_bot.logs import logger as log
+from core.utils.user import async_get_dm_user
 from core.utils.games import async_get_wait_list
 from core.utils.channels import async_get_game_channel_for_game
 from core.errors import ChannelError
 from discord_bot.utils.time import discord_countdown
 from discord_bot.utils.messaging import async_send_dm
 from discord_bot.utils.embed import async_update_game_embeds
-from discord_bot.utils.channel import (
-    async_remove_discord_member_from_game_channel,
-    async_add_discord_member_to_game_channel,
-)
+from discord_bot.utils.channel import async_remove_discord_member_from_game_channel
+
 from discord_bot.utils.channel import (
     async_get_game_for_channel,
     async_notify_game_channel,
@@ -53,7 +52,8 @@ async def remove_player(ctx, user: Option(Member, "Player to remove from the gam
         await async_update_game_embeds(game)
         log.info(f"[.] Removed player {user.name} from game {game.name}")
 
-        message = f"You were removed from {game.name} on {game.datetime}. Please contact {game.dm.discord_name} if you require more information."
+        dm_user = await async_get_dm_user(game.dm)
+        message = f"You were removed from {game.name} on {game.datetime}. Please contact {dm_user.discord_name} if you require more information."
         if await async_send_dm(user, message):
             log.info(f"[.] {user.name} notified of removal")
         else:
