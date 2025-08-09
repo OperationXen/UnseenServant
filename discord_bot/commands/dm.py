@@ -5,9 +5,9 @@ from discord import Member
 from config.settings import DISCORD_GUILDS, DISCORD_DM_ROLES, DISCORD_ADMIN_ROLES
 from discord_bot.bot import bot
 from discord_bot.logs import logger as log
-from core.utils.user import async_get_dm_user
 from core.utils.games import async_get_wait_list
 from core.utils.channels import async_get_game_channel_for_game
+from core.utils.players import async_get_user_from_player
 from core.errors import ChannelError
 from discord_bot.utils.time import discord_countdown
 from discord_bot.utils.messaging import async_send_dm
@@ -52,8 +52,7 @@ async def remove_player(ctx, user: Option(Member, "Player to remove from the gam
         await async_update_game_embeds(game)
         log.info(f"[.] Removed player {user.name} from game {game.name}")
 
-        dm_user = await async_get_dm_user(game.dm)
-        message = f"You were removed from {game.name} on {game.datetime}. Please contact {dm_user.discord_name} if you require more information."
+        message = f"You were removed from {game.name} on {game.datetime}. Please contact {ctx.author.name} if you require more information."
         if await async_send_dm(user, message):
             log.info(f"[.] {user.name} notified of removal")
         else:
@@ -143,8 +142,12 @@ async def tag_players(ctx):
     party = await async_get_party_for_game(game)
     message = "Attention players: "
     for party_member in party:
-        discord_user = await bot.fetch_user(party_member.discord_id)
-        message += f"{discord_user.mention} "
+        user = await async_get_user_from_player(party_member)
+        try:
+            discord_user = await bot.fetch_user(user.discord_id)
+            message += f"{discord_user.mention} "
+        except Exception as e:
+            pass
     await async_notify_game_channel(game, message)
 
     log.info(f"Tagged {len(party)} players in channel for game {game.name}")
