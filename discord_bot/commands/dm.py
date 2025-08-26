@@ -23,7 +23,7 @@ from discord_bot.utils.players import (
     async_get_party_for_game,
 )
 from discord_bot.utils.games import async_add_discord_member_to_game, async_remove_discord_member_from_game
-from discord_bot.utils.roles import do_dm_permissions_check
+from discord_bot.utils.roles import async_do_dm_permissions_check
 
 
 @bot.slash_command(guild_ids=DISCORD_GUILDS, description="Force remove a player from a game")
@@ -37,7 +37,7 @@ async def remove_player(ctx, user: Option(Member, "Player to remove from the gam
         log.error(f"[!] Channel {ctx.channel.name} has no associated game, command failed")
         return await ctx.followup.send("This channel is not linked to a game", ephemeral=True, delete_after=10)
 
-    if not do_dm_permissions_check(ctx.author, game):
+    if not await async_do_dm_permissions_check(ctx.author, game):
         return await ctx.followup.send("You are not the DM for this game", ephemeral=True, delete_after=10)
 
     removed = await async_remove_discord_member_from_game(user, game)
@@ -74,7 +74,7 @@ async def add_player(ctx, user: Option(Member, "Player to add to the game", requ
         log.error(f"[!] Channel {ctx.channel.name} has no associated game, command failed")
         return await ctx.followup.send("This channel is not linked to a game", ephemeral=True, delete_after=10)
 
-    if not do_dm_permissions_check(ctx.author, game):
+    if not await async_do_dm_permissions_check(ctx.author, game):
         return await ctx.followup.send("You are not the DM for this game", ephemeral=True, delete_after=10)
 
     added = await async_add_discord_member_to_game(user, game, force=True)
@@ -104,7 +104,7 @@ async def add_waitlist(ctx, user: Option(Member, "Player to add to the waitlist"
         log.error(f"[!] Channel {ctx.channel.name} has no associated game, command failed")
         return await ctx.followup.send("This channel is not linked to a game", ephemeral=True, delete_after=10)
 
-    if not do_dm_permissions_check(ctx.author, game):
+    if not await async_do_dm_permissions_check(ctx.author, game):
         return await ctx.followup.send("You are not the DM for this game", ephemeral=True, delete_after=10)
 
     added = await async_add_discord_member_to_game(user, game, force=False)
@@ -136,7 +136,7 @@ async def tag_players(ctx):
         log.error(f"Channel {ctx.channel.name} has no associated game, command failed")
         return await ctx.followup.send("This channel is not linked to a game", ephemeral=True)
 
-    if not do_dm_permissions_check(ctx.author, game):
+    if not await async_do_dm_permissions_check(ctx.author, game):
         return await ctx.followup.send("You are not the DM for this game", ephemeral=True)
 
     party = await async_get_party_for_game(game)
@@ -168,7 +168,7 @@ async def warn_waitlist(ctx):
         log.error(f"Channel {ctx.channel.name} has no associated game, command failed")
         return await ctx.followup.send("This channel is not linked to a game", ephemeral=True)
 
-    if not do_dm_permissions_check(ctx.author, game):
+    if not await async_do_dm_permissions_check(ctx.author, game):
         return await ctx.followup.send("You are not the DM for this game", ephemeral=True)
 
     waitlist = await async_get_wait_list(game)

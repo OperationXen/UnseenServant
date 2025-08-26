@@ -4,7 +4,7 @@ from discord.ext.commands import has_any_role
 from discord_bot.bot import bot
 from config.settings import DISCORD_GUILDS, DISCORD_DM_ROLES, DISCORD_ADMIN_ROLES
 from discord_bot.logs import logger as log
-from discord_bot.utils.roles import do_dm_permissions_check
+from discord_bot.utils.roles import async_do_dm_permissions_check
 from discord_bot.utils.channel import async_get_game_for_channel
 from core.utils.channel_members import async_set_default_channel_membership
 from core.utils.channels import async_get_game_channel_for_game
@@ -25,7 +25,7 @@ async def reset_channel_membership(
         log.error(f"[!] Channel {ctx.channel.name} has no associated game, command failed")
         return await ctx.followup.send("This channel is not linked to a game", ephemeral=True)
 
-    if not do_dm_permissions_check(ctx.author, game):
+    if not await async_do_dm_permissions_check(ctx.author, game):
         return await ctx.followup.send("You are not the DM for this game", ephemeral=True)
 
     try:
