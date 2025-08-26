@@ -1,3 +1,5 @@
+from asgiref.sync import sync_to_async
+
 from discord import User, Role
 from discord.errors import Forbidden
 
@@ -55,11 +57,20 @@ def discord_user_is_admin(discord_user: User) -> bool:
 
 def do_dm_permissions_check(user: User, game: Game) -> bool:
     """Verify a user has Admin permissions, or is the specified game's DM"""
-    if discord_user_is_admin(user):
-        log.info(f"[-] {user.name} is an admin, skipping DM game ownership check...")
-    else:
-        dm = get_dm(game)
-        if dm.user.discord_id != str(user.id):
-            log.error(f"{user.name} does not appear to be the DM for {game.name}, command failed")
-            return False
-    return True
+    try:
+        if discord_user_is_admin(user):
+            log.info(f"[-] {user.name} is an admin, skipping DM game ownership check...")
+        else:
+            dm = get_dm(game)
+            if dm.user.discord_id != str(user.id):
+                log.error(f"{user.name} does not appear to be the DM for {game.name}, command failed")
+                return False
+        return True
+    except Exception as e:
+        log.error(f"[!] Error checking DM permissions for {user.name}: {e}")
+        return False
+    
+@sync_to_async
+def async_do_dm_permissions_check(user: User, game: Game) -> bool:
+    """Async wrapper to do a DM permissions check from async context"""
+    return do_dm_permissions_check(user, game)
