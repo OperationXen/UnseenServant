@@ -91,7 +91,7 @@ class MSCCharacterList(View):
         self.characters = characters
 
         character_list = []
-        for character in characters:
+        for character in characters[:25]:  # Discord only allows 25 options in a select menu 
             x = SelectOption(label=get_character_string(character), value=character.get("uuid"))
             character_list.append(x)
         self.character_picker = Select(options=character_list, placeholder="Character to post")
