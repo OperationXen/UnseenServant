@@ -1,7 +1,8 @@
 from django.utils import timezone
-from discord import Embed, Colour, Option
+from discord import Embed, Colour, Option, Member
+from discord.ext.commands import has_any_role
 
-from config.settings import DISCORD_GUILDS
+from config.settings import DISCORD_GUILDS, DISCORD_DM_ROLES, DISCORD_ADMIN_ROLES
 from discord_bot.bot import bot
 from discord_bot.logs import logger as log
 from core.utils.games import (
@@ -56,6 +57,46 @@ async def games(ctx):
         message = f"You are waitlisted for {len(waitlist)} games"
         await ctx.respond(message, embeds=embeds, ephemeral=True)
 
+
+@bot.slash_command(guild_ids=DISCORD_GUILDS, description="Get a users current signed up games")
+@has_any_role(*DISCORD_ADMIN_ROLES, *DISCORD_DM_ROLES)
+async def check_games(ctx, user: Option(Member, "Member to check", required=True)):
+    """check current games for a user"""
+    await ctx.defer(ephemeral=True)
+    log.debug(f"[/] [/check_games] used by User [{ctx.author.name}] to check User [{user.name}]")
+
+    games = await async_get_upcoming_games_for_discord_id(ctx.author.id, waitlisted=False)
+    if games:
+        embeds = []
+        for game in games[:10]:
+            summary_embed = GameSummaryEmbed(game, colour=Colour.dark_purple())
+            await summary_embed.build()
+            embeds.append(summary_embed)
+        message = f"Playing in {len(games)} games"
+        await ctx.respond(message, embeds=embeds, ephemeral=True)
+
+    
+    waitlist = await async_get_upcoming_games_for_discord_id(ctx.author.id, waitlisted=True)
+    if waitlist:
+        embeds = []
+        for game in waitlist[:10]:
+            summary_embed = GameSummaryEmbed(game, colour=Colour.dark_green())
+            await summary_embed.build()
+            embeds.append(summary_embed)
+        message = f"Waitlisted for {len(waitlist)} games"
+        await ctx.respond(message, embeds=embeds, ephemeral=True)
+
+    dming = await async_get_upcoming_games_for_dm_discord_id(ctx.author.id)
+    if dming:
+        embeds = []
+        for game in dming[:10]:
+            summary_embed = GameSummaryEmbed(game, colour=Colour.blue())
+            await summary_embed.build()
+            embeds.append(summary_embed)
+        message = f"DMing {len(dming)} games"
+        await ctx.respond(message, embeds=embeds, ephemeral=True)
+    if not games and not waitlist and not dming:
+        await ctx.respond("No games for this user", ephemeral=True)
 
 @bot.slash_command(
     guild_ids=DISCORD_GUILDS, description="All upcoming games within a time period (default is 30 days)"
