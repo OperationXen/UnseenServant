@@ -23,12 +23,12 @@ async def character(ctx):
             view = MSCCharacterList(ctx.author, characters)
         except Exception as e:
             log.error(f"[!] Exception {str(e)} occured creating MSC character list view for {discord_name}")
-            await ctx.followup.send("Error occured building list of your characters - you may have too many!", ephemeral=True)
+            view.message = await ctx.followup.send("Error occured building list of your characters - you may have too many!", ephemeral=True)
         view.message = await ctx.followup.send(
             f"Characters for discord user {discord_name} from the Moonsea Codex:", view=view, ephemeral=True
         )
     else:
-            await ctx.followup.send(
+            view.message = await ctx.followup.send(
             f"Cannot find any characters for you on Moonsea Codex, have you set your discord profile ID?"
         )
 
