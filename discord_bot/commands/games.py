@@ -62,10 +62,10 @@ async def games(ctx):
 @has_any_role(*DISCORD_ADMIN_ROLES, *DISCORD_DM_ROLES)
 async def check_games(ctx, user: Option(Member, "Member to check", required=True)):
     """check current games for a user"""
-    await ctx.defer(ephemeral=True)
-    log.debug(f"[/] [/check_games] used by User [{ctx.author.name}] to check User [{user.name}]")
+    log.debug(f"[/] [/check_games] used by User [{ctx.author.name}] to check User [{user.display_name}]")
+    await ctx.respond(f"Upcoming games for {user.display_name}:", ephemeral=True)
 
-    games = await async_get_upcoming_games_for_discord_id(ctx.author.id, waitlisted=False)
+    games = await async_get_upcoming_games_for_discord_id(user, waitlisted=False)
     if games:
         embeds = []
         for game in games[:10]:
@@ -76,7 +76,7 @@ async def check_games(ctx, user: Option(Member, "Member to check", required=True
         await ctx.respond(message, embeds=embeds, ephemeral=True)
 
     
-    waitlist = await async_get_upcoming_games_for_discord_id(ctx.author.id, waitlisted=True)
+    waitlist = await async_get_upcoming_games_for_discord_id(user, waitlisted=True)
     if waitlist:
         embeds = []
         for game in waitlist[:10]:
@@ -86,7 +86,7 @@ async def check_games(ctx, user: Option(Member, "Member to check", required=True
         message = f"Waitlisted for {len(waitlist)} games"
         await ctx.respond(message, embeds=embeds, ephemeral=True)
 
-    dming = await async_get_upcoming_games_for_dm_discord_id(ctx.author.id)
+    dming = await async_get_upcoming_games_for_dm_discord_id(user.id)
     if dming:
         embeds = []
         for game in dming[:10]:
