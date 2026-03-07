@@ -17,7 +17,7 @@ async def send_escaped_message(ctx, message):
     try:
         return await ctx.respond(f"```{message}```")
     except Exception as e:
-        log.error(f"[!] Unable to send message are reply to context, message length was {len(message)}")
+        log.error(f"[!] Unable to send message as reply to context, message length was {len(message)}")
         await ctx.respond(f"I had a problem sending the response.")
 
 
