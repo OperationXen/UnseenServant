@@ -6,7 +6,7 @@ from discord_bot.utils.messaging import get_channel_by_name, async_get_bot_game_
 from discord_bot.components.games import GameDetailEmbed, GameControlView
 from discord_bot.utils.games import async_get_game_from_message, get_game_id_from_message
 from discord_bot.utils.views import add_persistent_view
-from core.utils.games import get_outstanding_games, async_check_game_expired
+from core.utils.games import async_get_outstanding_games, async_check_game_expired
 
 
 class GamesPoster:
@@ -100,7 +100,7 @@ class GamesPoster:
         """Create new messages for any games that need to be announced"""
         for priority in [False, True]:
             try:
-                for game in await get_outstanding_games(priority):
+                for game in await async_get_outstanding_games(priority):
                     channel = self.is_game_posted(game)
                     if not channel:
                         log.info(f"[-] Announcing new game: {game.name}")
