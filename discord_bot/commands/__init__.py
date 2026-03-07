@@ -8,5 +8,6 @@ from .credits import *
 from .misc import *
 from .bastion import *
 from .dice import *
+from .schedule import *
 
 from .moonseacodex import *
