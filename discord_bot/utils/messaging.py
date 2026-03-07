@@ -4,6 +4,8 @@ from discord_bot.bot import bot
 from discord_bot.logs import logger as log
 
 
+DISCORD_MAX_MESSAGE_LENGTH = 2000
+
 async def async_send_dm(user: DiscordUser | DiscordMember | int | str, message: str, **kwargs):
     if type(user) == int:
         user = await bot.get_or_fetch_user(user)
