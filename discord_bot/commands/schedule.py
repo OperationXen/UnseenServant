@@ -1,3 +1,5 @@
+from typing import List
+
 from discord import Option
 from discord.ext.commands import has_any_role
 
@@ -7,6 +9,16 @@ from discord_bot.logs import logger as log
 
 from core.utils.games import async_get_upcoming_games, async_get_dm, calc_game_tier
 from discord_bot.utils.time import discord_time
+from discord_bot.utils.messaging import DISCORD_MAX_MESSAGE_LENGTH
+
+
+async def send_escaped_message(ctx, message):
+    """ Send the message to the identified interaction context, using backticks to escape it """
+    try:
+        return await ctx.respond(f"```{message}```")
+    except Exception as e:
+        log.error(f"[!] Unable to send message are reply to context, message length was {len(message)}")
+        await ctx.respond(f"I had a problem sending the response.")
 
 
 @bot.slash_command(guild_ids=DISCORD_GUILDS, description="Generate a schedule of res DM games")
@@ -16,7 +28,7 @@ async def generate_schedule(ctx, days: Option(int, "Number of days", required=Fa
     await ctx.defer(ephemeral=True)
     outstanding_games = await async_get_upcoming_games(days)
 
-    message = ""
+    schedule: List[str] = []
     if not outstanding_games:
         return await ctx.respond(f"No upcoming unannounced games in the next 90 days")
     
@@ -27,8 +39,19 @@ async def generate_schedule(ctx, days: Option(int, "Number of days", required=Fa
         tier = calc_game_tier(game)
 
         if game.duration:
-            message = message + f"{hammer_time} **Tier {tier}** {game.module} {game.name} ({dm.name}) {game.duration} hours\n"
+            schedule.append(f"{hammer_time} **Tier {tier}** {game.module} {game.name} ({dm.name}) {game.duration} hours\n")
         else:
-            message = message + f"{hammer_time} **Tier {tier}** {game.module} {game.name} ({dm.name})\n"
-    # Escape the return as code so that it can be copy / pasted
-    return await ctx.respond(f"```{message}```")
+            schedule.append(f"{hammer_time} **Tier {tier}** {game.module} {game.name} ({dm.name})\n")
+    
+    message = ""
+    for line in schedule:
+        # Check line does not make the message too long before adding it
+        if len(message) + len(line) < DISCORD_MAX_MESSAGE_LENGTH - 10:
+            message = message + line
+        else:
+            # send what we have build so far, start a new message with the line that would have overspilled
+            await send_escaped_message(ctx, message)
+            message = line
+
+    if len(message):
+        await send_escaped_message(ctx, message)
