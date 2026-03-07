@@ -191,7 +191,6 @@ def async_get_upcoming_games_for_dm_discord_id(discord_id: str) -> list[Game]:
 
 
 # ########################################################################## #
-@sync_to_async
 def get_outstanding_games(priority=False):
     """Retrieve all game objects that are ready for release"""
     now = timezone.now()
@@ -208,7 +207,13 @@ def get_outstanding_games(priority=False):
     queryset = queryset.order_by("datetime")
     # force evaluation before leaving this sync context
     return list(queryset)
+    
 
+@sync_to_async
+def async_get_outstanding_games(priority=False):
+    """async wrapper for getting outstanding games"""
+    return get_outstanding_games(priority)
+    
 
 # ########################################################################## #
 def get_game_by_id(game_id):
