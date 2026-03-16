@@ -4,10 +4,10 @@ from config.settings import DISCORD_GAME_LOG_CHANNEL
 from discord_bot.logs import logger as log
 from discord_bot.bot import bot
 from discord_bot.commands import *
-from discord_bot.schedule.games import GamesPoster
-from discord_bot.schedule.channels.controller import ChannelController
 
+from discord_bot.schedule.games import GamesPoster
 from discord_bot.schedule.embeds import EmbedController
+from discord_bot.schedule.channels.controller import ChannelController
 from discord_bot.schedule.channels.membership import ChannelMembershipController
 
 from discord_bot.moonseacodex.messages import handle_game_log_posted
@@ -16,10 +16,10 @@ from discord_bot.moonseacodex.messages import handle_game_log_posted
 guild_id = int(DISCORD_GUILDS[0])
 
 # Register cogs
+bot.add_cog(GamesPoster(bot))
 bot.add_cog(EmbedController(bot))
 bot.add_cog(ChannelMembershipController(bot))
 bot.add_cog(ChannelController(bot, guild_id))
-bot.add_cog(GamesPoster(bot))
 
 
 def start_bot():
