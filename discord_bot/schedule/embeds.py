@@ -1,5 +1,4 @@
 from discord.ext import tasks, commands
-from discord.ext import tasks, commands
 
 from discord_bot.logs import logger as log
 
