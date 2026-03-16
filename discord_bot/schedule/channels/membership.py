@@ -25,10 +25,9 @@ class ChannelMembershipController(commands.Cog):
     """Manager class for syncing channel membership to database state"""
     bot = None
 
-    def __init__(self, bot, guild_id):
+    def __init__(self, bot):
         """initialisation function"""
         self.bot = bot
-        self.guild = bot.get_guild(guild_id)
         self.worker.start()
 
     def cog_unload(self):

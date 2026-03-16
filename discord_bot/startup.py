@@ -5,7 +5,7 @@ from discord_bot.logs import logger as log
 from discord_bot.bot import bot
 from discord_bot.commands import *
 from discord_bot.schedule.games import GamesPoster
-from discord_bot.schedule.channels.manager import ChannelController
+from discord_bot.schedule.channels.controller import ChannelController
 
 from discord_bot.schedule.embeds import EmbedController
 from discord_bot.schedule.channels.membership import ChannelMembershipController
@@ -17,8 +17,8 @@ guild_id = int(DISCORD_GUILDS[0])
 
 # Register cogs
 bot.add_cog(EmbedController(bot))
-bot.add_cog(ChannelMembershipController(bot, guild_id))
-
+bot.add_cog(ChannelMembershipController(bot))
+bot.add_cog(ChannelController(bot, guild_id))
 bot.add_cog(GamesPoster(bot))
 
 
@@ -30,15 +30,6 @@ def start_bot():
 @bot.event
 async def on_ready():
     log.info(f"[-] {bot.user.name} has connected to discord")
-    log.info("Starting automated services")
-
-    # try:
-    #     discord_bot.core.channel_controller = ChannelController(discord_bot.core.guild)
-    #     log.info("[+] Started service: Channel creation/deletion")
-    #     discord_bot.core.channel_membership_controller = ChannelMembershipController(discord_bot.core.guild)
-
-    # except IndexError:
-    #     log.info("Unable to find the specified guild")
 
 
 @bot.event

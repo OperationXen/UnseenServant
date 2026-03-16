@@ -1,2 +1,2 @@
-from .manager import ChannelController
+from .controller import ChannelController
 from .membership import ChannelMembershipController
