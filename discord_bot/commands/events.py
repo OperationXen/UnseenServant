@@ -29,7 +29,7 @@ async def join_event(ctx):
     await ctx.followup.send(f"Added you to the event")
 
 
-@bot.slash_command(guild_ids=DISCORD_GUILDS, description="Join an event")
+@bot.slash_command(guild_ids=DISCORD_GUILDS, description="Leave an event")
 async def leave_event(ctx):
     """Remove the player from the upcoming event"""
     await ctx.response.defer(ephemeral=True)
