@@ -19,6 +19,8 @@ guild_id = int(DISCORD_GUILDS[0])
 bot.add_cog(EmbedController(bot))
 bot.add_cog(ChannelMembershipController(bot, guild_id))
 
+bot.add_cog(GamesPoster(bot))
+
 
 def start_bot():
     """bot startup routine"""
@@ -31,11 +33,6 @@ async def on_ready():
     log.info("Starting automated services")
 
     # try:
-    #     
-    #     discord_bot.core.guild = bot.get_guild(guild_id)
-
-    #     discord_bot.core.game_controller = GamesPoster()
-    #     log.info("[+] Started service: Games poster")
     #     discord_bot.core.channel_controller = ChannelController(discord_bot.core.guild)
     #     log.info("[+] Started service: Channel creation/deletion")
     #     discord_bot.core.channel_membership_controller = ChannelMembershipController(discord_bot.core.guild)
