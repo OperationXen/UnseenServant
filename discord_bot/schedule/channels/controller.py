@@ -1,4 +1,4 @@
-from discord.ext import tasks
+from discord.ext import tasks, commands
 from discord.utils import get
 
 from config.settings import CHANNEL_SEND_PINGS
@@ -20,17 +20,22 @@ from core.utils.channel_members import async_set_default_channel_membership
 from core.utils.user import async_dm_is_res_dm, async_get_dm_user
 
 
-class ChannelController:
+class ChannelController(commands.Cog):
     """Manager class for performing channel based functions"""
-
-    initialised = False
+    bot = None
+    guild_id = None
     guild = None
     parent_category = None
 
-    def __init__(self, guild):
+    def __init__(self, bot, guild_id):
         """initialisation function"""
-        self.guild = guild
-        self.channel_event_loop.start()
+        self.bot = bot
+        self.guild_id = guild_id
+        self.worker.start()
+
+    def cog_unload(self):
+        """cleanup function"""
+        self.worker.cancel()
 
     async def get_topic_text(self, game):
         """build the game channel topic header"""
@@ -236,14 +241,8 @@ class ChannelController:
                 continue
 
     @tasks.loop(seconds=120)
-    async def channel_event_loop(self):
-        try:
-            if not self.initialised:
-                log.debug("[++] Starting up the Channel Controller loop")
-                self.parent_category = get(self.guild.categories, name="Your Upcoming Games")
-                await self.recover_channel_state()
-                self.initialised = True
-
+    async def worker(self):
+        try:            
             await self.check_and_create_channels()
             await self.check_and_delete_channels()
             await self.check_and_summarise_channels()
@@ -251,4 +250,11 @@ class ChannelController:
             await self.check_and_remind_channels()
         except Exception as e:
             log.error(f"[!] An unhandled exception has occured in the Channel Manager Loop: " + str(e))
-            self.initialised = False
+
+    @worker.before_loop
+    async def before_loop_start(self):
+        await self.bot.wait_until_ready()
+        log.info("[+] Starting service: Game channel controller")
+        self.guild = self.bot.get_guild(self.guild_id)
+        self.parent_category = get(self.guild.categories, name="Your Upcoming Games")
+        await self.recover_channel_state()

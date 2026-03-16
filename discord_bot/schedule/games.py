@@ -1,4 +1,4 @@
-from discord.ext import tasks
+from discord.ext import tasks, commands
 
 from discord_bot.logs import logger as log
 from config.settings import DEFAULT_CHANNEL_NAME, PRIORITY_CHANNEL_NAME
@@ -9,16 +9,22 @@ from discord_bot.utils.views import add_persistent_view
 from core.utils.games import async_get_outstanding_games, async_check_game_expired
 
 
-class GamesPoster:
+class GamesPoster(commands.Cog):
+    bot = None
     current_games = {}
 
     channel_general = None
     channel_priority = None
 
-    def __init__(self):
+    def __init__(self, bot):
         """initialisation function"""
         # self.refresh_state.start()
-        self.check_and_post_games.start()
+        self.bot = bot
+        self.worker.start()
+
+    def cog_unload(self):
+        """cleanup function"""
+        self.worker.cancel()
 
     async def fetch_message_state(self):
         """Perform async initialisation"""
@@ -130,8 +136,10 @@ class GamesPoster:
             except Exception as e:
                 log.error(f"[!] Exception caught in remove_stale_games: {e.__class__}, key = {key}")
 
+
+##########################################################################################################
     @tasks.loop(seconds=30)
-    async def check_and_post_games(self):
+    async def worker(self):
         try:
             await self.fetch_message_state()
 
@@ -140,3 +148,8 @@ class GamesPoster:
                 await self.post_outstanding_games()
         except Exception as e:
             log.error(f"[!] An unhandled exception has occured in the GamesPoster Loop: " + str(e))
+
+    @worker.before_loop
+    async def before_loop_start(self):
+        await self.bot.wait_until_ready()
+        log.info("[+] Starting service: Games poster")

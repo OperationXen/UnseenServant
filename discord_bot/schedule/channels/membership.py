@@ -2,7 +2,7 @@ from typing import List
 import traceback
 
 from discord import Member as DiscordMember
-from discord.ext import tasks
+from discord.ext import tasks, commands
 from discord.errors import NotFound
 
 from discord_bot.logs import logger as log
@@ -21,15 +21,18 @@ from discord_bot.utils.channel import (
 )
 
 
-class ChannelMembershipController:
+class ChannelMembershipController(commands.Cog):
     """Manager class for syncing channel membership to database state"""
+    bot = None
 
-    initialised = False
-
-    def __init__(self, guild):
+    def __init__(self, bot):
         """initialisation function"""
-        self.guild = guild
-        self.channel_event_loop.start()
+        self.bot = bot
+        self.worker.start()
+
+    def cog_unload(self):
+        """cleanup function"""
+        self.worker.cancel()
 
     def get_actual_channel_members_discord_id_list(self, members: List[ActualChannelMember]) -> List[str]:
         member_ids = set(map(lambda x: str(x.discord_id), members))
@@ -173,12 +176,8 @@ class ChannelMembershipController:
 
     # ################################### Worker loop definition ################################## #
     @tasks.loop(seconds=20)
-    async def channel_event_loop(self):
+    async def worker(self):
         try:
-            if not self.initialised:
-                log.info("[++] Starting up the Channel Membership Controller loop")
-                self.initialised = True
-
             channels = await async_get_all_current_game_channels()
             for channel in channels:
                 await self.sync_channel_membership(channel)
@@ -186,3 +185,8 @@ class ChannelMembershipController:
             log.error(f"[!] An unhandled exception has occured in the Channel Membership Controller Loop: " + str(e))
             log.debug(f"{traceback.format_exc()}")
             self.initialised = False
+
+    @worker.before_loop
+    async def before_loop_start(self):
+        await self.bot.wait_until_ready()
+        log.info("[+] Starting service: Channel membership manager")
