@@ -3,18 +3,15 @@ from asyncio import gather, create_task
 from discord import Embed, Colour, ButtonStyle
 from discord.ui import View, Button
 
-import discord_bot.core
+from discord_bot.bot import bot
 from discord_bot.logs import logger as log
 from discord_bot.utils.players import async_do_waitlist_updates
 from discord_bot.utils.time import discord_time, discord_countdown
 from discord_bot.utils.embed import async_update_game_embeds
-from discord_bot.utils.channel import async_add_discord_member_to_game_channel
 from discord_bot.utils.format import generate_calendar_message
 from discord_bot.utils.games import async_add_discord_member_to_game
 from discord_bot.utils.messaging import async_send_dm
 from core.models.game import Game
-from core.errors import ChannelError
-from core.utils.channels import async_get_game_channel_for_game
 from core.utils.games import (
     async_get_player_list,
     async_get_wait_list,
@@ -99,7 +96,8 @@ class GameSummaryEmbed(BaseGameEmbed):
         try:
             patreon_game = is_patreon_exclusive(self.game)
             await self.get_data()
-            jump_url = discord_bot.core.game_controller.get_jump_url(self.game)
+            game_controller = bot.get_cog("GamesPoster")
+            jump_url = game_controller.get_jump_url(self.game)
         except Exception as e:
             print(e)
 

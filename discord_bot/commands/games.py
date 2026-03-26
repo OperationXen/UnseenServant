@@ -20,6 +20,8 @@ from discord_bot.utils.time import discord_time
 async def games(ctx):
     """Retrieve a list of the users upcoming games and provide a summary"""
     now = timezone.now()
+    await ctx.response.defer(ephemeral=True)
+
     game_credit_text = await async_get_player_credit_text(ctx.author)
     games = await async_get_upcoming_games_for_discord_id(ctx.author.id, waitlisted=False)
     waitlist = await async_get_upcoming_games_for_discord_id(ctx.author.id, waitlisted=True)
