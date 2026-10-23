@@ -12,7 +12,8 @@
 			"extensions": [
 				"mhutchie.git-graph",
 				"ms-python.python",
-				"ms-python.debugpy"
+				"ms-python.debugpy",
+				"charliermarsh.ruff"
 			]
 		}
 	}

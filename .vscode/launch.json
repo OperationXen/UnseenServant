@@ -6,19 +6,23 @@
   "configurations": [
     {
       "name": "Django App",
-      "type": "python",
+      "type": "debugpy",
       "request": "launch",
-      "program": "${workspaceFolder}\\manage.py",
-      "args": ["runserver"],
+      "program": "${workspaceFolder}/manage.py",
+      "args": [
+        "runserver"
+      ],
       "django": true,
       "justMyCode": true
     },
     {
       "name": "Discord Bot",
-      "type": "python",
+      "type": "debugpy",
       "request": "launch",
-      "program": "${workspaceFolder}\\manage.py",
-      "args": ["startbot"],
+      "program": "${workspaceFolder}/manage.py",
+      "args": [
+        "startbot"
+      ],
       "django": true,
       "justMyCode": true
     }

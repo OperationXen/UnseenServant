@@ -1,6 +1,6 @@
 [project]
-name = "unseenservant"
-version = "0.1.0"
+name = "UnseenServant"
+version = "1.0.0"
 description = "Add your description here"
 readme = "README.md"
 authors = [
@@ -14,7 +14,6 @@ dependencies = [
     "async-timeout==4.0.2",
     "atomicwrites==1.4.1",
     "attrs==23.1.0",
-    "black==22.3.0",
     "certifi==2023.5.7",
     "chardet==5.1.0",
     "charset-normalizer==3.1.0",
@@ -64,9 +63,7 @@ dependencies = [
     "yarl==1.11.1",
 ]
 
-[project.scripts]
-unseenservant = "unseenservant:main"
-
-[build-system]
-requires = ["uv_build>=0.13.5,<0.14.0"]
-build-backend = "uv_build"
+[dependency-groups]
+dev = [
+    "ruff>=0.17.2",
+]
