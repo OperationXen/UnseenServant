@@ -9,16 +9,14 @@ ENV TZ=Europe/London
 
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
-# Install python external libs, and web server packages
-RUN apt update && apt install git python3.10 python3-pip python3-venv apache2 libapache2-mod-wsgi-py3 libpq-dev -y
+ENV VIRTUAL_ENV=/unseen_servant/.venv
 
-# Create python virtual env
-ENV VIRTUAL_ENV=/opt/venv
-RUN python3 -m venv $VIRTUAL_ENV
-ENV PATH="$VIRTUAL_ENV/bin:$PATH"
+# Install python external libs, and web server packages
+RUN apt update && apt install git python3.10 python3-pip apache2 libapache2-mod-wsgi-py3 libpq-dev -y
+RUN python3 -m pip install uv
 
 # Update tooling and install required packages
-RUN pip install --upgrade pip setuptools wheel && pip install -r requirements.txt
+RUN uv sync --no-dev
 RUN touch debugging.log && chmod 777 debugging.log
 RUN python manage.py collectstatic --no-input
 # Enable site
