@@ -21,6 +21,9 @@ dependencies = [
     "requests>=2.34.2",
 ]
 
+[tool.ruff]
+line-length = 120
+
 [dependency-groups]
 dev = [
     "ruff>=0.17.2",
