@@ -1,7 +1,7 @@
 from discord.ext.commands import has_any_role
 
+from config.settings import DISCORD_ADMIN_ROLES, DISCORD_GUILDS
 from discord_bot.bot import bot
-from config.settings import DISCORD_GUILDS, DISCORD_ADMIN_ROLES
 
 
 @bot.slash_command(
