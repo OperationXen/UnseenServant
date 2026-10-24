@@ -1,22 +1,19 @@
 from asgiref.sync import sync_to_async
-
 from django.utils import timezone
 
+from core.models import DM, CustomUser, Game, Player
 from core.utils.players import get_bonus_credits, get_user_pending_games_count
-from core.utils.ranks import get_highest_rank, has_res_dm_ranks, has_patreon_ranks
-from core.models import CustomUser, DM, Player, Game
+from core.utils.ranks import has_patreon_ranks, has_res_dm_ranks
 
 
 def get_user_max_credit(user: CustomUser) -> int:
-    """Get the maximum credit balance for a given user"""
+    """Get the maximum credit balance for a given user by picking the highest value from all of their associated ranks"""
     max_games = 0
     try:
         ranks = list(user.ranks.all())
-        rank = get_highest_rank(ranks)
+        max_games = max(rank.max_games for rank in ranks)
     except Exception as e:
         print(e)
-    if rank:
-        max_games = rank.max_games
     bonuses = get_bonus_credits(user.discord_id)
     return max_games + bonuses
 
@@ -105,15 +102,17 @@ def user_signup_permissions_valid(user: CustomUser, game: Game) -> bool:
         return True
     return False
 
+
 # ########################################################################## #
 def get_dm_user(dm: DM):
-    """ fetch the user object for a DM"""
+    """fetch the user object for a DM"""
     try:
         if dm.user:
             return dm.user
     except Exception as e:
         pass  # Silence
     return None
+
 
 @sync_to_async
 def async_get_dm_user(dm: DM):
