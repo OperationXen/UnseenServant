@@ -20,7 +20,7 @@ def is_button(element):
 
 def get_game_number(input):
     """Retrieve a game number from a string"""
-    result = re.search("(\d+)", input)
+    result = re.search(r"(\d+)", input)
     if result:
         return int(result.group(1))
     return None

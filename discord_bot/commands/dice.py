@@ -13,7 +13,7 @@ from discord_bot.logs import logger as log
 @bot.slash_command(guild_ids=DISCORD_GUILDS, description="Roll an arbitrary number of dice")
 async def roll(ctx, dice: Option(str, "Dice to roll (eg 2D10, 8D6)", required=True)):
     """roll an arbitrary number of dice"""
-    parsed = re.match("^(\d+)?d(\d+)([\+\-]\d+)?$", dice)
+    parsed = re.match(r"^(\d+)?d(\d+)([\+\-]\d+)?$", dice)
     if not parsed:
         return await ctx.respond(f"Invalid dice roll: `{dice}`", ephemeral=True)
     try:
