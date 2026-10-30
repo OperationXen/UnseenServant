@@ -19,11 +19,11 @@ router.register(r"game/realms", GameRealmOptionsViewset, basename="game-realms")
 urlpatterns = [
     path(r"", include(router.urls)),
     re_path(
-        "dungeonmasters/banlist/(?P<discord_name>\w+)?/?$",
+        r"dungeonmasters/banlist/(?P<discord_name>\w+)?/?$",
         DMBanListViewset.as_view(view_actions_CLD),
         name="dms-banlist",
     ),
-    re_path("dungeonmasters/(?P<pk>\w+)/?", DMProfileViewset.as_view(view_actions), name="dms-detail"),
+    re_path(r"dungeonmasters/(?P<pk>\w+)/?", DMProfileViewset.as_view(view_actions), name="dms-detail"),
     re_path("dungeonmasters/?$", DMProfileViewset.as_view({"get": "list", "post": "create"}), name="dms-list"),
     re_path("status/?", StatusViewSet.as_view(), name="status"),
     re_path("statistics/games/?", GameStatsViewSet.as_view(), name="stats-games"),

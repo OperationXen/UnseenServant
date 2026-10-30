@@ -1,15 +1,14 @@
-from django.utils import timezone
-
+from discord import ApplicationContext, DiscordException, Member
 from discord.commands import Option
 from discord.ext.commands import has_any_role
-from discord import Member
+from django.utils import timezone
 
-from config.settings import DISCORD_GUILDS, DISCORD_ADMIN_ROLES, DISCORD_SIGNUP_ROLES, DISCORD_DM_ROLES
+from config.settings import DISCORD_ADMIN_ROLES, DISCORD_DM_ROLES, DISCORD_GUILDS, DISCORD_SIGNUP_ROLES
 from core.utils.players import async_get_player_credit_text, async_issue_player_bonus_credit
 from discord_bot.bot import bot
-from discord_bot.utils.time import discord_time
-from discord_bot.utils.messaging import async_send_dm
 from discord_bot.logs import logger as log
+from discord_bot.utils.messaging import async_send_dm
+from discord_bot.utils.time import discord_time
 
 
 @bot.slash_command(guild_ids=DISCORD_GUILDS, description="Get your current game credit balance")
@@ -59,10 +58,15 @@ async def issue_credit(
         await ctx.respond("Failed to issue credit", ephemeral=True, delete_after=15)
 
 
-@bot.slash_command(guild_ids=DISCORD_GUILDS, description="Get a users current game credit balance")
-@has_any_role(*DISCORD_ADMIN_ROLES, *DISCORD_DM_ROLES)
+@bot.slash_command(guild_ids=DISCORD_GUILDS, description="Admin function to get a users current game credit balance")
+@has_any_role([*DISCORD_ADMIN_ROLES, *DISCORD_DM_ROLES])
 async def check_credits(ctx, user: Option(Member, "Member to check", required=True)):
     """check current game credit balance"""
     await ctx.defer(ephemeral=True)
     message = await async_get_player_credit_text(user)
     await ctx.respond(message, ephemeral=True)
+
+
+@check_credits.error
+async def handle_error(ctx: ApplicationContext, error: DiscordException):
+    await ctx.respond("That command is an admin command, did you mean `/credit`?", ephemeral=True)
