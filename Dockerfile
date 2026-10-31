@@ -1,4 +1,4 @@
-FROM ghcr.io/astral-sh/uv:trixie-slim
+FROM ghcr.io/astral-sh/uv:python3.13-trixie-slim
 
 WORKDIR /unseen_servant
 COPY . /unseen_servant
@@ -13,6 +13,7 @@ RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 RUN apt update && apt install apache2 libapache2-mod-wsgi-py3 libpq-dev -y
 
 # Update tooling and install required packages
+RUN uv venv --python 3.13
 RUN uv sync --no-dev
 RUN touch debugging.log && chmod 777 debugging.log
 RUN uv run manage.py collectstatic --no-input
