@@ -6,7 +6,7 @@ readme = "README.md"
 authors = [
     { name = "Daemoxia", email = "OperationXen@NotInventedHere" }
 ]
-requires-python = "==3.13"
+requires-python = "~=3.13"
 dependencies = [
     "coverage>=7.17.0",
     "django>=5.2.18,<6",
