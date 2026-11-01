@@ -1,8 +1,7 @@
 from django.db import models
-from django.utils import timezone
 
-from .game import Game
 from .auth import CustomUser
+from .game import Game
 
 
 class GameChannel(models.Model):
@@ -47,6 +46,7 @@ class GameChannelMember(models.Model):
     read_message_history = models.BooleanField(null=False, default=True)
     use_slash_commands = models.BooleanField(null=False, default=True)
     manage_messages = models.BooleanField(null=False, default=False)
+    pin_messages = models.BooleanField(null=False, default=False)
 
     channel = models.ForeignKey(GameChannel, on_delete=models.CASCADE, related_name="text_channel")
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name="text_channel")
