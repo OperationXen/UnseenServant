@@ -8,14 +8,13 @@ jobs:
   Unit-Tests:
     runs-on: ubuntu-latest
     timeout-minutes: 5
-
     steps:
       - name: Checkout source
         uses: actions/checkout@v4
       - name: Set up python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.14"
+          python-version: "3.13"
           cache: "pip"
       - name: Install dependencies
         run: python -m pip install uv && uv sync --no-dev
@@ -24,31 +23,38 @@ jobs:
       - name: "Upload coverage to Codecov"
         uses: codecov/codecov-action@v1
 
-  Build-Docker-Container:
+  Build-Containers:
     runs-on: ubuntu-latest
     timeout-minutes: 5
-    needs: Unit-Tests
-
     steps:
       - name: Checkout source
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Login to DockerHub
-        uses: docker/login-action@v2
+        uses: docker/login-action@v4
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Build and push
-        uses: docker/build-push-action@v3
-        with:
-          push: true
-          tags: operationxen/unseen_servant:main
+      - parallel:
+        - name: Build - API
+          uses: docker/build-push-action@v7
+          with:
+            file: ./build/Dockerfile-api
+            push: true
+            tags: operationxen/unseen_servant_api:main
+
+        - name: Build - Discord Bot
+          uses: docker/build-push-action@v7
+          with:
+            file: ./build/Dockerfile-bot
+            push: true
+            tags: operationxen/unseen_servant_bot:main
 
   Deploy-To-Server:
     runs-on: ubuntu-latest
     timeout-minutes: 5
-    needs: Build-Docker-Container
+    needs: [Build-Docker-Container, Unit-Tests]
 
     steps:
       - name: Stop services
@@ -67,7 +73,7 @@ jobs:
           username: ${{ secrets.USERNAME }}
           key: ${{ secrets.SSH_KEY }}
           script: |
-            docker pull operationxen/unseen_servant:main
+            docker pull operationxen/unseen_servant_api:main
             docker stop ${{ secrets.CONTAINER_NAME }} || true
             docker rm ${{ secrets.CONTAINER_NAME }} || true
             docker run -d --name ${{ secrets.CONTAINER_NAME }} --network=unseen_servant_net -p 127.0.0.1:8000:80 \
@@ -83,7 +89,7 @@ jobs:
               -e DB_USER=${{ secrets.DB_USER }} -e DB_PASS=${{ secrets.DB_PASS }} \
               -v /var/opt/unseen_servant:/unseen_servant/database \
               --restart always \
-              operationxen/unseen_servant:main
+              operationxen/unseen_servant_api:main
 
       - name: Database migrations
         uses: appleboy/ssh-action@v0.1.4
