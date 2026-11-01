@@ -136,6 +136,7 @@ async def async_channel_add_discord_user(
     read_message_history=True,
     use_slash_commands=True,
     manage_messages=False,
+    pin_messages=False,
 ):
     """Give a specific user permission to view and post in the channel for an upcoming game"""
 
@@ -146,6 +147,7 @@ async def async_channel_add_discord_user(
     overwrite.send_messages = send_messages
     overwrite.use_slash_commands = use_slash_commands
     overwrite.manage_messages = manage_messages
+    overwrite.pin_messages = pin_messages
 
     # then apply the overwrites to the user
     try:
@@ -236,6 +238,7 @@ def get_actual_channel_members(channel: TextChannel) -> List[Member]:
                     send_messages=permissions.send_messages,
                     use_slash_commands=permissions.use_slash_commands,
                     manage_messages=permissions.manage_messages,
+                    pin_messages=permissions.pin_messages,
                 )
                 current_members.append(actual_channel_member)
     return current_members
@@ -285,6 +288,7 @@ async def async_add_member_to_channel(membership: GameChannelMember, channel: Te
         membership.read_message_history,
         membership.use_slash_commands,
         membership.manage_messages,
+        membership.pin_messages,
     )
     return success
 

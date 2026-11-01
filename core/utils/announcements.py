@@ -60,4 +60,6 @@ def get_player_permissions_text(gcm: GameChannelMember, user_text: str):
         message += f"\n- :x: Use bot commands"
     if gcm.manage_messages:
         message += f"\n- :white_check_mark: Channel moderator"
+    if gcm.pin_messages:
+        message += f"\n- :white_check_mark: Pin posts in channel"
     return message
