@@ -107,7 +107,7 @@ jobs:
             docker pull operationxen/unseen_servant_bot:main
             docker stop unseen_servant_bot || true
             docker rm unseen_servant_bot || true
-            docker run -d --name unseen_servant_bot --network=unseen_servant_net\
+            docker run -d --name unseen_servant_bot --network=unseen_servant_net \
               -e DJANGO_SECRET=${{ secrets.DJANGO_SECRET }} -e DB_HOST=${{ secrets.DB_HOST }} \
               -e DB_USER=${{ secrets.DB_USER }} -e DB_PASS=${{ secrets.DB_PASS }} \
               -e DISCORD_TOKEN=${{ secrets.DISCORD_TOKEN }} -e DISCORD_GUILDS=${{ secrets.DISCORD_GUILDS }} \
