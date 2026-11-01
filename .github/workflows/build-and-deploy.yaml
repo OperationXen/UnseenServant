@@ -5,7 +5,7 @@ on:
     branches: ["main"]
 
 jobs:
-  Unit-Tests:
+  Unit tests:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
@@ -23,7 +23,7 @@ jobs:
       - name: "Upload coverage to Codecov"
         uses: codecov/codecov-action@v1
 
-  Build-Containers:
+  Build containers:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
@@ -51,10 +51,10 @@ jobs:
             push: true
             tags: operationxen/unseen_servant_bot:main
 
-  Deploy-To-Server:
+  Deploy to server:
     runs-on: ubuntu-latest
     timeout-minutes: 5
-    needs: [Build-Docker-Container, Unit-Tests]
+    needs: [Build containers, Unit tests]
 
     steps:
       - name: Stop services
