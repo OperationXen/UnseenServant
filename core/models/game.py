@@ -32,11 +32,10 @@ class Game(models.Model):
         MISTHUNTERS = "Misthunters", ("Misthunters")
         STRIX = "Strixhaven", ("Strixhaven")
         RAVNICA = "Ravnica", ("Ravnica")
+        LOG = "Greyhawk", ("Legends of Greyhawk")
         OTHER = "Other setting", ("Any Other setting")
 
-    dm = models.ForeignKey(
-        DM, related_name="games", on_delete=models.CASCADE, help_text="Dungeon Master for this game"
-    )
+    dm = models.ForeignKey(DM, related_name="games", on_delete=models.CASCADE, help_text="Dungeon Master for this game")
     name = models.CharField(max_length=128, help_text="Adventure Name")
     module = models.CharField(blank=True, max_length=32, help_text="Adventure Code (e.g. CCC-GHC-09)")
     realm = models.TextField(max_length=16, choices=Realms.choices, default=Realms.FAERUN, help_text="Game setting")
@@ -81,7 +80,9 @@ class Game(models.Model):
     ready = models.BooleanField(default=True, help_text="Game is ready for release")
 
     def __str__(self):
-        return f"{self.datetime.date()} | {self.dm.user.discord_name} - {self.name}"
+        return (
+            f"{self.datetime.date()} | {self.dm.user.discord_name if self.dm.user else '<unknown user>'} - {self.name}"
+        )
 
     def clean(self):
         """Validate data before saving"""
