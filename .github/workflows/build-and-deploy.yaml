@@ -36,19 +36,20 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Build - API
-        uses: docker/build-push-action@v7
-        with:
-          file: ./build/Dockerfile-api
-          push: true
-          tags: operationxen/unseen_servant_api:main
+      - parallel:
+        - name: Build - API
+          uses: docker/build-push-action@v7
+          with:
+            file: ./build/Dockerfile-api
+            push: true
+            tags: operationxen/unseen_servant_api:main
 
-      - name: Build - Discord Bot
-        uses: docker/build-push-action@v7
-        with:
-          file: ./build/Dockerfile-bot
-          push: true
-          tags: operationxen/unseen_servant_bot:main
+        - name: Build - Discord Bot
+          uses: docker/build-push-action@v7
+          with:
+            file: ./build/Dockerfile-bot
+            push: true
+            tags: operationxen/unseen_servant_bot:main
 
   Deploy-To-Server:
     runs-on: ubuntu-latest
