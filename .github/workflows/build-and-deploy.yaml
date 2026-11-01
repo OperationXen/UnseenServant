@@ -40,43 +40,34 @@ jobs:
         - name: Build - API
           uses: docker/build-push-action@v7
           with:
-            file: ./build/Dockerfile-api
+            file: ./build/api/Dockerfile
             push: true
             tags: operationxen/unseen_servant_api:main
 
         - name: Build - Discord Bot
           uses: docker/build-push-action@v7
           with:
-            file: ./build/Dockerfile-bot
+            file: ./build/bot/Dockerfile
             push: true
             tags: operationxen/unseen_servant_bot:main
 
-  deploy-to-server:
+  deploy-API:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     needs: [build-containers, unit-tests]
 
     steps:
-      - name: Stop services
-        uses: appleboy/ssh-action@v0.1.4
-        with:
-          host: ${{ secrets.SERVER }}
-          username: ${{ secrets.USERNAME }}
-          key: ${{ secrets.SSH_KEY }}
-          script: |
-            sudo service unseen_servant stop
-
-      - name: Deploy new container
-        uses: appleboy/ssh-action@v0.1.4
+      - name: Deploy API
+        uses: appleboy/ssh-action@v1
         with:
           host: ${{ secrets.SERVER }}
           username: ${{ secrets.USERNAME }}
           key: ${{ secrets.SSH_KEY }}
           script: |
             docker pull operationxen/unseen_servant_api:main
-            docker stop ${{ secrets.CONTAINER_NAME }} || true
-            docker rm ${{ secrets.CONTAINER_NAME }} || true
-            docker run -d --name ${{ secrets.CONTAINER_NAME }} --network=unseen_servant_net -p 127.0.0.1:8000:80 \
+            docker stop unseen_servant_api || true
+            docker rm unseen_servant_api || true
+            docker run -d --name unseen_servant_api --network=unseen_servant_net -p 127.0.0.1:8000:80 \
               -e DJANGO_SECRET=${{ secrets.DJANGO_SECRET }} -e DB_HOST=${{ secrets.DB_HOST }} \
               -e DB_USER=${{ secrets.DB_USER }} -e DB_PASS=${{ secrets.DB_PASS }} \
               -e DISCORD_TOKEN=${{ secrets.DISCORD_TOKEN }} -e DISCORD_GUILDS=${{ secrets.DISCORD_GUILDS }} \
@@ -92,20 +83,41 @@ jobs:
               operationxen/unseen_servant_api:main
 
       - name: Database migrations
-        uses: appleboy/ssh-action@v0.1.4
+        uses: appleboy/ssh-action@v1
         with:
           host: ${{ secrets.SERVER }}
           username: ${{ secrets.USERNAME }}
           key: ${{ secrets.SSH_KEY }}
           script: |
-            docker exec ${{ secrets.CONTAINER_NAME }} uv run manage.py migrate
+            docker exec unseen_servant_api uv run manage.py migrate
 
-      - name: Start services
-        uses: appleboy/ssh-action@v0.1.4
+  deploy-bot:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    needs: [build-containers, unit-tests]
+
+    steps:
+      - name: Deploy discord bot
+        uses: appleboy/ssh-action@v1
         with:
           host: ${{ secrets.SERVER }}
           username: ${{ secrets.USERNAME }}
           key: ${{ secrets.SSH_KEY }}
           script: |
-            docker restart ${{ secrets.CONTAINER_NAME }} 
-            sudo service unseen_servant start
+            docker pull operationxen/unseen_servant_bot:main
+            docker stop unseen_servant_bot || true
+            docker rm unseen_servant_bot || true
+            docker run -d --name unseen_servant_bot --network=unseen_servant_net -p 127.0.0.1:8000:80 \
+              -e DJANGO_SECRET=${{ secrets.DJANGO_SECRET }} -e DB_HOST=${{ secrets.DB_HOST }} \
+              -e DB_USER=${{ secrets.DB_USER }} -e DB_PASS=${{ secrets.DB_PASS }} \
+              -e DISCORD_TOKEN=${{ secrets.DISCORD_TOKEN }} -e DISCORD_GUILDS=${{ secrets.DISCORD_GUILDS }} \
+              -e DISCORD_CLIENT_ID=${{ secrets.DISCORD_CLIENT_ID }} -e DISCORD_CLIENT_SECRET=${{ secrets.DISCORD_CLIENT_SECRET }} \
+              -e MOONSEACODEX_URL=${{ vars.MOONSEACODEX_URL }} -e MOONSEACODEX_APIKEY=${{ secrets.MOONSEACODEX_APIKEY }} \
+              -e WEBAPP_URL=${{ secrets.WEBAPP_URL }} \
+              -e CHANNEL_SEND_PINGS=${{ secrets.CHANNEL_SEND_PINGS }} -e OAUTH_COMPLETE_URL=${{ secrets.OAUTH_COMPLETE_URL }} \
+              -e OAUTH_REDIRECT_URL=${{ secrets.OAUTH_REDIRECT_URL }} -e OAUTH_FAIL_URL=${{ secrets.OAUTH_FAIL_URL }} \
+              -e DB_HOST=${{ secrets.DB_HOST }} -e DB_NAME=${{ secrets.DB_NAME }} \
+              -e DB_USER=${{ secrets.DB_USER }} -e DB_PASS=${{ secrets.DB_PASS }} \
+              -v /var/opt/unseen_servant:/unseen_servant/database \
+              --restart always \
+              operationxen/unseen_servant_bot:main
