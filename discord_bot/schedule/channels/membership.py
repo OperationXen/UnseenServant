@@ -1,28 +1,29 @@
-from typing import List
 import traceback
 
 from discord import Member as DiscordMember
-from discord.ext import tasks, commands
 from discord.errors import NotFound
+from discord.ext import commands, tasks
 
-from discord_bot.logs import logger as log
 from core.models.channel import GameChannel, GameChannelMember
-from discord_bot.utils.channelmember import ChannelMember as ActualChannelMember
-
-from core.utils.channels import async_get_all_current_game_channels
 from core.utils.channel_members import async_get_game_channel_members
-from discord_bot.utils.channel import async_get_actual_channel_members, refresh_discord_channel
-from discord_bot.utils.channel import async_remove_discord_id_from_channel, async_add_member_to_channel
+from core.utils.channels import async_get_all_current_game_channels
+from discord_bot.logs import logger as log
 from discord_bot.utils.channel import (
+    async_add_member_to_channel,
     async_game_channel_tag_added_user,
-    async_game_channel_tag_removed_user,
     async_game_channel_tag_modified_user_permissions,
     async_game_channel_tag_promoted_waitlist_user,
+    async_game_channel_tag_removed_user,
+    async_get_actual_channel_members,
+    async_remove_discord_id_from_channel,
+    refresh_discord_channel,
 )
+from discord_bot.utils.channelmember import ChannelMember as ActualChannelMember
 
 
 class ChannelMembershipController(commands.Cog):
     """Manager class for syncing channel membership to database state"""
+
     bot = None
 
     def __init__(self, bot):
@@ -34,19 +35,19 @@ class ChannelMembershipController(commands.Cog):
         """cleanup function"""
         self.worker.cancel()
 
-    def get_actual_channel_members_discord_id_list(self, members: List[ActualChannelMember]) -> List[str]:
+    def get_actual_channel_members_discord_id_list(self, members: list[ActualChannelMember]) -> list[str]:
         member_ids = set(map(lambda x: str(x.discord_id), members))
-        return member_ids
+        return list(member_ids)
 
-    def get_game_channel_member_id_list(self, gcm: List[GameChannelMember]) -> List[str]:
+    def get_game_channel_member_id_list(self, gcm: list[GameChannelMember]) -> list[str]:
         """get a list of all game channel member ids"""
         gcm_ids = set(map(lambda x: x.user.discord_id, gcm))
         return gcm_ids
 
     ###### Member adding logic ######
     def get_missing_users(
-        self, actual_channel_members: List[ActualChannelMember], gcm: List[GameChannelMember]
-    ) -> List[GameChannelMember]:
+        self, actual_channel_members: list[ActualChannelMember], gcm: list[GameChannelMember]
+    ) -> list[GameChannelMember]:
         """Get all users which should be added to the channel"""
         missing = []
         member_ids = self.get_actual_channel_members_discord_id_list(actual_channel_members)
@@ -75,10 +76,10 @@ class ChannelMembershipController(commands.Cog):
 
     ###### Member removal logic ######
     def get_excess_users(
-        self, actual_channel_members: List[ActualChannelMember], gcm: List[GameChannelMember]
-    ) -> List[ActualChannelMember]:
+        self, actual_channel_members: list[ActualChannelMember], gcm: list[GameChannelMember]
+    ) -> list[ActualChannelMember]:
         """Get all users which should be removed from the channel"""
-        excess: List[ActualChannelMember] = []
+        excess: list[ActualChannelMember] = []
         gcm_ids = self.get_game_channel_member_id_list(gcm)
         for member in actual_channel_members:
             if str(member.discord_id) in gcm_ids:
@@ -87,7 +88,7 @@ class ChannelMembershipController(commands.Cog):
         return excess
 
     async def async_remove_excess_members_from_channel(
-        self, actual_channel_members: List[ActualChannelMember], expected, discord_channel
+        self, actual_channel_members: list[ActualChannelMember], expected, discord_channel
     ):
         """Identify any members who need to be removed and remove them"""
         to_remove = self.get_excess_users(actual_channel_members, expected)
@@ -116,9 +117,12 @@ class ChannelMembershipController(commands.Cog):
             return True
         if actual_member.manage_messages != expected_member.manage_messages:
             return True
+        if actual_member.pin_messages != expected_member.pin_messages:
+            return True
+
         return False
 
-    def get_expected_member(self, discord_id, expected: List[GameChannelMember]) -> GameChannelMember | None:
+    def get_expected_member(self, discord_id, expected: list[GameChannelMember]) -> GameChannelMember | None:
         """find a game channel member with a specific ID"""
         for gcm in expected:
             if gcm.user.discord_id == str(discord_id):
@@ -126,8 +130,8 @@ class ChannelMembershipController(commands.Cog):
         return None
 
     def get_updated_users(
-        self, actual_channel_members: List[ActualChannelMember], expected: List[GameChannelMember]
-    ) -> List[GameChannelMember]:
+        self, actual_channel_members: list[ActualChannelMember], expected: list[GameChannelMember]
+    ) -> list[GameChannelMember]:
         """Get all users who have outdated channel permissions"""
         users_pending_update = []
         try:
@@ -182,11 +186,12 @@ class ChannelMembershipController(commands.Cog):
             for channel in channels:
                 await self.sync_channel_membership(channel)
         except Exception as e:
-            log.error(f"[!] An unhandled exception has occured in the Channel Membership Controller Loop: " + str(e))
+            log.error("[!] An unhandled exception has occured in the Channel Membership Controller Loop: " + str(e))
             log.debug(f"{traceback.format_exc()}")
             self.initialised = False
 
     @worker.before_loop
     async def before_loop_start(self):
-        await self.bot.wait_until_ready()
-        log.info("[+] Starting service: Channel membership manager")
+        if self.bot:
+            await self.bot.wait_until_ready()
+            log.info("[+] Starting service: Channel membership manager")
