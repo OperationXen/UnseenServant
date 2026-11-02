@@ -24,6 +24,9 @@ dependencies = [
 [tool.ruff]
 line-length = 120
 
+[tool.ruff.lint]
+ignore = ["SIM103", "BLE001"]
+
 [dependency-groups]
 dev = [
     "ruff>=0.17.2",

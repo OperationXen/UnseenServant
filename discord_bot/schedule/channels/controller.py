@@ -1,27 +1,38 @@
-from discord.ext import tasks, commands
+from discord.ext import commands, tasks
 from discord.utils import get
 
 from config.settings import CHANNEL_SEND_PINGS
-from discord_bot.logs import logger as log
-from discord_bot.utils.time import get_hammertime, discord_countdown, discord_time
-from discord_bot.utils.views import add_persistent_view
-from discord_bot.utils.games import async_get_game_from_message, get_game_id_from_message
-from discord_bot.utils.channel import async_create_channel_hidden
-from discord_bot.utils.channel import async_get_all_game_channels_for_guild, async_get_channel_first_message
-from discord_bot.components.channels import MusteringBanner, MusteringView
-from core.utils.games import async_get_dm, async_get_player_list, async_get_wait_list
-from core.utils.channels import async_get_games_pending_channel_creation, async_set_game_channel_created
-from core.utils.channels import async_get_game_channels_pending_destruction, async_destroy_game_channel
-from core.utils.channels import async_get_games_pending_channel_reminder, async_set_game_channel_reminded
-from core.utils.channels import async_get_games_pending_channel_warning, async_set_game_channel_warned
-from core.utils.channels import async_set_game_channel_summarised, async_get_games_pending_summary_post
-from core.utils.channels import async_get_game_channel_for_game
 from core.utils.channel_members import async_set_default_channel_membership
+from core.utils.channels import (
+    async_destroy_game_channel,
+    async_get_game_channel_for_game,
+    async_get_game_channels_pending_destruction,
+    async_get_games_pending_channel_creation,
+    async_get_games_pending_channel_reminder,
+    async_get_games_pending_channel_warning,
+    async_get_games_pending_summary_post,
+    async_set_game_channel_created,
+    async_set_game_channel_reminded,
+    async_set_game_channel_summarised,
+    async_set_game_channel_warned,
+)
+from core.utils.games import async_get_dm, async_get_player_list, async_get_wait_list
 from core.utils.user import async_dm_is_res_dm, async_get_dm_user
+from discord_bot.components.channels import MusteringBanner, MusteringView
+from discord_bot.logs import logger as log
+from discord_bot.utils.channel import (
+    async_create_channel_hidden,
+    async_get_all_game_channels_for_guild,
+    async_get_channel_first_message,
+)
+from discord_bot.utils.games import async_get_game_from_message, get_game_id_from_message
+from discord_bot.utils.time import discord_countdown, discord_time, get_hammertime
+from discord_bot.utils.views import add_persistent_view
 
 
 class ChannelController(commands.Cog):
     """Manager class for performing channel based functions"""
+
     bot = None
     guild_id = None
     guild = None
@@ -242,7 +253,7 @@ class ChannelController(commands.Cog):
 
     @tasks.loop(seconds=120)
     async def worker(self):
-        try:            
+        try:
             await self.check_and_create_channels()
             await self.check_and_delete_channels()
             await self.check_and_summarise_channels()
@@ -253,8 +264,9 @@ class ChannelController(commands.Cog):
 
     @worker.before_loop
     async def before_loop_start(self):
-        await self.bot.wait_until_ready()
-        log.info("[+] Starting service: Game channel controller")
-        self.guild = self.bot.get_guild(self.guild_id)
-        self.parent_category = get(self.guild.categories, name="Your Upcoming Games")
-        await self.recover_channel_state()
+        if self.bot:
+            await self.bot.wait_until_ready()
+            log.info("[+] Starting service: Game channel controller")
+            self.guild = self.bot.get_guild(self.guild_id)
+            self.parent_category = get(self.guild.categories, name="Your Upcoming Games")
+            await self.recover_channel_state()

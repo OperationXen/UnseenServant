@@ -15,6 +15,7 @@ class ChannelMember:
     send_messages = False
     use_slash_commands = False
     manage_messages = False
+    pin_messages = False
 
     def __init__(self, discord_id, display_name, channel_id=None, channel_name="", **kwargs):
         """Instance creation logic"""
@@ -27,6 +28,7 @@ class ChannelMember:
         self.send_messages = kwargs.get("send_messages")
         self.use_slash_commands = kwargs.get("use_slash_commands")
         self.manage_messages = kwargs.get("manage_messages")
+        self.pin_messages = kwargs.get("pin_messages")
 
     def __str__(self):
         """represent this item as a string"""

@@ -1,4 +1,4 @@
-name: SSH deployment
+name: Build and Deploy
 
 on:
   push:
@@ -94,7 +94,7 @@ jobs:
   deploy-bot:
     runs-on: ubuntu-latest
     timeout-minutes: 5
-    needs: [build-containers, unit-tests]
+    needs: [deploy-API] # needs to follow API deployment as this handles db migrations
 
     steps:
       - name: Deploy discord bot
